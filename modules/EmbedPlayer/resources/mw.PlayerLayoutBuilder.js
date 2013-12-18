@@ -488,15 +488,7 @@ mw.PlayerLayoutBuilder.prototype = {
 			setTimeout( function(){
 				embedPlayer.doUpdateLayout();
 			},100)
-		});
-
-		// IE8 does not trigger click events on Flash objects
-		if( (embedPlayer.adSiblingFlashPlayer || embedPlayer.instanceOf == 'Kplayer') && 
-			(mw.isIE8() || mw.isIE9()) ){
-			embedPlayer.getVideoHolder().bind('mouseup', function(){
-				$( embedPlayer ).trigger('click');
-			});
-		}		
+		});	
 
 		// add the player click / touch bindings
 		addPlaybackBindings();

@@ -997,7 +997,6 @@ mw.KAdPlayer.prototype = {
 		$( '#' + this.getVideoAdSiblingId() ).remove();
 		$( '#' + this.getVideoAdSiblingId() + '_container' ).remove();
 		this.adSibling = null;
-		this.adSiblingFlashPlayer = null;
 		// remove click through binding
 		this.embedPlayer.getVideoHolder().unbind( this.adClickPostFix );
 		// show the player:
@@ -1037,9 +1036,6 @@ mw.KAdPlayer.prototype = {
 				var targetPlayer =  mw.EmbedTypes.getMediaPlayers().defaultPlayer( source.mimeType );
 				if ( targetPlayer.library == "Kplayer" ) {
 					this.adSibling = new mw.PlayerElementFlash( vidSibContainerId, this.getVideoAdSiblingId(), {autoPlay: true} );
-					// TODO: DELETE THIS!
-					// We need to figure out if we're using Flash player or HTML5 player
-					this.embedPlayer.adSiblingFlashPlayer = true;
 				} else {
 					this.adSibling = new mw.PlayerElementHTML( vidSibContainerId , this.getVideoAdSiblingId() );
 				}
