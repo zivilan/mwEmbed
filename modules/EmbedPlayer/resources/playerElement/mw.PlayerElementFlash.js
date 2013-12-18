@@ -100,6 +100,8 @@
 				flashvars
 			);
 
+			this._super( containerId, playerId );
+
 			return this;
 		},
 		play: function(){

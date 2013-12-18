@@ -3,6 +3,7 @@
 // Class defined in resources/class/class.js
 	mw.PlayerElementHTML = mw.PlayerElement.extend({
 		init: function( containerId , playerId ){
+			this._super( containerId, playerId );
 			// Create new video tag and append to container
 			var $vidSibling = $( '<video />' )
 				.attr({
