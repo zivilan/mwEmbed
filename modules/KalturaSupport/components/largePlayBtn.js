@@ -26,10 +26,18 @@
 					'target': '_blank'
 				});
 			});
-			this.bind('onChangeMediaDone playerReady onpause onEndedDone', function(){
+
+			this.bind('onChangeMediaDone',function(){
+				if ( !this.isPlaying ){
+					_this.show();
+				}
+			});
+			this.bind('playerReady onpause onEndedDone', function(e){
+				_this.isPlaying = false;
 				_this.show();
 			});
-			this.bind('playing AdSupport_StartAdPlayback', function(){
+			this.bind('playing AdSupport_StartAdPlayback', function(e){
+				_this.isPlaying = true;
 				_this.hide();
 			});
 			this.bind('onPlayerStateChange', function(e, newState, oldState){
