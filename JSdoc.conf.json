@@ -12,7 +12,8 @@
 		"monospaceLinks": false
 	},
 	"opts": {
-		"destination": "./out/",
-		"lenient": true
+		"destination": "./jsdoc",
+		"lenient": true,
+		 "recurse": true
 	}
 }

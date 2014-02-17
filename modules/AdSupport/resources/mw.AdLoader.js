@@ -8,12 +8,12 @@ mw.AdLoader = {
 	/**
 	 * Get ad display configuration object from a url
 	 *
-	 * @param {string} adUrl
+	 * @param {string} adUrl -
 	 * 		The url which contains the xml ad payload
-	 * @param {function} callback
+	 * @param {function} callback -
 	 * 		Function called with ad payload once ad content is loaded.
-	 * @param {boolean} wrapped
-	 * 		(optional) used to increase the internal counter
+	 * @param {boolean=} wrapped -
+	 * 		Used to increase the internal counter
 	 */
 	load: function( adUrl, callback, wrapped ){
 		var _this = this;
@@ -77,11 +77,8 @@ mw.AdLoader = {
 	},
 	/**
 	 * Get ad Format
-	 * @param {string}
-	 * 		The xml string of the ad contents
-	 * @return
-	 * @type {string}
-	 * 		The type of string
+	 * @param {string} xmlObject - The xml string of the ad contents
+	 * @return {string} The type of ad format, vast or unknown
 	 */
 	getAdFormat: function( xmlObject ){
 		if(xmlObject &&  xmlObject.childNodes ){

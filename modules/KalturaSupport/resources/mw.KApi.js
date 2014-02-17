@@ -6,6 +6,12 @@
  * Should extend new kWidget.api() api.request() base
  */
 
+( function( mw, $ ) { "use strict";
+
+mw.KApi = function( widgetId ){
+	return this.init( widgetId );
+};
+
 /**
  * kApi takes supports a few mixed argument types
  *
@@ -16,12 +22,6 @@
  *		Array An Array of request params for multi-request
  *		Object Named request params
  */
-( function( mw, $ ) { "use strict";
-
-mw.KApi = function( widgetId ){
-	return this.init( widgetId );
-};
-
 mw.KApi.prototype = {
 	baseParam: {
 		'apiVersion' : '3.1',

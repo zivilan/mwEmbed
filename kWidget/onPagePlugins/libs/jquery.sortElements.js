@@ -1,10 +1,10 @@
 /**
  * jQuery.fn.sortElements
  * --------------
- * @param Function comparator:
+ * @param {function} comparator -
  *   Exactly the same behaviour as [1,2,3].sort(comparator)
  *
- * @param Function getSortable
+ * @param {function} getSortable -
  *   A function that should return the element that is
  *   to be sorted. The comparator will run on the
  *   current collection, but you may want the actual
@@ -17,6 +17,7 @@
  *
  *   The <td>'s parent (<tr>) will be sorted instead
  *   of the <td> itself.
+ *   
  */
 jQuery.fn.sortElements = (function(){
 

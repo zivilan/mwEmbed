@@ -82,22 +82,22 @@ kWidget.addReadyCallback( function( playerId ){
 			return 'Kaltura Omniture OnPage v' + mw.getConfig('version'); 
 		},
 		getMediaName: function(){
-	 		var _this = this;
-	 		// shortcut to custom data
-	 		var g = function( key ){
-	 			return _this.getAttr( 'mediaProxy.entryMetadata.' + key ) || '_';
-	 		}
- 			switch( _this.getConfig( 'concatMediaName' ) ){
- 				case 'doluk':
- 					var refId = _this.entryData.referenceId;
- 					if( !refId ) 
- 						refId = _this.entryData.id;
- 					return [  this.getCType(), g('SiteSection'), g('PropertyCode'), 
- 						g('ContentType'),  g('ShortTitle').substr(0,30), 
- 						_this.getDuration(),  refId 
- 						].join(':').replace(/\s/g, "_");
- 				break;
- 			}
+			var _this = this;
+			// shortcut to custom data
+			var g = function( key ){
+				return _this.getAttr( 'mediaProxy.entryMetadata.' + key ) || '_';
+			}
+			switch( _this.getConfig( 'concatMediaName' ) ){
+				case 'doluk':
+					var refId = _this.entryData.referenceId;
+					if( !refId ) 
+						refId = _this.entryData.id;
+					return [  this.getCType(), g('SiteSection'), g('PropertyCode'), 
+						g('ContentType'),  g('ShortTitle').substr(0,30), 
+						_this.getDuration(),  refId 
+						].join(':').replace(/\s/g, "_");
+				break;
+			}
 			return this.entryData.name;
 		},
 		getDuration: function(){
@@ -282,9 +282,9 @@ kWidget.addReadyCallback( function( playerId ){
 		},
 
 		getPropsAndEvars: function( eventName ){
-	 		var _this = this;
-	 		var propsAndEvars = {};
-	 		// Look for up-to 10 associated eVars
+			var _this = this;
+			var propsAndEvars = {};
+			// Look for up-to 10 associated eVars
 			for( var i = 1 ; i < 10; i++ ){
 				var eVarId = _this.getConfig( eventName + 'Evar' + i );
 				var eVarVal = _this.getConfig( eventName + 'Evar' + i + 'Value' );
@@ -308,7 +308,7 @@ kWidget.addReadyCallback( function( playerId ){
 				propsAndEvars[ ePropId ] = ePropVal;
 			}
 			return propsAndEvars;
-	 	},		
+		},		
 		/**
 		 * Get the media content type
 		 */
@@ -328,7 +328,7 @@ kWidget.addReadyCallback( function( playerId ){
 			}
 			// default to video if we can't detect content type from mime
 			return 'vid';
-	 	},
+		},
 
 		runMediaCommand: function(){
 			// Exit if sCode is not loaded
@@ -336,70 +336,69 @@ kWidget.addReadyCallback( function( playerId ){
 				return ;
 			}
 			// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/arguments#Description
-	 		var args = Array.prototype.slice.call( arguments );
-	 		var cmd = args[0];
-	 		var argSet = args.slice( 1 );
+			var args = Array.prototype.slice.call( arguments );
+			var cmd = args[0];
+			var argSet = args.slice( 1 );
 
-	 		var s = window[ this.getSCodeName() ];
-	 		try {
-	 			// When using argSet.join we turn all arguments to string, we need to send them with the same type 
-	 			//eval( this.getSCodeName() + '.Media.' + cmd + '("' + argSet.join('","') + '");');
-	 			// not working :(
-	 			//s.Media[cmd].apply( this, args );
-		 		switch( cmd ) {
-		 			case 'open': 
-		 				s.Media.open(argSet[0], argSet[1], args[2]);
-		 			break;
-		 			case 'play': 
-		 				s.Media.play(argSet[0], argSet[1]);
-		 			break;
-		 			case 'stop':
-		 				s.Media.stop(argSet[0], argSet[1]);
-		 			break;
-		 			case 'close':
-		 				s.Media.close(argSet[0]);
-		 			break;
-		 		}
-		 	} catch( e ) {
-	 			this.log( "Error: Omniture, trying to run media command:" + cmd + " failed: \n" + e );
-	 		}
-	 		// audit if trackEventMonitor is set:
-	 		if( this.getConfig( 'trackEventMonitor') ){
-		 		try{
-		 			if( window[ this.getConfig( 'trackEventMonitor') ] ){
-		 				window[ this.getConfig( 'trackEventMonitor') ]( this.getSCodeName() + 
-		 					'.Media.' + cmd + '( "' + argSet.join('", "') + '" )' );
-		 			}
-		 		} catch ( e ){}
-	 		}
-	 	},
+			var s = window[ this.getSCodeName() ];
+			try {
+				// When using argSet.join we turn all arguments to string, we need to send them with the same type 
+				//eval( this.getSCodeName() + '.Media.' + cmd + '("' + argSet.join('","') + '");');
+				// not working :(
+				//s.Media[cmd].apply( this, args );
+				switch( cmd ) {
+					case 'open': 
+						s.Media.open(argSet[0], argSet[1], args[2]);
+					break;
+					case 'play': 
+						s.Media.play(argSet[0], argSet[1]);
+					break;
+					case 'stop':
+						s.Media.stop(argSet[0], argSet[1]);
+					break;
+					case 'close':
+						s.Media.close(argSet[0]);
+					break;
+				}
+			} catch( e ) {
+				this.log( "Error: Omniture, trying to run media command:" + cmd + " failed: \n" + e );
+			}
+			// audit if trackEventMonitor is set:
+			if( this.getConfig( 'trackEventMonitor') ){
+				try{
+					if( window[ this.getConfig( 'trackEventMonitor') ] ){
+						window[ this.getConfig( 'trackEventMonitor') ]( this.getSCodeName() + 
+							'.Media.' + cmd + '( "' + argSet.join('", "') + '" )' );
+					}
+				} catch ( e ){}
+			}
+		},
 
 		/**
-	 	 * Dispatches an event to omniture via the s.track(); call
-	 	 * 
-	 	 * This is based on AJAX event tracking docs: 
-	 	 * https://microsite.omniture.com/t2/help/en_US/sc/implement/index.html#Implementing_with_AJAX
-	 	 *
-	 	 * @param {String} eventId The omniture event id
-	 	 * @param {=String} eventName Optional eventName for logging ( not used in the omniture beacon )
-	 	 * @return
-	 	 */
-	 	sendNotification: function( eventId, eventName ){
-	 		var _this = this;
-	 		// get the updated s code mapping for link tracking:
-	 		var s = s_gi( s_account );
-	 		this.log( "sendNotification: " + eventId + ' ' +  eventName );
-	 		// mark everything we updated for logging and audit
-	 		var oDebugDispatch = {};
-	 		// Get the proprs and evars:
-	 		var propsAndEvars = _this.getPropsAndEvars( eventName );
+		 * Dispatches an event to omniture via the s.track(); call
+		 * 
+		 * This is based on AJAX event tracking docs: 
+		 * https://microsite.omniture.com/t2/help/en_US/sc/implement/index.html#Implementing_with_AJAX
+		 *
+		 * @param {String} eventId - The omniture event ID
+		 * @param {String=} eventName - Optional eventName for logging ( not used in the omniture beacon )
+		 */
+		sendNotification: function( eventId, eventName ){
+			var _this = this;
+			// get the updated s code mapping for link tracking:
+			var s = s_gi( s_account );
+			this.log( "sendNotification: " + eventId + ' ' +  eventName );
+			// mark everything we updated for logging and audit
+			var oDebugDispatch = {};
+			// Get the proprs and evars:
+			var propsAndEvars = _this.getPropsAndEvars( eventName );
 
-	 		// check if we have associated eVars:
-	 		s.linkTrackVars ='';
-	 		if( ! kWidget.isEmptyObject( propsAndEvars ) ){
-	 			//s.Media.trackEvents += ',eVars';
-	 			// Build props and evars
-	 			var coma='';
+			// check if we have associated eVars:
+			s.linkTrackVars ='';
+			if( ! kWidget.isEmptyObject( propsAndEvars ) ){
+				//s.Media.trackEvents += ',eVars';
+				// Build props and evars
+				var coma='';
 				for ( var key in propsAndEvars ){
 					s.linkTrackVars+=coma + key;
 					coma = ',';
@@ -407,28 +406,28 @@ kWidget.addReadyCallback( function( playerId ){
 					// add to log object:
 					oDebugDispatch[key] = propsAndEvars[ key ];
 				}
-	 		}
-	 		// append "events" as well:
-	 		s.linkTrackVars += ',events';
- 			s.events = eventId;
- 			s.linkTrackEvents= eventId;
- 			oDebugDispatch['events'] = s.events;
-	 		
-	 		// dispatch the event
-	 		s.tl(this, 'o', eventId);
-	 		
-	 		// Log the event:
-	 		try {
-	 			var logMethod = this.getConfig( 'trackEventMonitor' );
-	 			var logEvent = eventName || '';
-	 			window[ logMethod ](
-	 				logEvent,
+			}
+			// append "events" as well:
+			s.linkTrackVars += ',events';
+			s.events = eventId;
+			s.linkTrackEvents= eventId;
+			oDebugDispatch['events'] = s.events;
+			
+			// dispatch the event
+			s.tl(this, 'o', eventId);
+			
+			// Log the event:
+			try {
+				var logMethod = this.getConfig( 'trackEventMonitor' );
+				var logEvent = eventName || '';
+				window[ logMethod ](
+					logEvent,
 					oDebugDispatch
 				);
-	 			_this.log( "s.track(), state:" +  logEvent, oDebugDispatch );
-	 		} catch ( e ){ }
-	 		
-	 	},	 	
+				_this.log( "s.track(), state:" +  logEvent, oDebugDispatch );
+			} catch ( e ){ }
+			
+		},
 		normalizeAttrValue: function( attrValue ){
 			// normalize flash kdp string values
 			switch( attrValue ){

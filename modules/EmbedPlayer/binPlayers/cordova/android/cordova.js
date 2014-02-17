@@ -182,7 +182,7 @@
 				log:function(){}
 			};
 		}
-// there are places in the framework where we call `warn` also, so we should make sure it exists
+		// there are places in the framework where we call `warn` also, so we should make sure it exists
 		if(typeof window.console.warn === "undefined") {
 			window.console.warn = function(msg) {
 				this.log("warn: " + msg);
@@ -192,9 +192,7 @@
 		var cordova = {
 			define:define,
 			require:require,
-			/**
-			 * Methods to add/remove your own addEventListener hijacking on document + window.
-			 */
+			// Methods to add/remove your own addEventListener hijacking on document + window.
 			addWindowEventHandler:function(event) {
 				return (windowEventHandlers[event] = channel.create(event));
 			},
@@ -255,9 +253,10 @@
 
 			/**
 			 * Plugin callback mechanism.
+			 * 
+			 * Randomize the starting callbackId to avoid collisions after refreshing or navigating.
+			 * This way, it's very unlikely that any new callback would get the same callbackId as an old callback.
 			 */
-			// Randomize the starting callbackId to avoid collisions after refreshing or navigating.
-			// This way, it's very unlikely that any new callback would get the same callbackId as an old callback.
 			callbackId: Math.floor(Math.random() * 2000000000),
 			callbacks:  {},
 			callbackStatus: {
@@ -613,7 +612,7 @@
 		/**
 		 * Channel
 		 * @constructor
-		 * @param type  String the channel name
+		 * @param {String} the channel name
 		 */
 		var Channel = function(type, sticky) {
 				this.type = type;
@@ -666,7 +665,7 @@
 				 * This holds up Cordova's "deviceready" event until the feature has been initialized
 				 * and Cordova.initComplete(feature) is called.
 				 *
-				 * @param feature {String}     The unique feature name
+				 * @param {String} feature - The unique feature name
 				 */
 				waitForInitialization: function(feature) {
 					if (feature) {
@@ -679,7 +678,7 @@
 				/**
 				 * Indicate that initialization code has completed and the feature is ready to be used.
 				 *
-				 * @param feature {String}     The unique feature name
+				 * @param {String} feature - The unique feature name
 				 */
 				initializationComplete: function(feature) {
 					var c = this.deviceReadyChannelsMap[feature];
@@ -777,33 +776,33 @@
 		};
 
 
-// defining them here so they are ready super fast!
-// DOM event that is received when the web page is loaded and parsed.
+		// defining them here so they are ready super fast!
+		// DOM event that is received when the web page is loaded and parsed.
 		channel.createSticky('onDOMContentLoaded');
 
-// Event to indicate the Cordova native side is ready.
+		// Event to indicate the Cordova native side is ready.
 		channel.createSticky('onNativeReady');
 
-// Event to indicate that all Cordova JavaScript objects have been created
-// and it's time to run plugin constructors.
+		// Event to indicate that all Cordova JavaScript objects have been created
+		// and it's time to run plugin constructors.
 		channel.createSticky('onCordovaReady');
 
-// Event to indicate that all automatically loaded JS plugins are loaded and ready.
+		// Event to indicate that all automatically loaded JS plugins are loaded and ready.
 		channel.createSticky('onPluginsReady');
 
-// Event to indicate that Cordova is ready
+		// Event to indicate that Cordova is ready
 		channel.createSticky('onDeviceReady');
 
-// Event to indicate a resume lifecycle event
+		// Event to indicate a resume lifecycle event
 		channel.create('onResume');
 
-// Event to indicate a pause lifecycle event
+		// Event to indicate a pause lifecycle event
 		channel.create('onPause');
 
-// Event to indicate a destroy lifecycle event
+		// Event to indicate a destroy lifecycle event
 		channel.createSticky('onDestroy');
 
-// Channels that must fire before "deviceready" is fired.
+		// Channels that must fire before "deviceready" is fired.
 		channel.waitForInitialization('onCordovaReady');
 		channel.waitForInitialization('onDOMContentLoaded');
 
@@ -811,11 +810,11 @@
 
 	});
 
-// file: lib/common/commandProxy.js
+	// file: lib/common/commandProxy.js
 	define("cordova/commandProxy", function(require, exports, module) {
 
 
-// internal map of proxy function
+		// internal map of proxy function
 		var CommandProxyMap = {};
 
 		module.exports = {
@@ -988,7 +987,7 @@
 			}
 		};
 
-// Processes a single message, as encoded by NativeToJsMessageQueue.java.
+		// Processes a single message, as encoded by NativeToJsMessageQueue.java.
 		function processMessage(message) {
 			try {
 				var firstChar = message.charAt(0);
@@ -1037,7 +1036,7 @@
 			}
 		}
 
-// This is called from the NativeToJsMessageQueue.java.
+		// This is called from the NativeToJsMessageQueue.java.
 		androidExec.processMessages = function(messages) {
 			if (messages) {
 				messagesFromNative.push(messages);
@@ -1097,7 +1096,7 @@
 			}
 		}
 
-// Note: Android 2.3 does have Function.bind().
+		// Note: Android 2.3 does have Function.bind().
 		exports.clobbers = function(moduleName, symbolPath, opt_deprecationMessage) {
 			addEntry('c', moduleName, symbolPath, opt_deprecationMessage);
 		};
@@ -1183,7 +1182,7 @@
 
 	});
 
-// file: lib/android/platform.js
+	// file: lib/android/platform.js
 	define("cordova/platform", function(require, exports, module) {
 
 		module.exports = {
@@ -1221,7 +1220,7 @@
 
 	});
 
-// file: lib/android/plugin/android/app.js
+	// file: lib/android/plugin/android/app.js
 	define("cordova/plugin/android/app", function(require, exports, module) {
 
 		var exec = require('cordova/exec');
@@ -1237,13 +1236,13 @@
 			/**
 			 * Load the url into the webview or into new browser instance.
 			 *
-			 * @param url           The URL to load
-			 * @param props         Properties that can be passed in to the activity:
-			 *      wait: int                           => wait msec before loading URL
-			 *      loadingDialog: "Title,Message"      => display a native loading dialog
-			 *      loadUrlTimeoutValue: int            => time in msec to wait before triggering a timeout error
-			 *      clearHistory: boolean              => clear webview history (default=false)
-			 *      openExternal: boolean              => open in a new browser (default=false)
+			 * @param {string} url           The URL to load
+			 * @param props Properties that can be passed in to the activity:
+			 * @param props.wait: {number} - Wait msec before loading URL
+			 * @param props.loadingDialog {string} - "Title,Message"      => display a native loading dialog
+			 * @param props.loadUrlTimeoutValue {number} - time in msec to wait before triggering a timeout error
+			 * @props props.clearHistory {boolean} - clear webview history (default=false)
+			 * @props props.openExternal {boolean} - open in a new browser (default=false)
 			 *
 			 * Example:
 			 *      navigator.app.loadUrl("http://server/myapp/index.html", {wait:2000, loadingDialog:"Wait,Loading App", loadUrlTimeoutValue: 60000});
@@ -1298,7 +1297,7 @@
 
 	});
 
-// file: lib/android/plugin/android/nativeapiprovider.js
+	// file: lib/android/plugin/android/nativeapiprovider.js
 	define("cordova/plugin/android/nativeapiprovider", function(require, exports, module) {
 
 		/**
@@ -1321,7 +1320,7 @@
 
 	});
 
-// file: lib/android/plugin/android/promptbasednativeapi.js
+	// file: lib/android/plugin/android/promptbasednativeapi.js
 	define("cordova/plugin/android/promptbasednativeapi", function(require, exports, module) {
 
 		/**
@@ -1343,7 +1342,7 @@
 
 	});
 
-// file: lib/android/plugin/android/storage.js
+	// file: lib/android/plugin/android/storage.js
 	define("cordova/plugin/android/storage", function(require, exports, module) {
 
 		var utils = require('cordova/utils'),

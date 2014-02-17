@@ -97,8 +97,7 @@ mw.KAnalytics.prototype = {
 	/**
 	 * Get the current report set
 	 *
-	 * @param {Number}
-	 *			KalturaStatsEventType The eventType number.
+	 * @param {Number} KalturaStatsEventType - The eventType number.
 	 */
 	sendAnalyticsEvent: function( KalturaStatsEventKey ){
 		var _this = this;
