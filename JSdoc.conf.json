@@ -1,0 +1,18 @@
+{
+	"tags": {
+		"allowUnknownTags": true
+	},
+	"source": {
+		"include": [ "kWidget", "modules" ],
+		"includePattern": ".+\\.js(doc)?$"
+	},
+	"plugins": [],
+	"templates": {
+		"cleverLinks": false,
+		"monospaceLinks": false
+	},
+	"opts": {
+		"destination": "./out/",
+		"lenient": true
+	}
+}

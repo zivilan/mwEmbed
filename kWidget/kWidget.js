@@ -279,8 +279,8 @@ var kWidget = {
 	},
 	/**
 	 * The base embed method
-	 * @param targetId {String} Optional targetID string ( if not included, you must include in json)
-	 * @param settings {Object} Object of settings to be used in embedding.
+	 * @param targetId {String=} targetId - The DOM id target
+	 * @param settings {Object} settings - Object of settings to be used in embedding
 	 */
 	embed: function( targetId, settings ){
 		var _this = this;
@@ -376,9 +376,7 @@ var kWidget = {
 		this.proxyJsCallbackready();
 		settings.isHTML5 = this.isUiConfIdHTML5( uiconf_id );
 		
-		/**
-		 * Local scope doEmbed action, either writes out a msg, flash player
-		 */
+		// Local scope doEmbed action, either writes out a msg, flash player
 		var doEmbedAction = function(){
 			// Evaluate per user agent rules for actions
 			if( uiconf_id && _this.userAgentPlayerRules && _this.userAgentPlayerRules[ uiconf_id ] ){
@@ -1142,9 +1140,7 @@ var kWidget = {
 			return ;
 		}
 
-		/**
-		 * If Kaltura.AllowIframeRemoteService is not enabled force in page rewrite:
-		 */
+		// If Kaltura.AllowIframeRemoteService is not enabled force in page rewrite:
 		var serviceUrl = mw.getConfig('Kaltura.ServiceUrl');
 		if( ! mw.getConfig( 'Kaltura.AllowIframeRemoteService' ) ) {
 			if( ! serviceUrl || serviceUrl.indexOf( 'kaltura.com' ) === -1 ){
