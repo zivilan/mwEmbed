@@ -673,6 +673,7 @@ HTML;
 				moduleList.splice( itemToDelete, 1);
 		}
 		mw.config.set('KalturaSupport.DepModuleList', moduleList);
+		debugger;
 		mw.loader.load(moduleList);
 HTML;
 		// check if loadingSpinner plugin has config: 
