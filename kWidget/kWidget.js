@@ -714,7 +714,7 @@ var kWidget = {
 	outputFlashObject: function( targetId, settings, context ) {
 		context = context || document;
 		var elm = context.getElementById( targetId );
-		if( !elm && !elm.parentNode ){
+		if( !elm || !elm.parentNode ){
 			kWidget.log( "Error embed target missing" );
 			return ;
 		}
@@ -735,7 +735,9 @@ var kWidget = {
 		}
 		settings['id'] = elm.id;
 		// update the container id:
-		elm.setAttribute( 'id', elm.id + '_container' );
+		if ( !settings.useOriginalId ) {
+			elm.setAttribute( 'id', elm.id + '_container' );
+		}
 
 		// Output a normal flash object tag:
 		var spanTarget = context.createElement( "span" );
@@ -764,12 +766,24 @@ var kWidget = {
 			'allowScriptAccess': 'always',
 			'bgcolor': '#000000'
 		};
-		// output css trim:
-		var output = '<object style="' + elm.style.cssText.replace(/^\s+|\s+$/g,'')  + ';display:block;" ' +
-				' class="' + elm.className + '" ' +
-				' id="' + targetId + '"' + 
-				' name="' + targetId + '"';
 
+		var defaultAttrSet = {
+			'style':	elm.style.cssText.replace(/^\s+|\s+$/g,'')  + ';display:block;',
+			'class': 	elm.className,
+			'id':		targetId,
+			'name':		targetId
+		}
+		//add/ override object attributes
+		if ( settings.objectParams ) {
+			for (var key in settings.objectParams ) {
+				defaultAttrSet[key] = settings.objectParams[key];
+			}
+		}
+
+		var output = '<object ';
+		for ( var key in defaultAttrSet ) {
+			output += key + '="' + defaultAttrSet[key] + '" ';
+		}
 		output += ' data="' + settings['src'] + '" type="application/x-shockwave-flash"';
 		if( window.ActiveXObject ){
 			output += ' classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000"';
@@ -800,7 +814,12 @@ var kWidget = {
 		// Use local function to output contents to work around some browser bugs
 		var outputElemnt = function(){
 			// update the target:
-			elm.parentNode.replaceChild( spanTarget, elm );
+			if ( settings.addAsChild ) {
+				elm.innerHTML = output;
+			} else {
+				elm.parentNode.replaceChild( spanTarget, elm );
+			}
+
 			spanTarget.innerHTML = output;
 		}
 		// XXX firefox with firebug enabled locks up the browser
