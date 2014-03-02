@@ -6,7 +6,7 @@
 $kgDefaultComponentAttr = array(
     'parent' => array(
         'doc' => 'Parent container for component. Components include default placement, leave as null if unsure.',
-        'type' => 'enum',
+        'type' => 'container',
         'enum' => array("topBarContainer", "videoHolder", "controlsContainer")
     ),
     'order' => array(
@@ -454,10 +454,10 @@ The playhead reflects segment time as if it was the natural stream length.",
         'label' => 'Share',
         'model' => 'config.plugins.share',
         'attributes' => array(
-            'parent' => array(
+            'share' => array(
                 'doc' => 'Parent container for component. Components include default placement, leave as null if unsure.',
                 'model' => "config.plugins.share.parent",
-                'type' => 'enum',
+                'type' => 'container',
                 'enum' => array("topBarContainer", "videoHolder", "controlsContainer"),
                 'options' => array(
                     array(
