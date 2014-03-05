@@ -7,17 +7,34 @@ $kgDefaultComponentAttr = array(
     'parent' => array(
         'doc' => 'Parent container for component. Components include default placement, leave as null if unsure.',
         'type' => 'container',
-        'enum' => array("topBarContainer", "videoHolder", "controlsContainer")
+        'enum' => array("topBarContainer", "videoHolder", "controlsContainer"),
+        'options' => array(
+            array(
+                'label' => "Top bar container",
+                'value' => "topBarContainer"
+            ),
+            array(
+                'label' => "Video holder",
+                'value' => "videoHolder"
+            ), array(
+                'label' => "Controls container",
+                'value' => "controlsContainer"
+            )
+        ),
+        'initvalue' => 'videoHolder'
     ),
     'order' => array(
         'doc' => 'Draw order of the component within the container.
 			Together with alignment, determines component placement of the component. Order is set with respect to siblings on the parent container.',
-        'type' => 'number.',
+        'type' => 'sortVal',
+        'initvalue' => 0
     ),
     'align' => array(
         'doc' => 'Alignment for component, can be left or right.',
-        'type' => 'enum',
-        'enum' => array('left', 'right')
+        'type' => 'alignment',
+        'initvalue' => 'left',
+        'enum' => array('left', 'right'),
+        "options" => array(array('label' => "Left", 'value' => 'left'), array('label' => "Right", 'value' => 'right'))
     )
 );
 
@@ -453,53 +470,18 @@ The playhead reflects segment time as if it was the natural stream length.",
         'type' => 'featuremenu',
         'label' => 'Share',
         'model' => 'config.plugins.share',
-        'attributes' => array(
-            'share' => array(
-                'doc' => 'Parent container for component. Components include default placement, leave as null if unsure.',
-                'model' => "config.plugins.share.parent",
-                'type' => 'container',
-                'enum' => array("topBarContainer", "videoHolder", "controlsContainer"),
-                'options' => array(
-                    array(
-                        'label' => "Top bar container",
-                        'value' => "topBarContainer"
-                    ),
-                    array(
-                        'label' => "Video holder",
-                        'value' => "videoHolder"
-                    ), array(
-                        'label' => "Controls container",
-                        'value' => "controlsContainer"
-                    )
-                ),
-                'initvalue' => "topBarContainer"
-            ),
-            'align' => array(
-                'doc' => 'Alignment for component, can be left or right.',
-                'type' => 'enum',
-                'enum' => array('left', 'right'),
-                'initvalue' => "right",
-                'options' => array(
-                    array(
-                        'label' => "Left",
-                        'value' => "left"
-                    ),
-                    array(
-                        'label' => "Right",
-                        'value' => "right"
-                    )
-                )
-            ),
-            'socialShareURL' => array(
-                'doc' => "Allows you to define the URL shared for this player.
+        'attributes' => array_merge($kgDefaultComponentAttr, array(
+                'socialShareURL' => array(
+                    'doc' => "Allows you to define the URL shared for this player.
 					<ul>
 						<li><b>Smart</b> will maximize inline social sharing playback, by using the
 							page URL or Kaltura URL, and depend on whether opengraph tags are present</li>
 						<li><b>Parent</b> will share the parent page URL.</li>
 						<li><b>http://my-custom-domain.com/?v={mediaProxy.entry.id}</b> a custom URL with magic substitution can also be used.</li>
 					</ul>",
-                'type' => 'string'
-            ),
+                    'type' => 'string'
+                ),
+            )
         )
     ),
     'watermark' => array(
@@ -938,7 +920,7 @@ The playhead reflects segment time as if it was the natural stream length.",
     ),
     'volumeControl' => array(
         'description' => 'The volume control plugin allows you to control the player volume using mute/unmute buttons and a volume slider.',
-        'attributes' => array(
+        'attributes' => array_merge($kgDefaultComponentAttr, array(
             'showSlider' => array(
                 'doc' => 'Show the volume slider.',
                 'type' => 'boolean'
@@ -951,7 +933,7 @@ The playhead reflects segment time as if it was the natural stream length.",
                 'doc' => 'Accessible buttons volume change percent from 0 to 1.',
                 'type' => 'number'
             )
-        )
+        ))
     ),
     'accessibilityButtons' => array(
         'description' => 'The accessibility buttons allow keyboard access to seek forward/backward and current position.',
@@ -1041,7 +1023,7 @@ The playhead reflects segment time as if it was the natural stream length.",
     ),
     'titleLabel' => array(
         'description' => 'Enables a title hover overlay over the video content.',
-        'attributes' => array(
+        'attributes' => array_merge($kgDefaultComponentAttr, array(
             'align' => array(
                 'doc' => 'Alignment for title text.',
                 'type' => 'enum',
@@ -1051,7 +1033,7 @@ The playhead reflects segment time as if it was the natural stream length.",
                 'doc' => 'The text string to be displayed for the title.',
                 'type' => 'string',
             ),
-        )
+        ))
     ),
     'related' => array(
         'description' => 'Add the Related Videos screen at the end of the video to attract users to watch additional videos.',
