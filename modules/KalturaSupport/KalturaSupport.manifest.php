@@ -707,7 +707,7 @@ The playhead reflects segment time as if it was the natural stream length.",
         'label' => 'Vast',
         "endline" => "true", // *NEW* - demonstrates possible formatting decorator
         'type' => 'menu', // *NEW* - demonstrates submenu
-        'sections' => array( // *NEW* - demonstrates separtating to sections
+        'sections' => array( // *NEW* - demonstrates separating to sections
             'type' => 'tabs',
             'tabset' => array(
                 array('title' => 'Pre Roll', 'active' => true, 'key' => 'pre')
@@ -964,7 +964,7 @@ The playhead reflects segment time as if it was the natural stream length.",
                 'doc' => 'Support seek forward button.',
                 'type' => 'boolean'
             ),
-            'backwardBtn' => array(
+         'backwardBtn' => array(
                 'doc' => 'Support seek backward button.',
                 'type' => 'boolean'
             )
