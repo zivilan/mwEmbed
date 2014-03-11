@@ -155,17 +155,19 @@ return array(
         'children' => array(
             'first' => array(
                 'section' => 'dyn1',
+                'model'=>'config.plugins.sections.dyn1.first',
                 'label' => 'First control',
                 'type' => 'text',
             ),
             'second' => array(
+                'model'=>'config.plugins.sections.dyn1.second',
                 'section' => 'dyn1',
                 'label' => 'Another control',
                 'type' => 'checkbox',
-
             ),
             'third' => array(
                 'section' => 'dyn1',
+                'model'=>'config.plugins.sections.dyn1.third',
                 'label' => 'last control',
                 'type' => 'number'
             )
