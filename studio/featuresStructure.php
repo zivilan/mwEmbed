@@ -147,6 +147,7 @@ return array(
                 'dyn1' => array(
                     'modelPre' => '',
                     'modelPost' => '#',
+                    'model'=>'config.plugins.sections.dyn1',
                     'title' => 'Press + button to add new section',
                     'addButtonTxt' => '+'
                 )
@@ -155,19 +156,19 @@ return array(
         'children' => array(
             'first' => array(
                 'section' => 'dyn1',
-                'model'=>'config.plugins.sections.dyn1.first',
+                'model'=>'config.plugins.sections.first',
                 'label' => 'First control',
                 'type' => 'text',
             ),
             'second' => array(
-                'model'=>'config.plugins.sections.dyn1.second',
+                'model'=>'config.plugins.sections.second',
                 'section' => 'dyn1',
                 'label' => 'Another control',
                 'type' => 'checkbox',
             ),
             'third' => array(
                 'section' => 'dyn1',
-                'model'=>'config.plugins.sections.dyn1.third',
+                'model'=>'config.plugins.sections.third',
                 'label' => 'last control',
                 'type' => 'number'
             )
