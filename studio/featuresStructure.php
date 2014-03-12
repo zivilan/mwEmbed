@@ -145,6 +145,7 @@ return array(
             'type' => 'kaDynamicSection',
             'sectionsConfig' => array(
                 'dyn1' => array(
+                    'remove1'=>true,
                     'modelPre' => '',
                     'modelPost' => '#',
                     'model'=>'config.plugins.sections.dyn1',
