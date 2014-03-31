@@ -55,7 +55,8 @@ mw.EmbedPlayerNativeComponent = {
 		'timeupdate',
 		'progress',
 		'enterfullscreen',
-		'exitfullscreen'
+		'exitfullscreen',
+		'showChromecastDeviceList'
 	],
 	// Native player supported feature set
 	supports: {
@@ -100,6 +101,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Apply media element bindings
 	 */
 	applyMediaElementBindings: function() {
+		mw.log("EmbedPlayerNativeComponent:: applyMediaElementBindings::");
 		var _this = this;
 		mw.log("EmbedPlayerNative::MediaElementBindings");
 
@@ -125,6 +127,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Get the embed player time
 	 */
 	getPlayerElementTime: function() {
+		mw.log("EmbedPlayerNativeComponent:: getPlayerElementTime::");
 		var _this = this;
 		// Make sure we have .vid obj
 
@@ -153,6 +156,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Stop the player ( end all listeners )
 	 */
 	stop: function(){
+		mw.log("EmbedPlayerNativeComponent:: stop::");
 		this.parent_stop();
 		if( this.getPlayerElement() && this.getPlayerElement().attr('currentTime')){
 			this.getPlayerElement().attr('currentTime', '0');
@@ -166,6 +170,7 @@ mw.EmbedPlayerNativeComponent = {
 	 */
 
 	play: function() {
+		mw.log("EmbedPlayerNativeComponent:: play::");
 		$( this ).find( '.playerPoster' ).remove();
 
 		if ( this.getPlayerElement() ) { // update player
@@ -183,6 +188,7 @@ mw.EmbedPlayerNativeComponent = {
 	* calls parent_pause to update the interface
 	*/
 	pause: function() {
+		mw.log("EmbedPlayerNativeComponent:: pause::");
 		this.parent_pause(); // update interface
 		if ( this.getPlayerElement() ) { // update player
 			this.getPlayerElement().pause();
@@ -190,9 +196,15 @@ mw.EmbedPlayerNativeComponent = {
 	},
 
 	seek: function( percentage ) {
+		mw.log("EmbedPlayerNativeComponent:: seek::");
 		var seekTime = percentage * this.getDuration();
 		this.getPlayerElement().attr('currentTime', seekTime);
 		this.parent_seek( percentage );
+	},
+
+	showChromecastDeviceList: function() {
+		mw.log("EmbedPlayerNativeComponent:: showChromecastDeviceList::");
+		this.getPlayerElement().showChromecastDeviceList();
 	},
 
 	/**
@@ -256,6 +268,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * accurately reflect the src duration
 	 */
 	_onloadedmetadata: function() {
+		mw.log("EmbedPlayerNativeComponent:: _onloadedmetadata::");
 		//Fire "onLoaded" flags if set
 		if( typeof this.onLoadedCallback == 'function' ) {
 			this.onLoadedCallback();
@@ -272,6 +285,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Local method for end of media event
 	 */
 	_onended: function( event ) {
+		mw.log("EmbedPlayerNativeComponent:: _onended::");
 		if( this.getPlayerElement() ){
 			mw.log( 'EmbedPlayer:native: onended:');
 			if( this._propagateEvents ){
@@ -284,6 +298,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Local onClip done function for native player.
 	 */
 	onClipDone: function(){
+		mw.log("EmbedPlayerNativeComponent:: onClipDone::");
 		this.parent_onClipDone();
 	},
 
@@ -291,6 +306,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * playback error
 	 */
 	_onerror: function ( event ) {
+		mw.log("EmbedPlayerNativeComponent:: _onerror::");
 		this.triggerHelper( 'embedPlayerError' );
 	},
 
@@ -301,6 +317,8 @@ mw.EmbedPlayerNativeComponent = {
 	 * @private
 	 */
 	_onprogress: function( event , progress ) {
+		mw.log("EmbedPlayerNativeComponent:: _onprogress::");
+
 		if ( typeof progress !== 'undefined' ) {
 			this.updateBufferStatus( progress );
 		}
@@ -310,6 +328,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Write the Embed html to the target
 	 */
 	getVideoElementPosition: function(){
+		mw.log("EmbedPlayerNativeComponent:: getVideoElementPosition::");
 		var videoElementDiv = parent.document.getElementById( this.id );
 		var videoElementRect = videoElementDiv.getBoundingClientRect();
 
@@ -317,6 +336,7 @@ mw.EmbedPlayerNativeComponent = {
 	},
 
 	drawVideoNativeComponent: function(){
+		mw.log("EmbedPlayerNativeComponent:: drawVideoNativeComponent::");
 		var videoElementPosition = this.getVideoElementPosition();
 		var x = videoElementPosition.left;
 		var y = videoElementPosition.top;
@@ -327,14 +347,17 @@ mw.EmbedPlayerNativeComponent = {
 	},
 
 	showNativePlayer: function(){
+		mw.log("EmbedPlayerNativeComponent:: showNativePlayer::");
 		this.getPlayerElement().showNativePlayer();
 	},
 
 	hideNativePlayer: function(){
+		mw.log("EmbedPlayerNativeComponent:: hideNativePlayer::");
 		this.getPlayerElement().hideNativePlayer();
 	},
 
 	useNativePlayerControls: function() {
+		mw.log("EmbedPlayerNativeComponent:: useNativePlayerControls::");
 		return false;
 	},
 
@@ -342,6 +365,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Passes a fullscreen request to the layoutBuilder interface
 	 */
 	toggleFullscreen: function() {
+		mw.log("EmbedPlayerNativeComponent:: toggleFullscreen::");
 		this.getPlayerElement().toggleFullscreen();
 	}
 };
