@@ -55,8 +55,7 @@ mw.EmbedPlayerNativeComponent = {
 		'timeupdate',
 		'progress',
 		'enterfullscreen',
-		'exitfullscreen',
-		'showChromecastDeviceList'
+		'exitfullscreen'
 	],
 	// Native player supported feature set
 	supports: {
@@ -97,6 +96,14 @@ mw.EmbedPlayerNativeComponent = {
 			this.bindHelper("SourceChange", function() {
 				this.getPlayerElement().attr('src', this.getSrc());
 			});
+			this.bindHelper("layoutBuildDone ended", function() {
+				this.getPlayerElement().notifyLayoutReady();
+			});
+			this.bindHelper("showChromecastDeviceList", function() {
+				mw.log("EmbedPlayerNativeComponent:: showChromecastDeviceList::");
+				this.getPlayerElement().showChromecastDeviceList();
+			});
+			this.bindHelper()
 		}
 	},
 
@@ -203,11 +210,6 @@ mw.EmbedPlayerNativeComponent = {
 		var seekTime = percentage * this.getDuration();
 		this.getPlayerElement().attr('currentTime', seekTime);
 		this.parent_seek( percentage );
-	},
-
-	showChromecastDeviceList: function() {
-		mw.log("EmbedPlayerNativeComponent:: showChromecastDeviceList::");
-		this.getPlayerElement().showChromecastDeviceList();
 	},
 
 	/**
