@@ -27,7 +27,7 @@ $kgDefaultComponentAttr = array(
 	'order' => array(
 		'doc' => 'Draw order of the component within the container.
 			Together with alignment, determines component placement of the component. Order is set with respect to siblings on the parent container.',
-		'type' => 'number.',
+		'type' => 'number',
 	),
 	'align' => array(
 		'doc' => 'Alignment for component, can be left or right.',
@@ -88,7 +88,7 @@ $kgDefaultCaptionAttr = array(
 	),
 	'defaultLanguageKey' => array(
 		'doc' => "The default language key for the player.",
-		'type' => 'language'
+		'type' => 'text'
 	),
 	'bg' => array(
 		'doc' => "Background color for timed text.",
@@ -751,8 +751,10 @@ The playhead reflects segment time as if it was the natural stream length.",
 		'sections' => array( // *NEW* - demonstrates separtating to sections
 			'type' => 'tabs',
 			'tabset' => array(
-				array('title' => 'Pre Roll', 'active' => true, 'key' => 'pre')
-			, array('title' => 'Post Roll', 'key' => 'post')),
+				array('label' => 'Pre', 'active' => true, 'key' => 'pre', 'children' => array()),
+				array('label' => 'Overlay', 'key' => 'over', 'children' => array()),
+				array('label' => 'Post', 'key' => 'post', 'children' => array()),
+				array('label' => 'Comp.', 'key' => 'comp', 'children' => array())),
 			'title' => 'Configuration'
 		),
 		'description' => "Kaltura player features robust VAST support for prerolls, midrolls, overlays, companions and postrolls",
@@ -774,61 +776,50 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'doc' => 'The number of prerolls to be played.',
 				'type' => 'number',
 				'section' => 'pre',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
+				'min' => 0, // *NEW*
 				'initvalue' => 1,
-				'to' => 5, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'skipOffset' => array(
 				'doc' => 'The time in seconds, before the skip ad link is active.',
 				'type' => 'number', // this was a string - dosen't seem logical
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
+				'min' => 0, // *NEW*
 				'initvalue' => 5,
-				'to' => 5, // *NEW*
+				'max' => 30, // *NEW*
 			),
 			'skipBtn' => array(
 				'doc' => "Skip button label.",
 				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
 				'model' => 'config.plugins.skipBtn.label',
 				'initvalue' => "Skip Ad",
-				'type' => 'string'
-			),
-			'storeSession' => array(
-				'doc' => 'If the frequency playback should be stored across player reloads.
-					By default, only playlists respect frequency intervals. 
-					If set to true, the prerollInterval will be respected across player views.',
-				'type' => 'boolean',
-				'initvalue' => false,
+				'type' => 'string',
+				'endline' => true,
 			),
 			'prerollStartWith' => array(
 				'label' => 'Number of prerolls to start with.', // *NEW*
 				'doc' => 'Number of prerolls to start with.',
 				'type' => 'number', // *NEW*
 				'section' => 'pre',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
+				'min' => 0, // *NEW*
 				'initvalue' => 0,
-				'to' => 5, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'prerollInterval' => array(
 				'label' => 'Preroll interval.', // *NEW*
 				'doc' => "How often to show prerolls",
 				'type' => 'number',
 				'section' => 'pre',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
+				'min' => 0, // *NEW*
 				'initvalue' => 0,
-				'to' => 5, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'preSequence' => array(
 				'label' => 'VAST pre-sequence index', // *NEW*
 				'doc' => "The VAST preSequence index. For example,1 for ads then 2 for a bumper plugin; would result in ad then bumper.",
 				'type' => 'number',
 				'section' => 'pre',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 5, // *NEW*
+				'min' => 0, // *NEW*
+				'max' => 5, // *NEW*
 				'initvalue' => 0,
 				"endline" => "true", // *NEW* - demonstrates possible formatting decorator
 			),
@@ -851,75 +842,88 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'doc' => 'The number of prerolls to be played.',
 				'type' => 'number',
 				'section' => 'post',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
+				'min' => 0, // *NEW*
 				'initvalue' => 1,
-				'to' => 5, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'postrollStartWith' => array(
 				'doc' => 'Number of postrolls to start with.',
 				'label' => 'Number of postrolls to start with.',
 				'type' => 'number',
 				'section' => 'post',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 5, // *NEW*
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'postrollInterval' => array(
 				'doc' => "How often to show postrolls.",
 				'type' => 'number',
 				'section' => 'post',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 5, // *NEW*
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'postSequence' => array(
 				'label' => 'VAST post-sequence index',
 				'doc' => "The VAST post-Sequence index. For example, 1 for ads then 2 for a bumper plugin; would result in ad then bumper.",
 				'type' => 'number',
 				'section' => 'post',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 5, // *NEW*
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 5, // *NEW*
 				"endline" => "true", // *NEW* - demonstrates possible formatting decorator
 			),
 			'htmlCompanions' => array(
 				'label' => 'HTML Companions', // *NEW*
-				'doc' => "Companion list format, seperated by ;, {companionDomId}:{width}:{height};{companionDomId2}:{width2}:{height2}.",
-				'initvalue' => "Companion_300x250:300:250;Companion_728x90:728:90;",
-				'type' => 'multiinput'
+				'doc' => "Companions list. Make sure to list the companion size after the underscore.",
+				'type' => 'multiinput',
+				'section' => 'comp',
+                "initvalue" => array(
+                    array("label" => "Companion_300x250"),
+                    array("label" => "Companion_728x90"),
+                ),
 			),
 			'overlayStartAt' => array(
 				'label' => 'Overlay start time.',
 				'doc' => "Start time (in seconds) for overlay.",
 				'type' => 'number',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 10000, // *NEW*
+				'section' => 'over',
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 10000, // *NEW*
 			),
 			'overlayInterval' => array(
 				'doc' => "How often should the overlay be displayed.",
 				'type' => 'number',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 5, // *NEW*
+				'section' => 'over',
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 5, // *NEW*
 			),
 			'overlayUrl' => array(
 				'label' => 'Overlay URL', // *NEW*
+				'section' => 'over',
 				'doc' => "The VAST XML file that contains the overlay media and tracking info.",
 				'type' => 'url'
 			),
 			'timeout' => array(
 				'doc' => "The timeout in seconds, for loading an ad from a VAST ad server.",
 				'type' => 'number',
-				'from' => 0, // *NEW*
-				'stepsize' => 1, // *NEW*
-				'to' => 1000, // *NEW*
+				'min' => 0, // *NEW*
+				'initvalue' => 0, // *NEW*
+				'max' => 1000, // *NEW*
 			),
 			'trackCuePoints' => array(
 				'doc' => "If entry cuepoints should be tracked for DoubleClick cue points / VAST URLs.",
 				'type' => 'boolean'
-			)
+			),
+			'storeSession' => array(
+                'doc' => 'If the frequency playback should be stored across player reloads.
+                    By default, only playlists respect frequency intervals.
+                    If set to true, the prerollInterval will be respected across player views.',
+                'type' => 'boolean',
+                'initvalue' => false,
+            )
 		)
 	),
 	'keyboardShortcuts' => array(
