@@ -933,7 +933,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 			'volumePercentChange' => array(
 				'doc' => 'Volume change percent, from 0 to 1.',
 				'type' => 'number',
-				'initvalue' => '.1'
+				'initvalue' => '0.1'
 			),
 			'shortSeekTime' => array(
 				'doc' => 'Short seek time in seconds.',
