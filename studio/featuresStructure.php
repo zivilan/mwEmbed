@@ -54,8 +54,7 @@ return array(
 				"helpnote" => "Select aspect ratio",
 				"type" => "dropdown",
 				"label" => "Aspect Ratio",
-				"endline" => "true",
-				"model" => "basicDisplay.aspectRatio"
+				"endline" => "true"
 			),
 			array(
 				"label" => "Automatically play video on page load",
