@@ -34,7 +34,7 @@ return array(
 				"player-refresh"=> true,
 				"endline" => "true",
 				"width" => "100%",
-				"model" => "~settings.previewEntry",
+				"model" => "~selectedEntry",
 				"data-placeholder" => "Pick an entry"
 			),
 			array(
