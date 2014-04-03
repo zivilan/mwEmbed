@@ -965,20 +965,10 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'type' => 'number',
 				'initvalue' => '37'
 			),
-			'longSeekBackKey' => array(
-				'doc' => 'Long Seek back key.',
-				'type' => 'string',
-				'initvalue' => 'ctrl+37'
-			),
 			'shortSeekForwardKey' => array(
 				'doc' => 'Short Seek long key.',
 				'type' => 'number',
 				'initvalue' => '39'
-			),
-			'longSeekForwardKey' => array(
-				'doc' => 'Long Seek long key.',
-				'type' => 'string',
-				'initvalue' => 'ctrl+39'
 			),
 			'openFullscreenKey' => array(
 				'doc' => 'Open Full Screen Key.',
@@ -1000,6 +990,16 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'type' => 'number',
 				'initvalue' => '35'
 			),
+			'longSeekForwardKey' => array(
+				'doc' => 'Long Seek long key.',
+				'type' => 'string',
+				'initvalue' => 'ctrl+39'
+			),
+			'longSeekBackKey' => array(
+                'doc' => 'Long Seek back key.',
+                'type' => 'string',
+                'initvalue' => 'ctrl+37'
+            ),
 			'percentageSeekKeys' => array(
 				'doc' => 'Comma seperated keys for percentage seek.',
 				'type' => 'string',
