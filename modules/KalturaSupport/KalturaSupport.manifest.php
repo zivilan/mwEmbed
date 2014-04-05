@@ -473,10 +473,8 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'type' => 'number',
 				'player-refresh' => 'theme.buttonsSize',
 				"initvalue" => 12,
-				"from" => 2,
-				"to" => 100,
-				"stepsize" => 1,
-				"numberOfDecimals" => 0
+				"min" => 2,
+				"max" => 100
 			),
 			'buttonsColor' => array(
 				'label' => 'Button\'s color',
@@ -789,7 +787,6 @@ The playhead reflects segment time as if it was the natural stream length.",
 			'skipBtn' => array(
 				'doc' => "Skip button label.",
 				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
-				'model' => 'config.plugins.skipBtn.label',
 				'initvalue' => "Skip Ad",
 				'type' => 'string',
 				'endline' => true,
@@ -877,10 +874,8 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'doc' => "Companions list. Make sure to list the companion size after the underscore.",
 				'type' => 'multiinput',
 				'section' => 'comp',
-                "initvalue" => array(
-                    array("label" => "Companion_300x250"),
-                    array("label" => "Companion_728x90"),
-                ),
+				'filter' => 'companions',
+                "initvalue" => "Companion_300x250:300:250;Companion_728x90:728:90;",
 			),
 			'overlayStartAt' => array(
 				'label' => 'Overlay start time.',
