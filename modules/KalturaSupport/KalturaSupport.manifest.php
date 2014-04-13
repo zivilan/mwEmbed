@@ -788,6 +788,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'doc' => "Skip button label.",
 				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
 				'initvalue' => "Skip Ad",
+				'model' => 'config.plugins.skipBtn.label',
 				'type' => 'string',
 				'endline' => true,
 			),
