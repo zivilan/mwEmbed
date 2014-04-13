@@ -38,12 +38,6 @@ return array(
 				'initvalue' => 's',
 				'type' => 'string'
 			),
-			'monitorEventInterval' => array(
-				'doc' => "Set to an interval ( in seconds ) for tracking the Omniture 'monitor' event.",
-				'label' => 'Monitor event tracking interval',
-				'initvalue' => 0,
-				'type' => 'number'
-			),
 			'trackEventMonitor' => array(
 				'doc' => 'A global callback function for logging Omniture events.',
 				'label' => 'Omniture events function name',
@@ -69,6 +63,12 @@ return array(
 				Values will correspond to the evars and props comma seperated map defined in additionalEvarsAndProps.",
 				'label' => 'Kaltura values',
 				'type' => 'string'
+			),
+			'monitorEventInterval' => array(
+				'doc' => "Set to an interval ( in seconds ) for tracking the Omniture 'monitor' event.",
+				'label' => 'Monitor event tracking interval',
+				'initvalue' => 0,
+				'type' => 'number'
 			)
 		)
 	),

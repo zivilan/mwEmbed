@@ -25,7 +25,7 @@ return array(
 			),
 			
 			'c3' => array(
-				'doc' => "Owner of the content(Content producer).",
+				'doc' => "Owner of the content (Content producer).",
 				'label' => 'Content owner',
 				'type' => 'url',
 			),

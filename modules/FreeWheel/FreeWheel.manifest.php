@@ -44,11 +44,6 @@ return array (
 			'siteSectionId' => array(
 				'doc' => "The site section ID used to segment ad retrieval per site section.",
 				'type' => 'string'
-			), 
-			'useKalturaTemporalSlots' => array(
-				'doc' => "If Kaltura cuePoints should be used for ad opportunities.",
-				'label' => 'Use Kaltura cue points.',
-				'type' => 'boolean'
 			),
 			'videoAssetId' => array(
 				'doc' => "Asset ID, for FreeWheel ad targeting.",
@@ -57,6 +52,11 @@ return array (
 			'videoAssetFallbackId' => array(
 				'doc' => "Fallback asset ID, if the initial asset does not have targeting info.",
 				'type' => 'string'
+			),
+			'useKalturaTemporalSlots' => array(
+				'doc' => "If Kaltura cuePoints should be used for ad opportunities.",
+				'label' => 'Use Kaltura cue points.',
+				'type' => 'boolean'
 			)
 		)
 	)

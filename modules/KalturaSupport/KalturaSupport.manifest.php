@@ -23,11 +23,6 @@ $kgDefaultComponentAttr = array(
 		),
 		'initvalue' => "topBarContainer"
 	),
-	'order' => array(
-		'doc' => 'Draw order of the component within the container.
-			Together with alignment, determines component placement of the component. Order is set with respect to siblings on the parent container.',
-		'type' => 'number',
-	),
 	'align' => array(
 		'doc' => 'Alignment for component, can be left or right.',
 		'type' => 'enum',
@@ -44,10 +39,24 @@ $kgDefaultComponentAttr = array(
 			)
 		)
 	),
+	'order' => array(
+		'doc' => 'Draw order of the component within the container.
+			Together with alignment, determines component placement of the component. Order is set with respect to siblings on the parent container.',
+		'type' => 'number',
+	)
 );
 
 // list any duplicate attribute sets here:
 $kgDefaultCaptionAttr = array(
+	'displayCaptions' => array(
+		'doc' => 'Should caption be displayed by default.',
+		'initvalue' => true,
+		'type' => 'boolean'
+	),
+	'useCookie' => array(
+		'doc' => 'Should cookies be used to store user language.',
+		'type' => 'boolean'
+	),
 	'layout' => array(
 		'doc' => 'Layout mode for caption, on top of the video or below the video.',
 		'type' => 'enum',
@@ -64,15 +73,6 @@ $kgDefaultCaptionAttr = array(
 			)
 		)
 	),
-	'displayCaptions' => array(
-		'doc' => 'Should caption be displayed by default.',
-		'initvalue' => true,
-		'type' => 'boolean'
-	),
-	'useCookie' => array(
-		'doc' => 'Should cookies be used to store user language.',
-		'type' => 'boolean'
-	),
 	'fontFamily' => array(
 		'doc' => "Top level font familiy for Captions text.",
 		'type' => 'enum',
@@ -85,19 +85,15 @@ $kgDefaultCaptionAttr = array(
 		'initvalue' => 12,
 		'type' => 'number'
 	),
-	'defaultLanguageKey' => array(
-		'doc' => "The default language key for the player.",
-		'type' => 'text'
+	'fontColor' => array(
+		'doc' => "Color of the caption text.",
+		'initvalue' => '#000000',
+		'type' => 'color'
 	),
 	'bg' => array(
 		'doc' => "Background color for timed text.",
 		'label' => 'Background color',
 		'initvalue' => '#ffffff',
-		'type' => 'color'
-	),
-	'fontColor' => array(
-		'doc' => "Color of the caption text.",
-		'initvalue' => '#000000',
 		'type' => 'color'
 	),
 	'useGlow' => array(
@@ -114,6 +110,10 @@ $kgDefaultCaptionAttr = array(
 		'doc' => 'The color of the glow.',
 		'initvalue' => '#ffffff',
 		'type' => 'color'
+	),
+	'defaultLanguageKey' => array(
+		'doc' => "The default language key for the player.",
+		'type' => 'text'
 	)
 );
 return array(
@@ -835,7 +835,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 			),
 			'postrollStartWith' => array(
 				'doc' => 'Number of postrolls to start with.',
-				'label' => 'Number of postrolls to start with.',
+				'label' => 'Number of postrolls to start with',
 				'type' => 'number',
 				'section' => 'post',
 				'min' => 0, // *NEW*
@@ -862,11 +862,17 @@ The playhead reflects segment time as if it was the natural stream length.",
 			),
 			'htmlCompanions' => array(
 				'label' => 'HTML Companions', // *NEW*
-				'doc' => "Companions list. Make sure to list the companion size after the underscore.",
-				'type' => 'multiinput',
+				'doc' => "Companions list. For each companion please specify the ad container div id and the expected ad width and height.",
+				'type' => 'companions',
 				'section' => 'comp',
 				'filter' => 'companions',
-                "initvalue" => "Companion_300x250:300:250;Companion_728x90:728:90;",
+                "initvalue" => "Comp_300x250:300:250;Comp_728x90:728:90;",
+			),
+			'overlayUrl' => array(
+				'label' => 'Overlay URL', // *NEW*
+				'section' => 'over',
+				'doc' => "The VAST XML file that contains the overlay media and tracking info.",
+				'type' => 'url'
 			),
 			'overlayStartAt' => array(
 				'label' => 'Overlay start time.',
@@ -884,12 +890,6 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'min' => 0, // *NEW*
 				'initvalue' => 0, // *NEW*
 				'max' => 5, // *NEW*
-			),
-			'overlayUrl' => array(
-				'label' => 'Overlay URL', // *NEW*
-				'section' => 'over',
-				'doc' => "The VAST XML file that contains the overlay media and tracking info.",
-				'type' => 'url'
 			),
 			'timeout' => array(
 				'doc' => "The timeout in seconds, for loading an ad from a VAST ad server.",

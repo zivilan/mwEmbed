@@ -29,7 +29,7 @@ return array (
 				'type' => 'string'
 			),
 			'timeout' => array(
-				'doc' => "Time in seconds to load the tremor ad. The default is 10 seconds,",
+				'doc' => "Time in seconds to load the tremor ad. The default is 10 seconds.",
 				'initvalue' => 10,
 				'type' => 'number'
 			)
