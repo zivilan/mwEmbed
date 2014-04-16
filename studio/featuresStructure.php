@@ -87,11 +87,13 @@ return array(
 			"logo" => "",
 			"loadingSpinner" => "",
 			"volumeControl" => "",
+			"keyboardShortcuts" => "",
 			"closedCaptions" => "",
 			"watermark" => "",
 			"infoScreen" => "",
 			"share" => "",
 			"related" => "",
+			"moderation" => "",
 			"theme" => ""
 		)
 	),
@@ -132,8 +134,6 @@ return array(
 		"model" => "plugins",
 		"children"=> array(
 			/*"chaptersView" => "",*/
-			"keyboardShortcuts" => "",
-			"moderation" => "",
 			"playbackRateSelector" => "",
 			"restrictUserAgent" => "",
 			"widevine" => ""
