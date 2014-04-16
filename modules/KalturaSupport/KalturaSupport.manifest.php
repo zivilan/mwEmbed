@@ -149,7 +149,7 @@ return array(
 			'imageUrl' => array(
                 'doc' => "An image URL, to use as the loading spinner. By default it is null. If a URL is provided, it will replace the dynamic loading spinner.",
                 'type' => 'url',
-                'initvalue' => '',
+                'initvalue' => ''
             ),
 			'lines' => array(
 				'doc' => 'The number of lines to draw, 11 by default.',
