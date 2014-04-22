@@ -120,8 +120,7 @@ return array(
 			"bumper" => "",
 			"vast" => "",
 			"doubleClick" => "",
-			"freeWheel" => "",
-			"tremor" => ""
+			"freeWheel" => ""
 		)
 	),
 	"plugins"=> array(
