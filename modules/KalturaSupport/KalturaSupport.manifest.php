@@ -431,14 +431,14 @@ The playhead reflects segment time as if it was the natural stream length.",
 		'description' => "The Kaltura custom logo plugin.",
 		'featureCheckbox' => true,
 		'attributes' => array(
-			'href' => array(
-					'label' => 'Logo link',
-					'doc' => "URL for the control bar logo to click through to.",
-					'type' => 'url'
-			),
 			'img'=> array(
 					'label' => 'Logo image URL',
 					'doc' => "URL for custom control bar logo image.",
+					'type' => 'url'
+			),
+			'href' => array(
+					'label' => 'Logo link',
+					'doc' => "URL for the control bar logo to click through to.",
 					'type' => 'url'
 			),
 			'title' => array(
@@ -748,9 +748,9 @@ The playhead reflects segment time as if it was the natural stream length.",
 		'sections' => array( // *NEW* - demonstrates separtating to sections
 			'type' => 'tabs',
 			'tabset' => array(
-				array('label' => 'Pre', 'active' => true, 'key' => 'pre', 'children' => array()),
+				array('label' => 'Preroll', 'active' => true, 'key' => 'pre', 'children' => array()),
 				array('label' => 'Overlay', 'key' => 'over', 'children' => array()),
-				array('label' => 'Post', 'key' => 'post', 'children' => array()),
+				array('label' => 'Postroll', 'key' => 'post', 'children' => array()),
 				array('label' => 'Comp.', 'key' => 'comp', 'children' => array())),
 			'title' => 'Configuration'
 		),
@@ -777,20 +777,19 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'initvalue' => 1,
 				'max' => 5, // *NEW*
 			),
+			'skipBtn' => array(
+				'doc' => "Skip button label.",
+				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
+				'initvalue' => "Skip Ad",
+				'model' => 'config.plugins.skipBtn.label',
+				'type' => 'string'
+			),
 			'skipOffset' => array(
 				'doc' => 'The time in seconds, before the skip ad link is active.',
 				'type' => 'number', // this was a string - dosen't seem logical
 				'min' => 0, // *NEW*
 				'initvalue' => 5,
 				'max' => 30, // *NEW*
-			),
-			'skipBtn' => array(
-				'doc' => "Skip button label.",
-				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
-				'initvalue' => "Skip Ad",
-				'model' => 'config.plugins.skipBtn.label',
-				'type' => 'string',
-				'endline' => true,
 			),
 			'prerollStartWith' => array(
 				'label' => 'Number of prerolls to start with.', // *NEW*
@@ -817,8 +816,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'section' => 'pre',
 				'min' => 0, // *NEW*
 				'max' => 5, // *NEW*
-				'initvalue' => 0,
-				"endline" => "true", // *NEW* - demonstrates possible formatting decorator
+				'initvalue' => 0
 			),
 
 			'postrollUrl' => array(
@@ -867,8 +865,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'section' => 'post',
 				'min' => 0, // *NEW*
 				'initvalue' => 0, // *NEW*
-				'max' => 5, // *NEW*
-				"endline" => "true", // *NEW* - demonstrates possible formatting decorator
+				'max' => 5
 			),
 			'htmlCompanions' => array(
 				'label' => 'HTML Companions', // *NEW*
