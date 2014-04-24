@@ -934,8 +934,7 @@
 				// this way we won't need all the comments
 				//var api = new kWidget.api( { 'wid' : '_' + partner_id });
 				
-				var currentUrl = kWidget.getPath() + 'mwEmbedLoader.php' +
-					'/partner_id/' + partner_id + '/uiconf_id/' + uiconf_id;
+				var currentUrl = kWidget.getPath() + 'mwEmbedLoader.php';
 				
 				$embedCode = $( '<div>' )
 				.append(
