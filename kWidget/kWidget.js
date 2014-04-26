@@ -1695,6 +1695,13 @@ var kWidget = {
 	 flashVarsToUrl: function( flashVarsObject ){
 		 var params = '';
 		 for( var i in flashVarsObject ){
+			 if (i.indexOf("!") > -1){
+				window.clientVars = window.clientVars || {};
+				window.clientVars[i.replace("!",'')] = flashVarsObject[i];
+			    flashVarsObject[i] = "{}";
+				 i = i.replace("!",'');
+
+			 }
 			 var curVal = typeof flashVarsObject[i] == 'object'?
 					 JSON.stringify( flashVarsObject[i] ):
 					 flashVarsObject[i]

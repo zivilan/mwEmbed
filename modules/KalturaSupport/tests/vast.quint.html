@@ -1,0 +1,165 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Audio MP3 Entry Test</title>
+    <script type="text/javascript" src="../../../tests/qunit/qunit-bootstrap.js"></script>
+    <script type="text/javascript" src="../../../mwEmbedLoader.php"></script>
+    <script type="text/javascript" src="../../../docs/js/doc-bootstrap.js"></script>
+    <script type="text/javascript">
+        function jsKalturaPlayerTest( videoId ){
+
+
+
+        }
+    </script>
+
+    <!-- qunit-kaltura must come after qunit-bootstrap.js and after mwEmbedLoader.php and after any jsCallbackReady stuff-->
+    <script type="text/javascript" src="resources/qunit-kaltura-bootstrap.js"></script>
+</head>
+<body>
+<h2> Vast quint</h2>
+
+<br />
+<div id="kaltura_player" style="width:400px;height:333px;"></div>
+<script>
+    var multiline = function(string) { return string.toString().replace(/(^[^\n]*\n)|(\n\*\/\})/g, ""); };
+
+    var vastXML = multiline(function(){/*
+     <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+     <VAST version="3.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd">
+     <Ad id="preroll-1" sequence="1">
+     <InLine>
+     <AdSystem version="2.0">DART_DFP</AdSystem>
+     <AdTitle/>
+     <Description/>
+     <Survey/>
+     <Impression id="DART">
+     <![CDATA[http://tracking/impression/1]]>
+     </Impression>
+
+     <Creatives>
+     <Creative sequence="1" AdID="">
+     <Linear skipoffset="20%">
+     <Duration>00:00:52</Duration>
+     <TrackingEvents>
+     <Tracking event="start">
+     <![CDATA[http://tracking/start/1]]>
+     </Tracking>
+     <Tracking event="midpoint">
+     <![CDATA[http://tracking/midpoint/1]]>
+     </Tracking>
+     <Tracking event="complete">
+     <![CDATA[http://tracking/complete/1]]>
+     </Tracking>
+
+     <Tracking event="mute">
+     <![CDATA[http://tracking/mute/1]]>
+     </Tracking>
+     <Tracking event="pause">
+     <![CDATA[http://tracking/pause/1]]>
+     </Tracking>
+     <Tracking event="fullscreen">
+     <![CDATA[http://tracking/fullscreen/1]]>
+     </Tracking>
+     </TrackingEvents>
+     <AdParameters/>
+     <VideoClicks>
+     <ClickThrough>
+     <![CDATA[http://clickthrough/1]]>
+     </ClickThrough>
+     <ClickTracking id="DART">
+     <![CDATA[http://tracking/clickthrough/1]]>
+     </ClickTracking>
+     </VideoClicks>
+
+     <MediaFiles>
+     <MediaFile id="1" delivery="progressive" type="video/mp4" bitrate="1500" width="720" height="480">
+     <![CDATA[http://cdnapi.kaltura.com/p/777122/sp/77712200/playManifest/entryId/0_vriq23ct/flavorId/0_g0vnoj5i/format/url/protocol/http/a.mp4]]>
+     </MediaFile>
+
+     <MediaFile id="2" delivery="progressive" type="video/mp4" bitrate="356" width="480" height="260">
+     <![CDATA[http://cdnapi.kaltura.com/p/777122/sp/77712200/playManifest/entryId/0_vriq23ct/flavorId/0_ve7wy5mt/format/url/protocol/http/a.mp4]]>
+     </MediaFile>
+     </MediaFiles>
+     </Linear>
+     </Creative>
+
+     <Creative sequence="1" AdID="">
+     <CompanionAds>
+     <Companion id="1" width="300" height="250">
+     <StaticResource creativeType="image/jpeg">
+     <![CDATA[http://s0.2mdn.net/1248596/PID_1472073_1290217213786_PID_1244559_1265644904000_parisian_love_300x250.jpg]]>
+     </StaticResource>
+     <CompanionClickThrough>
+     <![CDATA[http://www.google.com]]>
+     </CompanionClickThrough>
+     <AltText/>
+     <AdParameters/>
+
+     </Companion>
+     <Companion id="2" width="728" height="90">
+     <StaticResource creativeType="image/jpeg">
+     <![CDATA[http://s0.2mdn.net/1248596/PID_1472074_1290217231811_PID_1244559_1265644932000_parisian_love_728x90.jpg]]>
+     </StaticResource>
+     <CompanionClickThrough>
+     <![CDATA[http://www.google.com]]>
+     </CompanionClickThrough>
+     <AltText/>
+     <AdParameters/>
+     </Companion>
+     <Companion id="3" width="300" height="250">
+     <StaticResource creativeType="application/x-shockwave-flash">
+     <![CDATA[http://s0.2mdn.net/1248596/PID_1485267_1291327077547_parisian_love_300x250_click.swf]]>
+     </StaticResource>
+
+     <CompanionClickThrough>
+     <![CDATA[http://www.google.com]]>
+     </CompanionClickThrough>
+     <AltText/>
+     <AdParameters/>
+     </Companion>
+     <Companion id="4" width="728" height="90">
+     <StaticResource creativeType="application/x-shockwave-flash">
+     <![CDATA[http://s0.2mdn.net/1248596/PID_1485268_1291327112590_parisian_love_728x90_click.swf]]>
+     </StaticResource>
+     <CompanionClickThrough>
+     <![CDATA[http://www.google.com]]>
+     </CompanionClickThrough>
+     <AltText/>
+     <AdParameters/>
+
+     </Companion>
+     </CompanionAds>
+     </Creative>
+
+     </Creatives>
+     </InLine>
+     </Ad>
+
+
+     </VAST>
+
+
+*/});
+kWidget.featureConfig({
+'targetId': 'kaltura_player',
+'wid': '_243342',
+'uiconf_id' : '13306622',
+'entry_id' : '0_uka1msg4',
+'flashvars': {
+    '!vast': {
+//'plugin' : true,
+        'numPreroll': "1",
+        'prerollInterval': "1",
+        'prerollStartWith': "1",
+        'prerollUrl': vastXML,
+        'preSequence': "1",
+        'postSequence': "1",
+        'timeout': "4"
+    },
+    'adsOnReplay': true
+}
+})
+</script>
+</body>
+</html>

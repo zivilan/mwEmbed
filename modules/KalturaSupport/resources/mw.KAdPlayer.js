@@ -32,6 +32,11 @@ mw.KAdPlayer.prototype = {
 		this.embedPlayer = embedPlayer;
 	},
 
+	sendBeaconURL: function(url){
+		mw.sendBeaconUrl(url);
+		this.embedPlayer.triggerHelper('AdSupport_beaconSend', url);
+	},
+
 	/**
 	 * Display a given adSlot
 	 * once done issues the "displayDoneCallback"
@@ -200,7 +205,7 @@ mw.KAdPlayer.prototype = {
 		if( adConf.impressions && adConf.impressions.length ){
 			// Fire all the impressions
 			for( var i =0; i< adConf.impressions.length; i++ ){
-				mw.sendBeaconUrl( adConf.impressions[i].beaconUrl );
+				this.sendBeaconURL( adConf.impressions[i].beaconUrl );
 			}
 		}
 	},
@@ -340,7 +345,7 @@ mw.KAdPlayer.prototype = {
 			if ( icon.clickthru ) {
 				$( '#' + iconId ).click(function(){
 					window.open( icon.clickthru );
-					mw.sendBeaconUrl( icon.clickTracking );
+					_this.sendBeaconURL( icon.clickTracking );
 					return true;
 				});
 			}
@@ -348,7 +353,7 @@ mw.KAdPlayer.prototype = {
 			if ( icon.offsetInSecs ){
 				$('#' + iconId ).hide();
 			} else if ( icon.viewTracking ){
-				mw.sendBeaconUrl( icon.viewTracking );
+				_this.sendBeaconURL( icon.viewTracking );
 			}
 			
 			adConf.selectedIcon = icon;		
@@ -372,7 +377,7 @@ mw.KAdPlayer.prototype = {
 				$clickTarget.bind( clickEventName + _this.adClickPostFix, function(e){
 					if ( adSlot.videoClickTracking ) {
 						mw.log("KAdPlayer:: sendBeacon to: " + adSlot.videoClickTracking );
-						mw.sendBeaconUrl( adSlot.videoClickTracking );
+						_this.sendBeaconURL( adSlot.videoClickTracking );
 					}
 					if ( adConf.clickThrough ) {
 						e.stopPropagation();
@@ -785,7 +790,7 @@ mw.KAdPlayer.prototype = {
 				for(var i =0;i < trackingEvents.length; i++){
 					if( eventName == trackingEvents[ i ].eventName ){
 						mw.log("KAdPlayer:: sendBeacon: " + eventName + ' to: ' + trackingEvents[ i ].beaconUrl );
-						mw.sendBeaconUrl( trackingEvents[ i ].beaconUrl );
+						_this.sendBeaconURL( trackingEvents[ i ].beaconUrl );
 					}
 				}
 			}
@@ -877,7 +882,7 @@ mw.KAdPlayer.prototype = {
 				adConf.selectedIcon.offsetInSecs = 0;
 				$('#' + _this.embedPlayer.id + '_icon' ).fadeIn('fast');
 				if (adConf.selectedIcon.viewTracking)
-					mw.sendBeaconUrl( adConf.selectedIcon.viewTracking );
+					_this.sendBeaconURL( adConf.selectedIcon.viewTracking );
 				}
 				if (adConf.selectedIcon.durationInSecs && time >= adConf.selectedIcon.durationInSecs) {
 				adConf.selectedIcon.durationInSecs = 0;

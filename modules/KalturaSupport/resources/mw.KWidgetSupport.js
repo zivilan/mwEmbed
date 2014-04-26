@@ -603,10 +603,28 @@ mw.KWidgetSupport.prototype = {
 			if( window.kalturaIframePackageData.playerConfig ){
 				embedPlayer.playerConfig =  window.kalturaIframePackageData.playerConfig;
 				delete( window.kalturaIframePackageData.playerConfig );
+
 			}
 		}
+		try {
+			if (parent && parent.clientVars) {
+				for (var i in parent.clientVars) {
+					var clientObj = parent.clientVars[i];
+					for (var prop in clientObj) {
+						embedPlayer.playerConfig['plugins'][i][prop] = clientObj[prop];
+					}
+
+				}
+				delete parent.clientVars;
+			}
+		}
+		catch(e){
+			mw.log("Error occur while trying to get clientVars");
+		};
+
 
 		var plugins =  embedPlayer.playerConfig['plugins'];
+
 		var returnConfig = {};
 
 		// ConfPrefix is the plugin Name and the first letter should always be lower case.

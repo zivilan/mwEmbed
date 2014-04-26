@@ -34,17 +34,21 @@ mw.AdLoader = {
 			return ;
 		}
 
-		// Make ajax request with fallback to proxy service
-		new mw.ajaxProxy({
-			url: adUrl,
-			success: function( resultXML ) {
-				_this.handleResult( resultXML, callback );
-			},
-			error: function( error ) {
-				mw.log("Error: AdLoader failed to load:" + adUrl);
-				callback({});
-			}
-		});
+		var xmlPosition = adUrl.indexOf("<?xml");
+		if( xmlPosition > 0 ) {
+			_this.handleResult($.trim(adUrl), callback);
+		}else {
+			new mw.ajaxProxy({
+				url: adUrl,
+				success: function (resultXML) {
+					_this.handleResult(resultXML, callback);
+				},
+				error: function (error) {
+					mw.log("Error: AdLoader failed to load:" + adUrl);
+					callback({});
+				}
+			});
+		}
 	},
 	handleResult: function(data, callback ){
 		var _this = this;
