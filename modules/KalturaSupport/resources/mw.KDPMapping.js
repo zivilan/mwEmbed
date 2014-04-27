@@ -1119,7 +1119,9 @@
 						embedPlayer.kCuePoints = null;
 
 						// clear ad data ..
-						embedPlayer.kAds = null;
+						debugger;
+                        embedPlayer.kAds.adPlayer.stop();
+                        embedPlayer.kAds = null;
 
 						// Temporary update the thumbnail to black pixel. the real poster comes from entry metadata
 						embedPlayer.updatePoster();

@@ -305,13 +305,78 @@ mw.KWidgetSupport.prototype = {
 			return rawConfigArray;
 		};
 
+        // Add getKalturaConfig to embed player:
+        embedPlayer.getKalturaPersistentConfig = function( confPrefix, attr, entryLevel ){
+            return _this.getPluginPersistentConfig( embedPlayer, confPrefix, attr, entryLevel );
+        };
+
+        // Extend plugin persistent configuration
+        embedPlayer.setKalturaPersistentConfig = function( pluginName, key, value, quiet, entryLevel ) {
+
+            // no key - exit
+            if ( ! key ) {
+                return ;
+            }
+
+            var storageIdPrefix = entryLevel ? 'kaltura_keid_' + embedPlayer.kentryid : 'kaltura_kuicid_' + embedPlayer.kuiconfid;
+
+            // Always create obj with plugin properties
+            var objectSetContainer = {};
+            var objectSet = objectSetContainer[storageIdPrefix] = {};
+
+            if( typeof key === "string" ) {
+                objectSet[ key ] = value;
+            }
+
+            // The key could be an object with all plugin properties
+            if( typeof key === "object" ) {
+                objectSet = key;
+            }
+
+            // No player persistent config, create the object
+            if( ! embedPlayer.playerPersistentConfig ) {
+                embedPlayer.playerPersistentConfig = {};
+            }
+            if( ! embedPlayer.playerPersistentConfig[storageIdPrefix] ) {
+                //TODO: Should we try to get it before in case it exist but never been read in this session?
+                embedPlayer.playerPersistentConfig[storageIdPrefix] = {
+                    'plugins': {},
+                    'vars': {}
+                };
+            }
+
+            // check for var update ( no top level plugin )
+            if( ! pluginName ){
+                embedPlayer.playerPersistentConfig[storageIdPrefix]['vars'][key] = value;
+            } else if(! embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ]){
+                // Plugin doesn't exists -> create it
+                embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ] = objectSet;
+            } else {
+                // If our key is an object, and the plugin already exists, merge the two objects together
+                if( typeof key === 'object' ) {
+                    $.extend( embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ], objectSet);
+                    mw.log( 'merged:: ', embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ]);
+                }
+                // If the old value is an object and the new value is an object merge them
+                else if( typeof embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ][ key ] === 'object' && typeof value === 'object' ) {
+                    $.extend( embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ][ key ], value );
+                } else {
+                    embedPlayer.playerPersistentConfig[storageIdPrefix][ 'plugins' ][ pluginName ][ key ] = value;
+                }
+            }
+            window.localStorage.setItem(storageIdPrefix, JSON.stringify(embedPlayer.playerPersistentConfig[storageIdPrefix]));
+            if( !quiet ) {
+                embedPlayer.triggerHelper( 'Kaltura_ConfigChanged', [ pluginName, key, value ]);
+            }
+        };
+
 		// Add getKalturaConfig to embed player:
-		embedPlayer.getKalturaConfig = function( confPrefix, attr ){
-			return _this.getPluginConfig( embedPlayer, confPrefix, attr );
+		embedPlayer.getKalturaConfig = function( confPrefix, attr, localStorageConfData ){
+			return _this.getPluginConfig( embedPlayer, confPrefix, attr, localStorageConfData );
 		};
 
 		// Extend plugin configuration
-		embedPlayer.setKalturaConfig = function( pluginName, key, value, quiet ) {
+		embedPlayer.setKalturaConfig = function( pluginName, key, value, quiet, localStorageConfData ) {
 
 			// no key - exit
 			if ( ! key ) {
@@ -335,28 +400,41 @@ mw.KWidgetSupport.prototype = {
 					'vars' : {}
 				};
 			}
-			// check for var update ( no top level plugin ) 
-			if( ! pluginName ){
-				embedPlayer.playerConfig['vars'][key] = value;
-			} else if( 
-				! embedPlayer.playerConfig[ 'plugins' ][ pluginName ] 
-			){
-				// Plugin doesn't exists -> create it
-				embedPlayer.playerConfig[ 'plugins' ][ pluginName ] = objectSet;
-			} else {
-				// If our key is an object, and the plugin already exists, merge the two objects together
-				if( typeof key === 'object' ) {
-					$.extend( embedPlayer.playerConfig[ 'plugins' ][ pluginName ], objectSet);
-					mw.log( 'merged:: ', embedPlayer.playerConfig[ 'plugins' ][ pluginName ]);
-				}
-				// If the old value is an object and the new value is an object merge them
-				else if( typeof embedPlayer.playerConfig[ 'plugins' ][ pluginName ][ key ] === 'object' && typeof value === 'object' ) {
-					$.extend( embedPlayer.playerConfig[ 'plugins' ][ pluginName ][ key ], value );
-				} else {
-					embedPlayer.playerConfig[ 'plugins' ][ pluginName ][ key ] = value;
-				}
-			}
-			if( !quiet ) {
+
+            function setStorageData(storage) {
+                // check for var update ( no top level plugin )
+                if (!pluginName) {
+                    storage['vars'][key] = value;
+                } else if (
+                    !storage[ 'plugins' ][ pluginName ]
+                    ) {
+                    // Plugin doesn't exists -> create it
+                    storage[ 'plugins' ][ pluginName ] = objectSet;
+                } else {
+                    // If our key is an object, and the plugin already exists, merge the two objects together
+                    if (typeof key === 'object') {
+                        $.extend(storage[ 'plugins' ][ pluginName ], objectSet);
+                        mw.log('merged:: ', storage[ 'plugins' ][ pluginName ]);
+                    }
+                    // If the old value is an object and the new value is an object merge them
+                    else if (typeof storage[ 'plugins' ][ pluginName ][ key ] === 'object' && typeof value === 'object') {
+                        $.extend(storage[ 'plugins' ][ pluginName ][ key ], value);
+                    } else {
+                        storage[ 'plugins' ][ pluginName ][ key ] = value;
+                    }
+                }
+            }
+
+            setStorageData(embedPlayer.playerConfig);
+
+            if (localStorageConfData && localStorageConfData.isLocal){
+                var localStorageDataObj =_this.getPersistentConfig( embedPlayer, localStorageConfData );
+                setStorageData(localStorageDataObj);
+                var storageIdPrefix = 'kaltura_lsuid_' + (localStorageConfData.entryLevel ? embedPlayer.kentryid : embedPlayer.kuiconfid);
+                window.localStorage.setItem(storageIdPrefix, JSON.stringify(localStorageDataObj));
+            }
+
+            if( !quiet ) {
 				embedPlayer.triggerHelper( 'Kaltura_ConfigChanged', [ pluginName, key, value ]);
 			}
 		};
@@ -581,20 +659,89 @@ mw.KWidgetSupport.prototype = {
 			embedPlayer.streamerType = streamerType;
 		}
 	},
-	/**
+
+    getPluginPersistentConfig: function( embedPlayer, confPrefix, attr, entryLevel ){
+        var singleAttrName = false;
+        if( typeof attr == 'string' ){
+            singleAttrName = attr;
+        }
+
+        var rawConfigArray = this.getRawPluginPersistentConfig( embedPlayer, confPrefix, singleAttrName, entryLevel );
+        var configArray = this.postProcessConfig( embedPlayer, rawConfigArray );
+
+        if( singleAttrName != false ){
+            return configArray[ singleAttrName ];
+        } else {
+            return configArray;
+        }
+    },
+
+    getRawPluginPersistentConfig: function( embedPlayer, confPrefix, attr, entryLevel ){
+        // Setup local pointers:
+        var _this = this;
+        if( ! embedPlayer.playerConfig ){
+            // Some IE out of order issue? has us re-checking player config here
+            if( window.kalturaIframePackageData.playerConfig ){
+                embedPlayer.playerConfig =  window.kalturaIframePackageData.playerConfig;
+                delete( window.kalturaIframePackageData.playerConfig );
+            }
+        }
+
+        var storageIdPrefix = entryLevel ? 'kaltura_keid_' + embedPlayer.kentryid : 'kaltura_kuicid_' + embedPlayer.kuiconfid;
+
+        if( ! embedPlayer.playerPersistentConfig ) {
+            embedPlayer.playerPersistentConfig = {};
+        }
+
+        if (window.localStorage.hasOwnProperty(storageIdPrefix)) {
+            embedPlayer.playerPersistentConfig[storageIdPrefix] = JSON.parse(window.localStorage[storageIdPrefix]);
+            var plugins = embedPlayer.playerPersistentConfig[storageIdPrefix]['plugins'];
+            var returnConfig = {};
+
+            // ConfPrefix is the plugin Name and the first letter should always be lower case.
+            if (confPrefix && confPrefix[0]) {
+                confPrefix = confPrefix[0].toLowerCase() + confPrefix.substr(1);
+            }
+
+            // if confPrefix is not an empty string or null check for the conf prefix
+            if (confPrefix && plugins[ confPrefix ]) {
+                if (!attr) {
+                    return plugins[ confPrefix ];
+                }
+                if (attr && typeof plugins[ confPrefix ][ attr ] !== 'undefined') {
+                    returnConfig[ attr ] = plugins[ confPrefix ][ attr ];
+                }
+                if (attr && typeof attr == 'object') {
+                    for (var currAttr in attr) {
+                        if (plugins[ confPrefix ][ attr[ currAttr ] ]) {
+                            returnConfig[ attr[ currAttr ] ] = plugins[ confPrefix ][ attr[ currAttr ] ];
+                        }
+                    }
+                }
+            } else if (!confPrefix && attr) {
+                returnConfig[ attr ] = embedPlayer.playerPersistentConfig[storageIdPrefix]['vars'][attr]
+            } else {
+                return undefined;
+            }
+        }
+        return returnConfig;
+    },
+
+
+    /**
 	 * Check for xml config, let flashvars override
 	 * @param embedPlayer {Object} the embedPlayer for which configuration is being retrived
 	 * @param confPrefix {String} the confPrefix, Can be empty if you want a non-prefixed attribute
 	 * @param attr {Optional: Array|String} A list of attributes you want to get for the confPrefix
 	 * 				if null, we retrive all settings with the provided confPrefix
 	 */
-	getPluginConfig: function( embedPlayer, confPrefix, attr ){
+	getPluginConfig: function( embedPlayer, confPrefix, attr, localStorageConfData ){
 		var singleAttrName = false;
 		if( typeof attr == 'string' ){
 			singleAttrName = attr;
 		}
 
-		var rawConfigArray = this.getRawPluginConfig( embedPlayer, confPrefix, singleAttrName );
+		var rawConfigArray = this.getRawPluginConfig( embedPlayer, confPrefix, singleAttrName, localStorageConfData );
 		var configArray = this.postProcessConfig( embedPlayer, rawConfigArray );
 
 		if( singleAttrName != false ){
@@ -604,7 +751,7 @@ mw.KWidgetSupport.prototype = {
 		}
 	},
 
-	getRawPluginConfig: function( embedPlayer, confPrefix, attr ){
+	getRawPluginConfig: function( embedPlayer, confPrefix, attr, localStorageConfData ){
 		// Setup local pointers:
 		var _this = this;
 		if( ! embedPlayer.playerConfig ){
@@ -615,7 +762,14 @@ mw.KWidgetSupport.prototype = {
 			}
 		}
 
-		var plugins =  embedPlayer.playerConfig['plugins'];
+        var plugins = {};
+        if (localStorageConfData && localStorageConfData.isLocal){
+            var persistentConfig = this.getPersistentConfig(embedPlayer, localStorageConfData);
+            plugins = persistentConfig['plugins'];
+        }else {
+            plugins = embedPlayer.playerConfig['plugins'];
+        }
+
 		var returnConfig = {};
 
 		// ConfPrefix is the plugin Name and the first letter should always be lower case.
@@ -646,6 +800,23 @@ mw.KWidgetSupport.prototype = {
 		
 		return returnConfig;
 	},
+    getPersistentConfig: function(embedPlayer, localStorageConfData){
+        this.initPersistentConfig(embedPlayer);
+        var storageIdPrefix = 'kaltura_lsuid_' + (localStorageConfData.entryLevel ? embedPlayer.kentryid : embedPlayer.kuiconfid);
+        if (window.localStorage.hasOwnProperty(storageIdPrefix)) {
+            var localStorageData = JSON.parse(window.localStorage.getItem(storageIdPrefix));
+            $.extend(embedPlayer.playerPersistentConfig[storageIdPrefix], localStorageData);
+        }
+        return embedPlayer.playerPersistentConfig[storageIdPrefix];
+    },
+    initPersistentConfig: function(embedPlayer) {
+        if (!embedPlayer.playerPersistentConfig) {
+            var confObj = embedPlayer.playerPersistentConfig = {};
+            confObj['kaltura_lsuid_' + embedPlayer.kentryid] = {plugins: {}, vars: {}};
+            confObj['kaltura_lsuid_' + embedPlayer.kuiconfid] = {plugins: {}, vars: {}};
+
+        }
+    },
 	postProcessConfig: function( embedPlayer, config ){
 		var _this = this;
 		var returnSet = $.extend( {}, config );

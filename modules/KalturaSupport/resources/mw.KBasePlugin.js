@@ -3,6 +3,9 @@
 // Class defined in resources/class/class.js
 mw.KBasePlugin = Class.extend({
 	asyncInit: false,
+    localStorageDefaultOptions: {
+      ttl: 10000
+    },
 	init: function( embedPlayer, callback, pluginName ){
 
 		// Save to local scope
@@ -13,6 +16,7 @@ mw.KBasePlugin = Class.extend({
 		this.bindPostFix = '.' + pluginName;
 
 		this.setDefaults();
+        this.setPersistent();
 
 		var safeEnviornment = this.isSafeEnviornment();
 		var _this = this;
@@ -54,6 +58,18 @@ mw.KBasePlugin = Class.extend({
 			});
 		}
 	},
+    setPersistent: function(){
+        if (this.getConfig('persistentConfigEnabled')) {
+            var _this = this;
+            var persistentPluginConfig = this.getPersistentConfig();
+            // Set configuration from persistent storage for the plugin
+            if ($.isPlainObject(persistentPluginConfig)) {
+                $.each(persistentPluginConfig, function (key, value) {
+                    _this.setConfig(key, value, true);
+                });
+            }
+        }
+    },
 	isSafeEnviornment: function(){
 		return true;
 	},
@@ -70,6 +86,58 @@ mw.KBasePlugin = Class.extend({
 	setConfig: function( attr, value, quiet ) {
 		this.embedPlayer.setKalturaConfig( this.pluginName, attr, value, quiet );
 	},
+    getPersistentConfig: function( attr ) {
+        var persistentConfig;
+        if( typeof attr === "string" ) {
+            var attrIsEntryLevel = this.getConfig('persistentConfig')[attr].entryLevel;
+            persistentConfig = this.embedPlayer.getKalturaConfig( this.pluginName, attr, {isLocal: true, entryLevel: attrIsEntryLevel} );
+        } else if( typeof attr === "undefined" ) {
+            persistentConfig = {};
+            $.extend(persistentConfig, this.embedPlayer.getKalturaConfig(this.pluginName, {}, {isLocal: true, entryLevel: true}));
+            $.extend(persistentConfig, this.embedPlayer.getKalturaConfig(this.pluginName, {}, {isLocal: true, entryLevel: false}));
+        }
+        return persistentConfig;
+    },
+    setPersistentConfig: function( attr, value, quiet ) {
+        var attrIsEntryLevel;
+        if( typeof attr === "string" ) {
+            attrIsEntryLevel = this.getConfig('persistentConfig')[attr].entryLevel;
+            this.embedPlayer.setKalturaConfig( this.pluginName, attr, value, quiet, {isLocal: true, entryLevel: attrIsEntryLevel} );
+        } else if( typeof attr === "object" || typeof attr === "undefined") {
+            var _this = this;
+            var entryLevelAttr = {};
+            var uiConfLevelAttr = {};
+
+            if (typeof attr === "undefined"){
+                $.each(this.getConfig('persistentConfig'), function(key, val) {
+                    if (val.entryLevel) {
+                        entryLevelAttr[key] = _this.getConfig(key);
+                    } else {
+                        uiConfLevelAttr[key] = _this.getConfig(key);
+                    }
+                });
+            } else {
+                $.each(attr, function (key, val) {
+                    //TODO: should we return or save as non-persistent anyway???
+                    if (!_this.getConfig('persistentConfig')[key]){
+                        return true;
+                    }
+                    if (_this.getConfig('persistentConfig')[key].entryLevel) {
+                        entryLevelAttr[key] = val;
+                    } else {
+                        uiConfLevelAttr[key] = val;
+                    }
+                });
+            }
+
+            if (!$.isEmptyObject(entryLevelAttr)){
+                this.embedPlayer.setKalturaConfig( this.pluginName, entryLevelAttr, value, quiet, {isLocal: true, entryLevel: true} );
+            }
+            if (!$.isEmptyObject(uiConfLevelAttr)) {
+                this.embedPlayer.setKalturaConfig(this.pluginName, uiConfLevelAttr, value, quiet, {isLocal: true, entryLevel: false});
+            }
+        }
+    },
 	getTemplateHTML: function( data ){
 		var _this = this;
 		// Setup empty object
