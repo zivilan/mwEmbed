@@ -69,6 +69,12 @@ return array(
 				"model" => "config.uiVars.autoMute"
 			),
 			array(
+                "label" => "Hovering controls",
+                "type" => "checkbox",
+                "endline" => "true",
+                "model" => "config.plugins.controlBarContainer.hover"
+            ),
+			array(
 				"label" => "Last Update",
 				"type" => "readonly",
 				"filter" => "timeago",
