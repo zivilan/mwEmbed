@@ -185,6 +185,7 @@ return array(
 			'direction' => array(
 				'doc' => '1: clockwise, -1: counterclockwise, clockwise by default.',
 				'type' => 'number',
+				'allowNegative' => true,
 				'initvalue'=> 1
 			),
 			'color' => array(
