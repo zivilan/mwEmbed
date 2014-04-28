@@ -467,7 +467,7 @@ The playhead reflects segment time as if it was the natural stream length.",
 			)
 		)
 	),
-	'theme' => array(
+'theme' => array(
 		'description' => 'Theme CSS style.',
 		'featureCheckbox' => true,
 		'label' => 'Custom styles',
@@ -478,8 +478,10 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'type' => 'number',
 				'player-refresh' => 'theme.buttonsSize',
 				"initvalue" => 12,
-				"min" => 2,
-				"max" => 100
+				"from" => 2,
+				"to" => 100,
+				"stepsize" => 1,
+				"numberOfDecimals" => 0
 			),
 			'buttonsColor' => array(
 				'label' => 'Button\'s color',
@@ -514,6 +516,20 @@ The playhead reflects segment time as if it was the natural stream length.",
 				"initvalue" => "#000000",
 				'player-refresh' => 'theme.controlsBkgColor',
 				'doc' => 'Controls bar color',
+				'type' => 'color'
+			),
+			'watchedSliderColor' => array(
+				'label' => 'Slider watched color',
+				"initvalue" => "#2ec7e1",
+				'player-refresh' => 'theme.watchedSliderColor',
+				'doc' => 'Slider watched color',
+				'type' => 'color'
+			),
+			'bufferedSliderColor' => array(
+				'label' => 'Slider buffer color',
+				"initvalue" => "#AFAFAF",
+				'player-refresh' => 'theme.bufferedSliderColor',
+				'doc' => 'Slider buffer color',
 				'type' => 'color'
 			)
 		)
