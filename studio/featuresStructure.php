@@ -123,6 +123,13 @@ return array(
 		"type" => "menu",
 		"model" => "monitization",
 		"children"=> array(
+			array(
+                "label" => "Display ads on replay",
+                "type" => "checkbox",
+                "initvalue" => true,
+                "endline" => "true",
+                "model" => "config.uiVars.adsOnReplay"
+            ),
 			"bumper" => "",
 			"vast" => "",
 			"doubleClick" => "",
