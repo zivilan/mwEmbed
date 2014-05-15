@@ -776,11 +776,13 @@ box-shadow:  0px 1px 0px rgba(0, 0, 0, 0.3);
 .ad-notice-label {
 	bottom: 14px;
 	left: 5px;
+	z-index: 1000;
 }
 
 .ad-skip-btn {
 	cursor: pointer;
 	font-size: 110%;
+	z-index: 1000;
 }
 
 .ad-skip-label,.ad-skip-btn {

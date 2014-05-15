@@ -449,7 +449,7 @@ mw.KAdPlayer.prototype = {
 		}
 		return true;
 	},
-	addAdBindings: function( vid,  adSlot, adConf ){
+	addAdBindings: function( vid,  adSlot, adConf, VPAIDObj ){
 		var _this = this;
 		var embedPlayer = this.embedPlayer;
 		if( !vid ){
@@ -568,9 +568,14 @@ mw.KAdPlayer.prototype = {
 			};
 			if (!adConf.vpaid){
 				$( vid ).bind('loadedmetadata', loadMetadataCB );
+			}else{
+				if ( skipPercentage ){
+					adConf.skipOffset = VPAIDObj.duration * skipPercentage;
+				}
+				_this.addAdTracking( adConf.trackingEvents, adConf  );
 			}
 		}
-		
+
 		// Support Audio controls on ads:
 		$( embedPlayer ).bind('volumeChanged' + _this.trackingBindPostfix, function( e, changeValue ){
 			// when using siblings we need to adjust the sibling volume on volumeChange evnet.
@@ -1016,6 +1021,7 @@ mw.KAdPlayer.prototype = {
 	},
 	restoreEmbedPlayer: function(){
 		// remove the video sibling:
+		$( '#' + this.getVPAIDId()).remove();
 		$( '#' + this.getVideoAdSiblingId() ).remove();
 		$( '#' + this.getVideoAdSiblingId() + '_container' ).remove();
 		this.adSibling = null;
@@ -1129,12 +1135,18 @@ mw.KAdPlayer.prototype = {
 
 			VPAIDObj.subscribe(function(){
 				_this.getVPAIDDurtaion = function(){
-					//TODO add this to flash vpaid
-					return VPAIDObj.getAdRemainingTime();
+					return VPAIDObj.duration;
 				};
-				if (isJs){
-					_this.addAdBindings( environmentVars.videoSlot, adSlot, adConf );
-				}
+				//if (isJs){
+					_this.addAdBindings( environmentVars.videoSlot, adSlot, adConf, VPAIDObj);
+				/*}else{
+					// add support for volume control over KDP during Flash ad playback
+					$( _this.embedPlayer ).bind('volumeChanged' + _this.trackingBindPostfix, function( e, changeValue ){
+						if (typeof VPAIDObj.playerElement.sendNotification === "function"){
+							VPAIDObj.playerElement.sendNotification( 'changeVolume', changeValue );
+						}
+					});
+				}*/
 				_this.embedPlayer.hideSpinner();
 			},'AdImpression');
 			VPAIDObj.subscribe(function(message) {
@@ -1183,7 +1195,7 @@ mw.KAdPlayer.prototype = {
 			}
 			//flashvars to load vpaidPlugin.swf and to disable on screen clicks since vpaid swf will handle the clicks
 			var adSibling = new mw.PlayerElementFlash( vpaidId, vpaidId+ "_obj", playerParams, null, function() {
-				VPAIDObj = this.getElement();
+				_this.adSibling = VPAIDObj = this.getElement();
 				this.src = adConf.vpaid.flash.src;
 				this.load();
 				onVPAIDLoad();
