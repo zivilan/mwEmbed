@@ -71,17 +71,16 @@ mw.EmbedPlayerYouTube = {
 					this.hasEnded = true;
 				  break;
 				case 1:
+					_this.setDuration();
 					$(embedPlayer).trigger("onPlayerStateChange",["play"]);
+					$(embedPlayer).trigger( 'onEnableInterfaceComponents',[]);
 					// hide the player container so that youtube click through work
 					$('.mwEmbedPlayer').hide();
 					//hide the poster
 					$(".playerPoster").hide();
 					$('.blackBoxHide').hide();
-					_this.play();
+
 					stateName = "playing";
-					//$(this).hide();
-					// update duraiton
-					_this.setDuration();
 					// trigger the seeked event only if this is seek and not in play
 					if(_this.seeking){
 						_this.seeking = false;
@@ -89,6 +88,7 @@ mw.EmbedPlayerYouTube = {
 						// update the playhead status
 						_this.updatePlayheadStatus();
 					}
+					_this.startMonitor();
 				  break;
 				case 2:
 					stateName = "paused";
@@ -105,7 +105,7 @@ mw.EmbedPlayerYouTube = {
 					stateName = "video cued";
 				  break;
 			}
-			//$( _this ).trigger( 'onPlayerStateChange', [ stateName ] );
+			$( _this ).trigger( 'onPlayerStateChange', [ stateName ] );
 
 		};
 		window['hidePlayer'] = function( event ){
@@ -149,8 +149,14 @@ mw.EmbedPlayerYouTube = {
 			}else{
 				  window['hidePlayer']();
 			}
-			
-			
+
+			if (mw.isMobileDevice()){
+				$(".largePlayBtn").remove();
+				$(".mwEmbedPlayer").hide();
+				var embedPlayer = $('#' + window["pid"].replace( 'pid_', '' ) )[0];
+				$(embedPlayer).trigger( 'onDisableInterfaceComponents',[]);
+			}
+
 
 		};
 		// YOUTUBE FLASH PLAYER READY
@@ -478,6 +484,7 @@ mw.EmbedPlayerYouTube = {
 	 * function called by flash at set interval to update the playhead.
 	 */
 	onUpdatePlayhead : function( playheadValue ){
+		alert("updatePlayHead");
 		this.time = playheadValue;
 	},
 
