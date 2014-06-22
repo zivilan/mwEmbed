@@ -130,6 +130,8 @@ return array(
                 "endline" => "false",
                 "model" => "config.uiVars.adsOnReplay"
             ),
+            "skipNotice" => "",
+            "noticeMessage" => "",
 			"bumper" => "",
 			"vast" => "",
 			"doubleClick" => "",

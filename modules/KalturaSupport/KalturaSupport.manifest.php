@@ -805,6 +805,26 @@ The playhead reflects segment time as if it was the natural stream length.",
 			)
 		)
 	),
+	'skipNotice' => array(
+		'description' => 'Skip notice message',
+		'attributes' => array(
+			'text' => array(
+				'doc' => 'Skip notice message to display until the Skip button appears',
+				'initvalue' => 'You can skip this ad in {sequenceProxy.skipOffsetRemaining} seconds',
+				'type' => 'string'
+			),
+		)
+	),
+	'noticeMessage' => array(
+		'description' => 'Notice message',
+		'attributes' => array(
+			'text' => array(
+				'doc' => 'Notice message to display while the ad plays',
+				'initvalue' => 'Video will start in {sequenceProxy.timeRemaining} seconds',
+				'type' => 'string'
+			),
+		)
+	),
 	'vast' => array(
 		'label' => 'Vast',
 		"endline" => "true", // *NEW* - demonstrates possible formatting decorator
@@ -841,13 +861,13 @@ The playhead reflects segment time as if it was the natural stream length.",
 				'initvalue' => 1,
 				'max' => 5, // *NEW*
 			),
-			'skipBtn' => array(
+			/*'skipBtn' => array(
 				'doc' => "Skip button label.",
 				'label' => 'Skip button label', // *NEW* - all controls require label, if is it not there I use the control model camelCase converted to separated words with ucfirst
 				'initvalue' => "Skip Ad",
 				'model' => 'config.plugins.skipBtn.label',
 				'type' => 'string'
-			),
+			),*/
 			'skipOffset' => array(
 				'doc' => 'The time in seconds, before the skip ad link is active.',
 				'type' => 'number', // this was a string - dosen't seem logical
