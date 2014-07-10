@@ -36,6 +36,12 @@
 			this.bind( 'seeked', function(){
 				_this.updateUI( _this.getCurrentTime() );
 			});
+			this.bind( 'playerReady', function(){
+				// reflect start time offset in current time display
+				if( _this.embedPlayer.startTime ){
+					_this.updateUI( _this.embedPlayer.startTime );
+				}
+			});
 		},
 		bindTimeUpdate: function() {
 			var _this = this;

@@ -52,7 +52,6 @@
 					_this.getComponent().css('width', ( targetSize ) + 'px' );
 				});
 			}
-
 			// Update buffer bar
 			this.bind( 'updateBufferPercent', function( e, bufferedPercent ){
 				_this.updateBufferUI(bufferedPercent);
@@ -80,6 +79,11 @@
 							_this.thumbnailsLoaded = true;
 						});
 					},1000);
+				}
+				
+				// playhead should reflect offsets time:
+				if( _this.embedPlayer.startTime ){
+					_this.updatePlayheadPercentUI( _this.embedPlayer.startTime / _this.embedPlayer.duration );
 				}
 			} );
 		},

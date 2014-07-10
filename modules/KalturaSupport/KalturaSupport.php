@@ -70,6 +70,11 @@
 		"mw.KAdPlayer"=> array( 
 			'scripts' => "resources/mw.KAdPlayer.js" 
 		),
+		"hashMediaTimeHandler" => array(
+			'scripts' => "resources/uiConfComponents/hashMediaTimeHandler.js",
+			'dependencies' => 'mw.KBaseComponent',
+			'kalturaPluginName' => 'hashMediaTimeHandler'
+		),
 		"dualScreen" => array(
 		    'scripts' => "components/dualScreen/dualScreen.js",
 		    'styles' =>  "components/dualScreen/displayControlBar.css",
