@@ -36,6 +36,7 @@
 			'scripts' => "resources/mw.KBasePlugin.js",
 			'dependencies' => array( 'class', 'mw.PluginManager', 'mediawiki.util.tmpl' )
 		),
+
 		"mw.KCuePoints"=> array( 
 			'scripts' => "resources/mw.KCuePoints.js" 
 		),
@@ -77,6 +78,11 @@
 		    'dependencies' => array( 'mw.KBaseComponent', 'jquery.ui.draggable', 'jquery.ui.resizable' ),
 		    'kalturaPluginName' => 'dualScreen'
         ),
+        "abChecker" => array(
+        		    'scripts' => "components/abChecker.js",
+        		    'dependencies' => array( 'mw.KBaseComponent' ),
+        		    'kalturaPluginName' => 'abChecker'
+                ),
         "search" => array(
             'scripts' => "components/search/search.js",
             'styles' =>  "components/search/search.css",
