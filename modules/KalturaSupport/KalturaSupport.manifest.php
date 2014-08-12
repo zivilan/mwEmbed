@@ -1220,6 +1220,29 @@ The playhead reflects segment time as if it was the natural stream length.",
 	),
 	'nativeCallout' => array(
 		'description' => 'Supports replacing the player "play button" with a callout to native player, for Mobile Devices.',
+		'attributes' => array(
+			'storeUrl' => array(
+				'doc' => 'URL to the application store',
+				'type' => 'string',
+				'initvalue' => '',
+				),
+			'mimeName' => array(
+				'doc' => 'The mime name handler for the callout, by default this is kalturaPlayerToolkit:// and registered against the kaltura player application. This can be customized to your own application mime name to pass the player handling to your own application',
+				'type' => 'string',
+				'initvalue' => 'kalturaPlayerToolkit://',
+				)
+			'iframeUrl' => array(
+				'doc' => 'Direct iframe url with all needed parameters',
+				'type' => 'string',
+				'initvalue' => null,
+				),
+			'enableOn' => array(
+				'doc' => 'Defines when to enable nativeCallout plugin',
+				'type' => 'enum',
+				'enum' => array('never', 'always', 'iPad', 'iPhone', 'iOS', 'AndroidPhone', 'AndroidDefaultBrowser', 'AndroidTablets'),
+				'initvalue' => 'always',
+				),
+			),
 		'type' => 'featuremenu',
 		'label' => 'nativeCallout',
 		'model' => 'config.plugins.nativeCallout',
