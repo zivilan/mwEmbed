@@ -1739,6 +1739,9 @@
 					_this.applyIntrinsicAspect();
 				})
 			).show();
+			if (mw.isIpad()){
+				$('.playerPoster').before('<div class="blackBoxHide" style="width:100%;height:100%;background:black;position:absolute;"></div>');
+			}
 		},
 		/**
 		 * Remove the poster
@@ -2035,6 +2038,9 @@
 		inPreSequence: false,
 		replayEventCount : 0,
 		play: function() {
+			if (mw.isIpad()){
+				$('.blackBoxHide').hide();
+			}
 			if (this.currentState == "end"){
 				// prevent getting another clipdone event on replay
 				this.setCurrentTime(0.01);
@@ -2527,7 +2533,6 @@
 			// Hide the spinner once we have time update:
 			if( _this._checkHideSpinner && _this.getPlayerElementTime() && _this.currentTime != _this.getPlayerElementTime() && !_this.seeking ){
 				_this._checkHideSpinner = false;
-				_this.isPauseLoading = false;
 				_this.hideSpinner();
 			}
 
@@ -2589,14 +2594,14 @@
 						mw.log( "EmbedPlayer::updatePlayheadStatus > should run clip done :: " + this.currentTime + ' > ' + endPresentationTime );
 						_this.onClipDone();
 						//sometimes we don't get the "end" event from the player so we trigger clipdone
-					} else if ( !this.shouldEndClip && ( ( ( this.currentTime - this.startOffset) / endPresentationTime ) >= .99 ) ){
+					} else if ( ( ( this.currentTime - this.startOffset) / endPresentationTime ) >= .99 ){
 						_this.shouldEndClip = true;
 						setTimeout( function() {
 							if ( _this.shouldEndClip ) {
 								mw.log( "EmbedPlayer::updatePlayheadStatus > should run clip done :: " + _this.currentTime );
 								_this.onClipDone();
 							}
-						}, endPresentationTime * 0.02 * 1000 )
+						}, endPresentationTime * 0.02 )
 					}
 				}
 			}
