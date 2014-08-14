@@ -14,7 +14,7 @@ Can't find what your looking for in the documentation, ran into an issue check t
 
 ## Quick start
 
-* Extract or git clone the mwEmebd folder to your php server. 
+* Extract or git clone the mwEmbed folder to your php server. 
 * Copy LocalSettings.php.sample to LocalSettings.php
 * Navigate to http://{yourServer}/path/to/mwEmbed/docs for player examples. 
 
@@ -26,6 +26,22 @@ Can't find what your looking for in the documentation, ran into an issue check t
 ## Release Notes
 
 [Release Notes ](http://html5video.org/wiki/Kaltura_HTML5_Release_Notes) documents every release and provides production, staging and zip downloads. 
+
+## Libraries and sub-projects
+
+### Kaltura developed
+
+* [Chromless flash kdp](https://github.com/kaltura/chromeless-kdp) 
+* [Chromeless sliverlight](https://github.com/kaltura/chromeless-silverlight)
+* [OSMF HLS for flash](https://github.com/kaltura/HLS-OSMF) -- repo not yet public
+* Android HLS player -- repo not yet public
+* [Player Studio](https://github.com/kaltura/player-studio) -- visual player config JSON editor 
+
+### External libraries 
+
+* [Resource Loader](https://www.mediawiki.org/wiki/ResourceLoader)
+* [jQuery](http://jquery.com/) 
+* [bootstrap](http://getbootstrap.com/) -- for documentation pages
 
 ## Library Features
 

@@ -27,8 +27,10 @@
 				});
 			});
 			
-			this.bind('onChangeMediaDone playerReady onpause onEndedDone', function(){
-				_this.show();
+			this.bind('onChangeMediaDone playerReady onpause onEndedDone onRemovePlayerSpinner', function(){
+				if( !_this.embedPlayer.isPlaying() ){
+					_this.show();
+				}
 			});
 			this.bind('playing AdSupport_StartAdPlayback onAddPlayerSpinner', function(){
 				_this.hide();

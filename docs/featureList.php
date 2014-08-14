@@ -6,11 +6,23 @@
 			'featureSets' => array(
 				'Captions' => array(
 					'title' => 'Accessibility and Close Captions',
-					'desc' => 'The kaltura captions player api, supports srt and ttml formats.',
+					'desc' => 'The Kaltura captions player API, supports S and TTML formats.',
 					'testfiles' => array(
+						'AccessibilityControls' => array(
+							'title' => 'Accessibility Controls',
+							'path' => 'KalturaSupport/tests/AccessibilityControls.html',
+						),
+						'KeyboardShortcuts' => array(
+							'title' => 'Keyboard Shortcuts',
+							'path' => 'KalturaSupport/tests/KeyboardShortcuts.html'
+						),
 						'CaptionsKalturaApi' => array(
 							'title' => 'Captions API',
 							'path' => 'KalturaSupport/tests/ClosedCaptions.html',
+						),
+						'Localization' => array(
+							'title' => 'Player Localization',
+							'path' => 'KalturaSupport/tests/Localization.il8n.html'
 						),
 						/*
 						'InVideo Search' => array(
@@ -30,7 +42,7 @@
 				),
 				'Live' => array(
 					'title' => 'Live',
-					'desc' => 'The kaltura LIVE supports sending streams to both HLS (iOS / mobile) and HDS ( flahs ).',
+					'desc' => 'The Kaltura LIVE supports sending streams to both HLS (iOS / mobile) and HDS ( flahs ).',
 					'testfiles' => array(
 						'LiveStream' => array(
 							'title' => 'Live Stream',
@@ -197,10 +209,10 @@
 							'title' => 'Chapters Editor',
 							'path' => '../kWidget/onPagePlugins/chapters/chaptersEdit.qunit.html'
 						),
-						'AttracTV' => array(
+						/*'AttracTV' => array(
 							'title' => 'AttracTV',
 							'path' => 'AttracTV/tests/AttracTV.qunit.html'
-						),
+						),*/
 						'LimeSurvey' => array(
 							'title' => 'LimeSurvey On Video',
 							'path' => '../kWidget/onPagePlugins/limeSurveyCuePointForms/limeSurveyCuePointForms.qunit.html'
@@ -296,7 +308,7 @@
 			'featureSets' => array(
 		
 				'Embedding'  => array(
-					'title' => 'Embedding the kaltura player',
+					'title' => 'Embedding the Kaltura player',
 					'desc' => 'These files cover basic embedding from <a href="#rewrite">legacy</a> object embed, to the dynamic <a href="#kwidget">kWidget</a> embed method', 
 					'testfiles' =>array(
 						'kwidget' => array(

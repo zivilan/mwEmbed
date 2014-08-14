@@ -55,7 +55,8 @@ mw.EmbedPlayerNativeComponent = {
 		'timeupdate',
 		'progress',
 		'enterfullscreen',
-		'exitfullscreen'
+		'exitfullscreen',
+		'durationchange'
 	],
 	// Native player supported feature set
 	supports: {
@@ -93,6 +94,71 @@ mw.EmbedPlayerNativeComponent = {
 			this.applyMediaElementBindings();
 			this.getPlayerElement().attr('src', this.getSrc());
 			this.playerIsLoaded = true;
+		}
+	},
+
+	playerSwitchSource: function( source, switchCallback, doneCallback ) {
+		mw.log( "NativeComponent:: playerSwitchSource" );
+		var _this = this;
+		var vid = this.getPlayerElement();
+		var switchBindPostfix = '.playerSwitchSource';
+
+		// add a loading indicator:
+		_this.addPlayerSpinner();
+
+		// empty out any existing sources:
+		$( vid ).empty();
+
+		// load the updated src
+		//only on desktop safari we need to load - otherwise we get the same movie play again.
+		if (mw.isDesktopSafari()){
+			vid.load();
+		}
+
+		if( this.getSrc() != source.getSrc() ) {
+			vid.attr( 'src', source.getSrc() );
+		} else {
+			vid.attr( 'src', this.getSrc() );
+		}
+
+		this.isPauseLoading = false;
+
+		if( switchCallback ){
+			_this.hideSpinner();
+			switchCallback( vid );
+		}
+
+		// restore position once we have metadata
+		$( vid ).bind( 'loadedmetadata' + switchBindPostfix, function(){
+			$( vid ).unbind( 'loadedmetadata' + switchBindPostfix);
+			mw.log("EmbedPlayerNative:: playerSwitchSource> loadedmetadata callback" );
+			// ( do not update the duration )
+			// Android and iOS <5 gives bogus duration, depend on external metadata
+
+			// keep going towards playback! if  switchCallback has not been called yet
+			// we need the "playing" event to trigger the switch callback
+			if ( $.isFunction( switchCallback ) ){
+				setTimeout( function() {
+					vid.play();
+				}, 100);
+			}
+		});
+
+		// Add the end binding if we have a post event:
+		if( $.isFunction( doneCallback ) ){
+			$( vid ).bind( 'ended' + switchBindPostfix , function( event ) {
+				// remove end binding:
+				$( _this.getPlayerElement() ).unbind( switchBindPostfix );
+				// issue the doneCallback
+				doneCallback();
+
+				// Support loop for older iOS
+				// Temporarily disabled pending more testing or refactor into a better place.
+				//if ( _this.loop ) {
+				//	vid.play();
+				//}
+				return false;
+			});
 		}
 	},
 
@@ -153,6 +219,7 @@ mw.EmbedPlayerNativeComponent = {
 	 * Stop the player ( end all listeners )
 	 */
 	stop: function(){
+		mw.log("EmbedPlayerNativeComponent:: stop::");
 		this.parent_stop();
 		if( this.getPlayerElement() && this.getPlayerElement().attr('currentTime')){
 			this.getPlayerElement().attr('currentTime', '0');
@@ -166,6 +233,7 @@ mw.EmbedPlayerNativeComponent = {
 	 */
 
 	play: function() {
+		mw.log("EmbedPlayerNativeComponent:: play::");
 		$( this ).find( '.playerPoster' ).remove();
 
 		if ( this.getPlayerElement() ) { // update player
@@ -183,6 +251,7 @@ mw.EmbedPlayerNativeComponent = {
 	* calls parent_pause to update the interface
 	*/
 	pause: function() {
+		mw.log("EmbedPlayerNativeComponent:: pause::");
 		this.parent_pause(); // update interface
 		if ( this.getPlayerElement() ) { // update player
 			this.getPlayerElement().pause();
@@ -190,9 +259,17 @@ mw.EmbedPlayerNativeComponent = {
 	},
 
 	seek: function( percentage ) {
+		mw.log("EmbedPlayerNativeComponent:: seek::");
 		var seekTime = percentage * this.getDuration();
 		this.getPlayerElement().attr('currentTime', seekTime);
 		this.parent_seek( percentage );
+	},
+
+	/**
+	 * returns true if device can auto play
+	 */
+	canAutoPlay: function(){
+		return true;
 	},
 
 	/**
@@ -239,6 +316,7 @@ mw.EmbedPlayerNativeComponent = {
 	 */
 	_onseeked: function() {
 		mw.log("EmbedPlayerNative::onSeeked " );
+		this.seeking = false;
 
 		if( this._propagateEvents ){
 			mw.log( "EmbedPlayerNative:: trigger: seeked" );
@@ -316,16 +394,6 @@ mw.EmbedPlayerNativeComponent = {
 		return videoElementRect;
 	},
 
-	drawVideoNativeComponent: function(){
-		var videoElementPosition = this.getVideoElementPosition();
-		var x = videoElementPosition.left;
-		var y = videoElementPosition.top;
-		var w = videoElementPosition.right - videoElementPosition.left;
-		var h = videoElementPosition.bottom - videoElementPosition.top;
-
-		this.getPlayerElement().drawVideoNativeComponent( [x, y, w, h] );
-	},
-
 	showNativePlayer: function(){
 		this.getPlayerElement().showNativePlayer();
 	},
@@ -343,6 +411,27 @@ mw.EmbedPlayerNativeComponent = {
 	 */
 	toggleFullscreen: function() {
 		this.getPlayerElement().toggleFullscreen();
+	},
+
+	doneFSBtnPressed: function() {
+		this.getPlayerElement().doneFSBtnPressed();
+	},
+
+	addNativeAirPlayButton: function() {
+		this.getPlayerElement().addNativeAirPlayButton();
+	},
+
+	showNativeAirPlayButton: function( airPlayBtnPosition ) {
+		var x = airPlayBtnPosition.left;
+		var y = airPlayBtnPosition.top;
+		var w = airPlayBtnPosition.right - airPlayBtnPosition.left;
+		var h = airPlayBtnPosition.bottom - airPlayBtnPosition.top;
+
+		this.getPlayerElement().showNativeAirPlayButton( [x, y, w, h] );
+	},
+
+	hideNativeAirPlayButton: function() {
+		this.getPlayerElement().hideNativeAirPlayButton();
 	}
 };
 } )( mediaWiki, jQuery );

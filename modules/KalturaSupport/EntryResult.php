@@ -66,6 +66,7 @@ class EntryResult {
 	
 	function getEntryResultFromApi(){
 		global $wgKalturaApiFeatures;
+		global $wgKalturaEnableProxyData;
 
 		// Check if the API supports entryRedirect feature
 		$supportsEntryRedirect = isset($wgKalturaApiFeatures['entryRedirect']) ? $wgKalturaApiFeatures['entryRedirect'] : false;
@@ -90,20 +91,17 @@ class EntryResult {
 			} else {
 				$filter->idEqual = $this->request->getEntryId();
 			}
+
+			if ($wgKalturaEnableProxyData && $this->request->getFlashVars("proxyData")){
+			    $filter->freeText = urlencode(json_encode($this->request->getFlashVars("proxyData")));
+			}
+
 			$baseEntryIdx = $namedMultiRequest->addNamedRequest( 'meta', 'baseEntry', 'list', array('filter' => $filter) );
 			// Get entryId from the baseEntry request response
 			$entryId = '{' . $baseEntryIdx . ':result:objects:0:id}';
 
 			// Access control NOTE: kaltura does not use http header spelling of Referer instead kaltura uses: "referrer"
-			$filter = new KalturaEntryContextDataParams();
-			$filter->referrer = $this->request->getReferer();
-			$filter->flavorTags = 'all';
-			if ( $this->uiconf->getPlayerConfig( false, 'flavorTags' ) ) {
-			    $filter->flavorTags = $this->uiconf->getPlayerConfig( false, 'flavorTags' );
-			}
-			if( $this->uiconf->getPlayerConfig( false, 'streamerType' ) ) {
-				$filter->streamerType =  $this->uiconf->getPlayerConfig( false, 'streamerType' );
-			}
+			$filter = $this->getACFilter();
 			$params = array( 
 				"contextDataParams" => $filter,
 				"entryId"	=> $entryId
@@ -193,7 +191,19 @@ class EntryResult {
 		}
 		return $resultObject;
 	}
-	
+	public function getACFilter(){
+		$filter = new KalturaEntryContextDataParams();
+		$filter->referrer = $this->request->getReferer();
+		$filter->userAgent = $this->request->getUserAgent();
+		$filter->flavorTags = 'all';
+		if ( $this->uiconf->getPlayerConfig( false, 'flavorTags' ) ) {
+		    $filter->flavorTags = $this->uiconf->getPlayerConfig( false, 'flavorTags' );
+		}
+		if( $this->uiconf->getPlayerConfig( false, 'streamerType' ) ) {
+			$filter->streamerType =  $this->uiconf->getPlayerConfig( false, 'streamerType' );
+		}
+		return $filter;
+	}
 	/**
 	*  Access Control Handling
 	*/
@@ -201,9 +211,9 @@ class EntryResult {
 			
 		// Kaltura only has entry level access control not playlist level access control atm: 
 		// don't check anything without an entry_id
-		if( !$this->request->getEntryId() ){
+		/*if( !$this->request->getEntryId() ){
 			return true;
-		}
+		}*/
 
 		// If we have an error, return
 		if( $this->error ) {

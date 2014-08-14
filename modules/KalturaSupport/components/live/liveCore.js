@@ -7,7 +7,7 @@
 		 * API requests interval for updating live stream status (Seconds).
 		 * Default is 30 seconds, to match server's cache expiration
 		 */
-		liveStreamStatusInterval : 30,
+		liveStreamStatusInterval : 10,
 
 		// Default DVR Window (Seconds)
 		defaultDVRWindow : 30 * 60,
@@ -35,6 +35,8 @@
 		 */
 		shouldReAttachTimeUpdate: false,
 
+		playWhenOnline:false,
+
 		setup: function() {
 			this.addPlayerBindings();
 			this.extendApi();
@@ -54,6 +56,10 @@
 			var _this = this;
 			var embedPlayer = this.getPlayer();
 
+			this.bind( 'checkIsLive', function( e, callback ) {
+				_this.getLiveStreamStatusFromAPI( callback );
+			});
+
 			this.bind( 'playerReady', function() {
 				//ui components to hide
 				var showComponentsArr = [];
@@ -68,10 +74,11 @@
 					_this.addLiveStreamStatusMonitor();
 					//hide source selector until we support live streams switching
 					hideComponentsArr.push( 'sourceSelector' );
-					embedPlayer.disablePlayControls();
 					embedPlayer.addPlayerSpinner();
 					_this.getLiveStreamStatusFromAPI( function( onAirStatus ) {
-						embedPlayer.hideSpinner();
+						if ( !embedPlayer._checkHideSpinner ) {
+							embedPlayer.hideSpinner();
+						}
 					} );
 					_this.switchDone = true;
 					if ( embedPlayer.sequenceProxy ) {
@@ -91,6 +98,57 @@
 					} else {  //live + no DVR
 						showComponentsArr.push( 'liveStatus' );
 						hideComponentsArr.push( 'scrubber', 'durationLabel', 'currentTimeLabel' );
+					}
+
+					if ( kWidget.isIOS() ) {
+						_this.bind( 'timeupdate' , function() {
+							var curTime = embedPlayer.getPlayerElementTime();
+
+							// handle timeupdate if pausedTimer was turned on
+							if ( _this.dvrTimePassed != 0 ) {
+								var lastShownTime = _this.lastShownTime;
+								if ( lastShownTime == 0 ) {
+									lastShownTime = curTime;
+								}
+								var accurateTime =  lastShownTime - _this.dvrTimePassed;
+								if ( accurateTime < 0 ) {
+									accurateTime = 0
+								}
+								if ( accurateTime > embedPlayer.duration ) {
+									accurateTime = embedPlayer.duration;
+								}
+								_this.updateTimeAndScrubber( accurateTime );
+
+							}
+							//handle bug in iOS: currenttime exceeds duration
+							else if ( curTime > embedPlayer.duration ) {
+								embedPlayer.triggerHelper( 'detachTimeUpdate' );
+								embedPlayer.triggerHelper( 'externalTimeUpdate', [ embedPlayer.duration ] );
+								_this.lastShownTime =  embedPlayer.duration;
+								_this.shouldReAttachTimeUpdate = true;
+							}
+							else if ( _this.dvrTimePassed == 0 && _this.shouldReAttachTimeUpdate) {
+								_this.sendReAttacheTimeUpdate();
+							}
+						});
+					}
+
+					if ( _this.shouldHandlePausedMonitor() ) {
+
+						_this.bind( 'onplay', function() {
+							if ( _this.isDVR() && _this.switchDone ) {
+								//	_this.hideLiveStreamStatus();
+								_this.removePausedMonitor();
+							}
+						} );
+
+						_this.bind( 'seeking movingBackToLive', function() {
+							//if we are keeping track of the passed time from a previous pause - reset it
+							if ( _this.dvrTimePassed != 0 ) {
+								_this.dvrTimePassed = 0;
+								_this.sendReAttacheTimeUpdate();
+							}
+						});
 					}
 				}
 				//not a live etnry: restore ui, hide live ui
@@ -131,15 +189,28 @@
 					//simetimes offline is only for a second and the message is not needed..
 					setTimeout( function() {
 						if ( !_this.onAirStatus ) {
+							//remember last state
+							_this.playWhenOnline = embedPlayer.isPlaying();
 							embedPlayer.layoutBuilder.displayAlert( { title: embedPlayer.getKalturaMsg( 'ks-LIVE-STREAM-OFFLINE-TITLE' ), message: embedPlayer.getKalturaMsg( 'ks-LIVE-STREAM-OFFLINE' ), keepOverlay: true } );
+							_this.getPlayer().disablePlayControls();
 						}
 					}, _this.getConfig( 'offlineAlertOffest' ) );
 
+					embedPlayer.triggerHelper( 'liveOffline' );
+
 				}  else if ( !_this.onAirStatus && onAirObj.onAirStatus ) {
 					embedPlayer.layoutBuilder.closeAlert(); //moved from offline to online - hide the offline alert
+					if ( !_this.getPlayer().getError() ) {
+						_this.getPlayer().enablePlayControls();
+					}
+					if ( _this.playWhenOnline ) {
+						embedPlayer.play();
+						_this.playWhenOnline = false;
+					}
+					embedPlayer.triggerHelper( 'liveOnline' );
 				}
+
 				_this.onAirStatus = onAirObj.onAirStatus;
-				_this.toggleControls( onAirObj.onAirStatus );
 
 				if ( _this.isDVR() ) {
 					if ( !onAirObj.onAirStatus ) {
@@ -161,57 +232,6 @@
 					}
 				}
 			});
-
-			if ( kWidget.isIOS() ) {
-				this.bind( 'timeupdate' , function() {
-					var curTime = embedPlayer.getPlayerElementTime();
-
-					// handle timeupdate if pausedTimer was turned on
-					if ( _this.dvrTimePassed != 0 ) {
-						var lastShownTime = _this.lastShownTime;
-						if ( lastShownTime == 0 ) {
-							lastShownTime = curTime;
-						}
-						var accurateTime =  lastShownTime - _this.dvrTimePassed;
-						if ( accurateTime < 0 ) {
-							accurateTime = 0
-						}
-						if ( accurateTime > embedPlayer.duration ) {
-							accurateTime = embedPlayer.duration;
-						}
-						_this.updateTimeAndScrubber( accurateTime );
-
-					}
-					//handle bug in iOS: currenttime exceeds duration
-					else if ( curTime > embedPlayer.duration ) {
-						embedPlayer.triggerHelper( 'detachTimeUpdate' );
-						embedPlayer.triggerHelper( 'externalTimeUpdate', [ embedPlayer.duration ] );
-						_this.lastShownTime =  embedPlayer.duration;
-						_this.shouldReAttachTimeUpdate = true;
-					}
-					else if ( _this.dvrTimePassed == 0 && _this.shouldReAttachTimeUpdate) {
-					   _this.sendReAttacheTimeUpdate();
-					}
-				});
-			}
-
-			if ( this.shouldHandlePausedMonitor() ) {
-
-				this.bind( 'onplay', function() {
-					if ( _this.isDVR() && _this.switchDone ) {
-						//	_this.hideLiveStreamStatus();
-						_this.removePausedMonitor();
-					}
-				} );
-
-				this.bind( 'seeking movingBackToLive', function() {
-					//if we are keeping track of the passed time from a previous pause - reset it
-					if ( _this.dvrTimePassed != 0 ) {
-						_this.dvrTimePassed = 0;
-						_this.sendReAttacheTimeUpdate();
-					}
-				});
-			}
 		},
 
 		sendReAttacheTimeUpdate: function() {
@@ -231,14 +251,6 @@
 			return this.getPlayer().evaluate( '{mediaProxy.entry.dvrStatus}' );
 		},
 
-		toggleControls: function( onAirStatus ) {
-			if ( onAirStatus && !this.getPlayer().getError()) {
-				this.getPlayer().enablePlayControls();
-			}  else {
-				this.getPlayer().disablePlayControls();
-			}
-		},
-
 		getCurrentTime: function() {
 			return this.getPlayer().getPlayerElement().currentTime;
 		},
@@ -252,6 +264,10 @@
 		 * API Requests to update on/off air status
 		 */
 		addLiveStreamStatusMonitor: function() {
+			//if player is in error state- no need for islive calls
+			if ( this.embedPlayer.getError() ) {
+				return;
+			}
 			this.log( "addLiveStreamStatusMonitor" );
 			var _this = this;
 			this.liveStreamStatusMonitor = setInterval( function() {
@@ -327,13 +343,21 @@
 				return;
 			}
 
+			var service = 'liveStream';
+			//type liveChannel
+			if ( embedPlayer.kalturaPlayerMetaData && embedPlayer.kalturaPlayerMetaData.type == 8 ) {
+				service = 'liveChannel';
+			}
+			var protocol = 'hls';
+			if ( embedPlayer.streamerType != 'http' ) {
+				protocol = embedPlayer.streamerType;
+			}
 			_this.getKalturaClient().doRequest( {
-				'service' : 'liveStream',
+				'service' : service,
 				'action' : 'islive',
 				'id' : embedPlayer.kentryid,
-				'protocol' : 'hls',
-				'partnerId': embedPlayer.kpartnerid,
-				'timestamp' : Date.now()
+				'protocol' : protocol,
+				'partnerId': embedPlayer.kpartnerid
 			}, function( data ) {
 				var onAirStatus = false;
 				if ( data === true ) {

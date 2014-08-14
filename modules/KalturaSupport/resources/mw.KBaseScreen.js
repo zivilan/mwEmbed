@@ -20,21 +20,23 @@ mw.KBaseScreen = mw.KBaseComponent.extend({
 	},
 
 	_addBindings: function(){
-
+		var _this = this;
 		// Make sure we will call _addBindings on KBaseComponent
 		this._super();
 
-		this.bind('playerReady', $.proxy(function(){
-			this.templateData = null;
-			this.removeScreen();
-		}, this));
+		this.bindCleanScreen();
 
 		this.bind('onplay', $.proxy(function(){
 			if( this.isScreenVisible() ){
+				setTimeout(function(){
+					_this.getPlayer().disableComponentsHover();
+				},50);
 				if( this.hasPreviewPlayer() ){
 					this.resizePlayer();
+
 				} else {
 					this.hideScreen();
+
 				}
 			}
 		}, this));
@@ -53,8 +55,16 @@ mw.KBaseScreen = mw.KBaseComponent.extend({
 		}, this));
 	},
 
+	bindCleanScreen: function(){
+		// TODO: should bind against onChangeMedia instead, to support screens on "Start" screen.
+		this.bind('playerReady', $.proxy(function(){
+			this.removeScreen();
+		}, this));
+	},
+
 	removeScreen: function(){
 		if( this.$screen ){
+			this.log('Remove Screen');
 			this.$screen.remove();
 			this.$screen = null;
 		}
@@ -65,8 +75,11 @@ mw.KBaseScreen = mw.KBaseComponent.extend({
 		} else {
 			this.restorePlayback();
 		}
-		this.getPlayer().restoreComponentsHover();
+		if (this.getPlayer().isPlaying()) {
+			this.getPlayer().restoreComponentsHover();
+		}
 		this.getScreen().fadeOut(400);
+
 	},
 	showScreen: function(){
 		this._hideAllScreens(this.pluginName);
@@ -76,9 +89,13 @@ mw.KBaseScreen = mw.KBaseComponent.extend({
 			this.pausePlayback();
 		}
 		this.getPlayer().disableComponentsHover();
-		this.getScreen().fadeIn(400);
+		this.getScreen().fadeIn(400, $.proxy(function(){
+			this.getPlayer().triggerHelper('showScreen', [this.pluginName]);
+		}, this));
+
 	},
 	toggleScreen: function(){
+		if( this.isDisabled ) return ;
 		if( this.isScreenVisible() ){
 			this.hideScreen();
 		} else {
@@ -92,14 +109,20 @@ mw.KBaseScreen = mw.KBaseComponent.extend({
 		return this.getConfig('usePreviewPlayer') && this.getConfig('previewPlayerEnabled');
 	},
 	pausePlayback: function(){
-		this.wasPlaying = this.getPlayer().isPlaying();
+		var player = this.getPlayer();
+		this.wasPlaying = player.isPlaying();
 		if( this.wasPlaying ){
-			this.getPlayer().pause();
+			// We use timeout to avoid race condition when we show screen on "playing" state
+			setTimeout(function(){
+				player.pause();
+			},0);
 		}
 	},
 	restorePlayback: function(){
-		if( this.wasPlaying )
+		if( this.wasPlaying ) {
+			this.wasPlaying = false;
 			this.getPlayer().play();
+		}
 	},
 	resizePlayer: function(){
 		this.getPlayer().getVideoDisplay().addClass('animateVideo');

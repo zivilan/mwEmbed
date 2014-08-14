@@ -23,8 +23,13 @@
 		},
 		requestedSrcIndex: null,
 		durationReceived: false,
+		readyCallbackFunc: undefined,
+		isMulticast: false,
+		isError: false,
+		readyFuncs: [],
 		// Create our player element
 		setup: function( readyCallback ) {
+			var _this = this;
 			mw.log('EmbedPlayerSilverlight:: Setup');
 
 			// Check if we created the sPlayer container
@@ -44,12 +49,55 @@
 					.addClass('maximize')
 			);
 
+			this.slCurrentTime = 0;
+			this.loadMedia( readyCallback );
+
+			this.bindHelper( 'changeEmbeddedTextTrack', function(e, data) {
+				if ( _this.playerObject ) {
+					_this.playerObject.selectTextTrack( data.index );
+				}
+			});
+
+			this.bindHelper( 'switchAudioTrack', function(e, data) {
+				if ( _this.playerObject ) {
+					_this.playerObject.selectAudioTrack( data.index );
+				}
+			});
+
+
+		},
+
+		loadMedia: function( readyCallback ) {
+
 			var _this = this;
 			var srcToPlay = _this.getSrc();
+
+			//in multicast we must first check if payer is live
+			var getMulticastStreamAddress = function() {
+				$( _this ).trigger( 'checkIsLive', [ function( onAirStatus ) {
+					 if ( onAirStatus ) {
+						 getStreamAddress().then( doEmbedFunc );
+					 }  else {
+					 //stream is offline, stream address can be retrieved when online
+						 _this.bindHelper( "liveOnline" + _this.bindPostfix , function( ) {
+							 _this.unbindHelper( "liveOnline" + _this.bindPostfix );
+							 _this.addPlayerSpinner();
+							 getStreamAddress().then( doEmbedFunc );
+							 //no need to save readyCallback since it was already called
+							 _this.readyCallbackFunc = undefined;
+
+						 });
+						 readyCallback();
+					 }
+				}]);
+			}
 
 			//parse url address from playmanifest
 			var getStreamAddress = function() {
 				var deferred = $.Deferred();
+				if (mw.getConfig("EmbedPlayer.UseDirectManifestLinks")) {
+					return deferred.resolve();
+				}
 				$.ajax({
 					url: _this.getSrc() + "&responseFormat=jsonp",
 					dataType: 'jsonp',
@@ -87,8 +135,9 @@
 				}
 				if ( isMimeType( "video/playreadySmooth" )
 					|| isMimeType( "video/ism" ) ) {
+					_this.isMulticast = false;
 
-					flashvars.smoothStreamPlayer =true;
+					flashvars.smoothStreamPlayer = true;
 					flashvars.preload = "auto";
 					flashvars.entryURL = srcToPlay;
 					//flashvars.debug = true;
@@ -110,34 +159,47 @@
 						if ( _this.b64Referrer ) {
 							flashvars.referrer = _this.b64Referrer;
 						}
+
 						var customDataString = "";
 						for(var propt in customData){
 							customDataString += propt + "=" + customData[propt] + "&";
 						}
-						flashvars.challengeCustomData = customDataString;
+						var eventObj = {
+							customString : customDataString
+						}
+
+						$( _this ).trigger( 'challengeCustomData', eventObj );
+
+						flashvars.challengeCustomData = eventObj.customString;
+
 					}
 				} else if ( isMimeType( "video/multicast" ) ) {
+					_this.isMulticast = true;
+					_this.bindHelper( "liveOffline", function( ) {
+						//if stream became offline
+						 if (  _this.playerObject ) {
+							 _this.playerObject.stop();
+						 }
+					});
+
 					flashvars.multicastPlayer = true;
-					flashvars.streamAddress = srcToPlay
+					flashvars.streamAddress = srcToPlay;
+					//flashvars.debug = true;
 
 					//check if multicast not available
 					var timeout = _this.getKalturaConfig( null, 'multicastStartTimeout' ) || _this.defaultMulticastStartTimeout;
+					_this.isError = false;
 					setTimeout( function() {
 						if ( !_this.durationReceived ) {
+							_this.isError = true
 							if ( _this.getKalturaConfig( null, 'enableMulticastFallback' ) == true ) {
 								//remove current source to fallback to unicast if multicast failed
 								for ( var i=0; i< _this.mediaElement.sources.length; i++ ) {
 									if ( _this.mediaElement.sources[i] == _this.mediaElement.selectedSource ) {
-										_this.playerObject.stop();
+										if ( _this.playerObject ) {
+											_this.playerObject.stop();
+										}
 										_this.mediaElement.sources.splice(i, 1);
-
-										//wait until player is ready to play again and trigger play
-										_this.bindHelper('onEnableInterfaceComponents' + _this.bindPostfix, function() {
-											_this.unbindHelper( 'onEnableInterfaceComponents' + _this.bindPostfix );
-											if ( _this.isPlaying() ) {
-												_this.play();
-											}
-										});
 
 										_this.setupSourcePlayer();
 										return;
@@ -147,12 +209,15 @@
 								var errorObj = { message: gM( 'ks-LIVE-STREAM-NOT-AVAILABLE' ), title: gM( 'ks-ERROR' ) };
 								_this.showErrorMsg( errorObj );
 							}
+
+							_this.readyCallbackFunc = undefined;
 						}
 					}, timeout );
 				}
 
 				flashvars.autoplay = _this.autoplay;
 				_this.durationReceived = false;
+				_this.readyCallbackFunc = readyCallback;
 				var playerElement = new mw.PlayerElementSilverlight( _this.containerId, 'splayer_' + _this.pid, flashvars, _this, function() {
 					var bindEventMap = {
 						'playerPaused' : 'onPause',
@@ -167,20 +232,31 @@
 						'switchingChangeStarted': 'onSwitchingChangeStarted',
 						'switchingChangeComplete' : 'onSwitchingChangeComplete',
 						'flavorsListChanged' : 'onFlavorsListChanged',
-						'enableGui' : 'onEnableGui'
+						'enableGui' : 'onEnableGui',
+						'audioTracksReceived': 'onAudioTracksReceived',
+						'audioTrackSelected': 'onAudioTrackSelected',
+						'textTracksReceived': 'onTextTracksReceived',
+						'textTrackSelected': 'onTextTrackSelected',
+						'loadEmbeddedCaptions': 'onLoadEmbeddedCaptions'
 					};
 
 					_this.playerObject = playerElement;
 					$.each( bindEventMap, function( bindName, localMethod ) {
 						_this.playerObject.addJsListener(  bindName, localMethod );
 					});
-					readyCallback();
+
+					if (  _this.getFlashvars( 'stretchVideo' ) ) {
+						playerElement.stretchFill();
+					}
+					//readyCallback();
 				});
 			}
 
-			getStreamAddress().then(doEmbedFunc);
-
-
+			if ( _this.isLive() ) {
+				getMulticastStreamAddress();
+			} else {
+				getStreamAddress().then( doEmbedFunc );
+			}
 		},
 
 		setCurrentTime: function( time ){
@@ -208,12 +284,13 @@
 
 		changeMediaCallback: function( callback ){
 			this.slCurrentTime = 0;
-			//for tests
-			//this.playerObject.src = "http://cdnapi.kaltura.com/p/524241/sp/52424100/playManifest/entryId/1_miehtdy7/flavorId/1_semte5d5/format/url/protocol/http/a.mp4";
-			this.playerObject.src = this.getSrc();
-			this.playerObject.stop();
-			this.playerObject.load();
-			callback();
+			// Check if we have source
+			if( this.getSrc() ) {
+				this.loadMedia( callback );
+			} else {
+				callback();
+			}
+
 		},
 
 		/*
@@ -224,7 +301,6 @@
 		updatePlayhead: function () {
 			if ( this.seeking ) {
 				this.seeking = false;
-				this.slCurrentTime = this.playerObject.currentTime;
 			}
 		},
 
@@ -242,6 +318,11 @@
 		 * parent_play
 		 */
 		onPlay: function() {
+			//workaround to avoid two playing events with autoPlay.
+			if ( !this.durationReceived ) {
+				return;
+			}
+
 			this.updatePlayhead();
 			$( this ).trigger( "playing" );
 			this.hideSpinner();
@@ -251,8 +332,38 @@
 			this.stopped = this.paused = false;
 		},
 
+		callReadyFunc: function() {
+			if ( this.readyCallbackFunc ) {
+				this.readyCallbackFunc();
+				this.readyCallbackFunc = undefined;
+			}
+		},
+
 		onDurationChange: function( data, id ) {
-			this.durationReceived = true;
+			//first durationChange indicate player is ready
+			if ( !this.durationReceived ) {
+				//hide player until we click play
+				this.getPlayerContainer().css('visibility', 'hidden');
+				this.durationReceived = true;
+				if ( !this.isError ) {
+					this.callReadyFunc();
+					//in silverlight we have unusual situation where "Start" is sent after "playing", this workaround fixes the controls state
+					if ( this.autoplay ) {
+						$( this ).trigger( "playing" );
+						this.monitor();
+					}
+				} else if ( this.autoplay ) {
+					this.playerObject.pause();
+				}
+
+				if ( this.readyFuncs && this.readyFuncs.length > 0 ) {
+					for ( var i=0; i< this.readyFuncs.length; i++ ) {
+						this.readyFuncs[i]();
+					}
+					this.readyFuncs = [];
+				}
+			}
+
 			// Update the duration ( only if not in url time encoding mode:
 			if( !this.supportsURLTimeEncoding() ){
 				this.setDuration( data );
@@ -280,7 +391,13 @@
 				}
 			}
 
-			this.layoutBuilder.displayAlert( { message: messageText, title: gM( 'ks-ERROR' ) } );
+			var errorObj =  { message: messageText, title: gM( 'ks-ERROR' ) };
+			if ( this.readyCallbackFunc ) {
+				this.setError( errorObj );
+				this.callReadyFunc();
+			} else {
+				this.layoutBuilder.displayAlert( errorObj );
+			}
 		},
 
 		/**
@@ -289,11 +406,20 @@
 		play: function() {
 			mw.log('EmbedPlayerSPlayer::play');
 			var _this = this;
-			if ( this.parent_play() ) {
-				this.playerObject.play();
+			if ( this.durationReceived && this.parent_play() ) {
+				//bring back the player
+				this.getPlayerContainer().css('visibility', 'visible');
+				if ( this.isMulticast  ) {
+					this.bindHelper( "durationChange" , function() {
+						_this.playerObject.play();
+					});
+					this.playerObject.reloadMedia();
+				} else {
+					this.playerObject.play();
+				}
 				this.monitor();
 			} else {
-				mw.log( "EmbedPlayerSPlayer:: parent play returned false, don't issue play on kplayer element");
+				mw.log( "EmbedPlayerSPlayer:: parent play returned false, don't issue play on splayer element");
 			}
 		},
 
@@ -302,7 +428,12 @@
 		 */
 		pause: function() {
 			try {
-				this.playerObject.pause();
+				//after first play we don't want to pause in multicast, only stop
+				if ( this.isMulticast && !this.firstPlay ) {
+					this.playerObject.stop();
+				} else {
+					this.playerObject.pause();
+				}
 			} catch(e) {
 				mw.log( "EmbedPlayerSPlayer:: doPause failed" );
 			}
@@ -364,7 +495,7 @@
 					if( _this.slCurrentTime != orgTime ){
 						_this.seeking = false;
 						clearInterval( _this.seekInterval );
-						$( _this ).trigger( 'seeked' );
+						$( _this ).trigger( 'seeked',[ _this.slCurrentTime] );
 					}
 				}, mw.getConfig( 'EmbedPlayer.MonitorRate' ) );
 			} else if ( percentage != 0 ) {
@@ -413,7 +544,8 @@
 			$( this ).trigger( 'updateBufferPercent', this.bufferedPercent );
 		},
 
-		onPlayerSeekEnd: function () {
+		onPlayerSeekEnd: function ( position ) {
+			this.slCurrentTime = position;
 			$( this ).trigger( 'seeked' );
 			this.updatePlayhead();
 			if( this.seekInterval  ) {
@@ -446,6 +578,34 @@
 			} else {
 				this.enablePlayControls();
 			}
+		},
+
+		onAudioTracksReceived: function ( data ) {
+			var _this = this;
+			this.callIfReady( function() {
+				_this.triggerHelper( 'audioTracksReceived', JSON.parse( data ) );
+			});
+		},
+
+		onAudioTrackSelected: function ( data ) {
+			var _this = this;
+			this.callIfReady( function() {
+				_this.triggerHelper( 'audioTrackIndexChanged', JSON.parse( data ) );
+			});
+		},
+
+		onTextTrackSelected: function ( data ) {
+			var _this = this;
+			this.callIfReady( function() {
+				_this.triggerHelper( 'textTrackIndexChanged', JSON.parse( data ) );
+			});
+		},
+
+		onTextTracksReceived: function ( data ) {
+			var _this = this;
+			this.callIfReady( function() {
+				_this.triggerHelper( 'textTracksReceived', JSON.parse( data ) );
+			});
 		},
 
 		/**
@@ -487,7 +647,7 @@
 			return sourceIndex;
 		},
 		switchSrc: function ( source ) {
-			if ( this.playerObject ) {
+			if ( this.playerObject && this.mediaElement.getPlayableSources().length > 1 ) {
 				var trackIndex = this.getSourceIndex( source );
 				mw.log( "EmbedPlayerSPlayer:: switch to track index: " + trackIndex);
 				$( this ).trigger( 'sourceSwitchingStarted' );
@@ -501,6 +661,26 @@
 
 		clean:function(){
 			$(this.getPlayerContainer()).remove();
+		},
+
+		callIfReady: function( callback ) {
+			if ( this.durationReceived ) {
+				callback();
+			} else {
+				this.readyFuncs.push( callback );
+			}
+		},
+
+		onLoadEmbeddedCaptions: function( data ) {
+			var captionData = JSON.parse( data );
+			var caption = {
+				source: {
+					srclang: captionData.language
+				},
+				capId: captionData.language,
+				ttml: captionData.ttml
+			};
+			this.triggerHelper( 'onEmbeddedData', caption );
 		}
 
 	}

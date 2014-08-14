@@ -133,7 +133,7 @@ class kalturaIframeClass {
 			'entry_id' => 'kentryid',
 			'uiconf_id' => 'kuiconfid',
 			'wid' => 'kwidgetid',
-			'autoplay' => 'autoplay',
+			'autoplay' => 'autoplay'
 		);
 
 		// If we have an error, show it
@@ -145,6 +145,7 @@ class kalturaIframeClass {
 		// so that overlays work on the iPad.
 		$o = "\n\n\t" .'<video class="persistentNativePlayer" ';
 		$o.= 'poster="' . htmlspecialchars( "data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%01%00%00%00%01%08%02%00%00%00%90wS%DE%00%00%00%01sRGB%00%AE%CE%1C%E9%00%00%00%09pHYs%00%00%0B%13%00%00%0B%13%01%00%9A%9C%18%00%00%00%07tIME%07%DB%0B%0A%17%041%80%9B%E7%F2%00%00%00%19tEXtComment%00Created%20with%20GIMPW%81%0E%17%00%00%00%0CIDAT%08%D7c%60%60%60%00%00%00%04%00%01'4'%0A%00%00%00%00IEND%AEB%60%82" ) . '" ';
+		//$o.= '  crossorigin="anonymous" poster="' . htmlspecialchars( "data:image/png,%89PNG%0D%0A%1A%0A%00%00%00%0DIHDR%00%00%00%01%00%00%00%01%08%02%00%00%00%90wS%DE%00%00%00%01sRGB%00%AE%CE%1C%E9%00%00%00%09pHYs%00%00%0B%13%00%00%0B%13%01%00%9A%9C%18%00%00%00%07tIME%07%DB%0B%0A%17%041%80%9B%E7%F2%00%00%00%19tEXtComment%00Created%20with%20GIMPW%81%0E%17%00%00%00%0CIDAT%08%D7c%60%60%60%00%00%00%04%00%01'4'%0A%00%00%00%00IEND%AEB%60%82" ) . '" ';
 		$o.= 'id="' . htmlspecialchars( $this->getIframeId() ) . '" ';
 
 		// Check for webkit-airplay option
@@ -250,6 +251,10 @@ class kalturaIframeClass {
 			$plugins = array();
 		}
 		foreach( $plugins as $pluginId => $plugin ){
+			// check if plugin is an array: 
+			if( ! is_array( $plugin ) ){
+				continue;
+			}
 			$loadInIframe = (isset($plugin['loadInIframe']) && $plugin['loadInIframe'] === true) ? true : false;
 			// Only load onPage plugins into iframe If we're in external iframe mode
 			$loadInIframe = ($loadInIframe && isset($_GET['iframeembed']));
@@ -356,6 +361,10 @@ class kalturaIframeClass {
 
 	public function getHeaders(){
 		$cacheHeaders = $this->utility->getCachingHeaders($this->getEntryResult()->getResponseHeaders());
+		// Merge in playlist response headers ( if requesting a playlist ) 
+		if( $this->getUiConfResult()->isPlaylist() ){
+			array_merge( $cacheHeaders, $this->getPlaylistResult()->getResponseHeaders() );
+		}
 		if( count($cacheHeaders) == 0 ) {
 			$cacheHeaders = array(
 				"Cache-Control: no-cache, must-revalidate",
@@ -467,9 +476,11 @@ class kalturaIframeClass {
 		if( $this->getCustomSkinUrl() ){
 			$_GET['skin'] = 'custom';
 		}
-		// include skin in cache path, as a custom param needed for startup
+		// check for language key: 
+		$_GET['lang'] = $this->getLangKey();
+		// include skin and language in cache path, as a custom param needed for startup
 		$cachePath = $wgScriptCacheDirectory . '/startup.' .
-			$wgMwEmbedVersion . $_GET['skin'] . $wgHTTPProtocol . '.min.js';
+			$wgMwEmbedVersion . $_GET['skin'] . $_GET['lang'] . $wgHTTPProtocol . '.min.js';
 			
 		// check for cached startup:
 		if( !$wgEnableScriptDebug){
@@ -493,6 +504,20 @@ class kalturaIframeClass {
 			@file_put_contents($cachePath, $s);
 		}
 		return $s;
+	}
+	private function getLangKey(){
+		global $coreLanguageNames;
+		$playerConfig = $this->getUiConfResult()->getPlayerConfig();
+		if( isset( $playerConfig['vars']['localizationCode'] ) ){
+			// get the list of language names
+			require_once( dirname( __FILE__ ) . '/../../includes/languages/Names.php' );
+			// validate localization code.
+			if( isset( $coreLanguageNames[ $playerConfig['vars']['localizationCode']  ] ) ){
+				return $playerConfig['vars']['localizationCode'];
+			}
+		}
+		// if no language code is specified default to english: 
+		return 'en';
 	}
 	/**
 	 * Get the location of the mwEmbed library
@@ -558,11 +583,18 @@ HTML;
 
 	function outputSkinCss(){
 		$playerConfig = $this->getUiConfResult()->getPlayerConfig();
+		// provide default layout if none exisits. 
+		if( !isset( $playerConfig['layout'] ) ){
+			$playerConfig['layout'] = array(
+				"skin"=> "kdark",
+				"cssFiles" => array()
+			);
+		}
 		$layout = $playerConfig['layout'];
 		// Todo use resource loader to manage the files
 		if( isset($layout['cssFiles']) && count($layout['cssFiles']) ) {
 			foreach( $layout['cssFiles'] as $cssFile ) {
-				//echo '<link rel="stylesheet" href="' . $cssFile .'" />' . "\n";
+				echo '<link rel="stylesheet" href="' .$this->resolveCustomResourceUrl($cssFile) .'" />' . "\n";
 			}
 		}
 	}
@@ -576,7 +608,7 @@ HTML;
 				$customStyle = $customStyle . 'body {font-size: ' . $theme['buttonsSize'] . 'px}';
 			}
 			if (isset($theme['buttonsColor'])){
-				$customStyle = $customStyle . '.btn {background-color: ' . $theme['buttonsColor'] . '!important}';
+				$customStyle = $customStyle . '.btn {background-color: ' . $theme['buttonsColor'] . '}';
 			}
 			if (isset($theme['sliderColor'])){
 				$customStyle = $customStyle . '.ui-slider {background-color: ' . $theme['sliderColor'] . '!important}';
@@ -592,6 +624,15 @@ HTML;
 			if (isset($theme['buttonsIconColor'])){
 				$customStyle = $customStyle . '.btn {color: ' . $theme['buttonsIconColor'] . '!important}';
 			}
+			if (isset($theme['watchedSliderColor'])){
+				$customStyle = $customStyle . '.watched {background-color: ' . $theme['watchedSliderColor'] . '!important}';
+			}
+			if (isset($theme['bufferedSliderColor'])){
+                $customStyle = $customStyle . '.buffered {background-color: ' . $theme['bufferedSliderColor'] . '!important}';
+            }
+            if (isset($theme['buttonsIconColorDropShadow']) && isset($theme['dropShadowColor'])){
+                $customStyle = $customStyle . '.btn {text-shadow: ' . $theme['dropShadowColor'] . '!important}';
+            }
 			$customStyle =  $customStyle . '</style>' . "\n";
 			echo $customStyle;
 		}
@@ -797,9 +838,13 @@ HTML;
 				} catch ( Exception $e ){
 					$payload['error'] = $e->getMessage();
 				}
+				// push up entry result errors to top level:
+				if( isset( $payload[ 'entryResult' ]  ) && isset( $payload[ 'entryResult' ]['error']) ){
+					$payload['error'] = $payload[ 'entryResult' ]['error'];
+				} 
+				// check for returned errors: 
 				echo json_encode( $payload );
 			?>;
-
 			var isIE8 = /msie 8/.test(navigator.userAgent.toLowerCase());
 		</script>
 		<script type="text/javascript">
@@ -882,7 +927,6 @@ HTML;
 
 		// Check if file exists
 		if( !file_exists( $path ) ){
-			die('file does not exists: ' . $path);
 			return false;
 		}
 

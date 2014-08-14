@@ -256,6 +256,15 @@
 
 			}
 
+			var getReffererURL = function(fv,objectPath) {
+				// Check for the fv:
+				if( fv && fv[ objectPath[2] ] ){
+					return fv[ objectPath[2] ];
+				}
+				// Else use the iframeParentUrl if set:
+				return mw.getConfig( 'EmbedPlayer.IframeParentUrl' );
+			}
+
 			switch( objectPath[0] ){
 				case 'isHTML5':
 					return true;
@@ -297,7 +306,7 @@
 							switch( objectPath[2] ){
 								case 'currentTime':
 									// check for kPreSeekTime ( kaltura seek delay update property )
-									if( embedPlayer.kPreSeekTime !== null ){
+									if( embedPlayer.seeking && embedPlayer.kPreSeekTime !== null ){
 										return embedPlayer.kPreSeekTime;
 									}
 									/*var ct = embedPlayer.currentTime - embedPlayer.startOffset;
@@ -379,12 +388,8 @@
 										return embedPlayer.autoplay;
 									break;
 									case 'referer':
-										// Check for the fv:
-										if( fv && fv[ objectPath[2] ] ){
-											return fv[ objectPath[2] ];
-										}
-										// Else use the iframeParentUrl if set:
-										return mw.getConfig( 'EmbedPlayer.IframeParentUrl' );
+									case 'referrer':
+										return getReffererURL(fv,objectPath);
 										break;
 									default:
 										if( fv && fv[ objectPath[2] ] ){
@@ -471,6 +476,31 @@
 						break;
 					}
 				break;
+				case 'utility':
+					switch( objectPath[1] ) {
+						case 'random':
+							return Math.floor(Math.random() * 1000000000);
+							break;
+						case 'timestamp':
+							return new Date().getTime();
+							break;
+						case 'referrer_url':
+							var fv = embedPlayer.getFlashvars();
+							return getReffererURL(fv,objectPath);
+							break;
+						case 'referrer_host':
+							var fv = embedPlayer.getFlashvars();
+							var referrer =  getReffererURL(fv,objectPath);
+							var getLocation = function(href) {
+								var l = document.createElement("a");
+								l.href = href;
+								return l;
+							};
+							var location = getLocation(referrer);
+							return location.hostname;
+							break;
+					}
+					break;
 			}
 			// Look for a plugin based config: typeof
 			var pluginConfigValue = null;
@@ -523,6 +553,9 @@
 			switch( functionName ){
 				case 'encodeUrl':
 					return encodeURI( value );
+					break;
+				case 'conditional': 
+					value
 					break;
 			}
 		},
@@ -603,7 +636,11 @@
 					}
 
 					if( $.isFunction( callbackToRun ) ) {
-						callbackToRun.apply( embedPlayer, $.makeArray( arguments ) );
+						try{
+							callbackToRun.apply( embedPlayer, $.makeArray( arguments ) );
+						}catch(e){
+							mw.log("Error when trying to run callbackToRun (probably JavaScript error in callbackToRun code)")
+						};
 					} else {
 						mw.log('kdpMapping::addJsListener: callback name: ' + callbackName + ' not found');
 					}
@@ -873,6 +910,7 @@
 						callback( { 'timeSlot': slotType }, embedPlayer.id );
 					});
 					break;
+
 				case 'preSequenceComplete':
 					b('AdSupport_preSequenceComplete', function( e, slotType ){
 						callback( { 'timeSlot': slotType }, embedPlayer.id );
@@ -880,7 +918,7 @@
 					break;
 
 				// mid Sequence:
-				case 'midrollStarted':
+				case 'midSequenceStart':
 					b('AdSupport_midrollStarted', function( e, slotType ){
 						callback( { 'timeSlot': slotType }, embedPlayer.id );
 					});
@@ -892,8 +930,8 @@
 					break;
 
 				// post roll Sequence:
-				case 'postRollStarted':
-					b('AdSupport_midrollStarted', function( e, slotType ){
+				case 'postSequenceStart':
+					b('AdSupport_postrollStarted', function( e, slotType ){
 						callback( { 'timeSlot': slotType }, embedPlayer.id );
 					});
 					break;
@@ -1007,6 +1045,9 @@
 					// If in ad, only trigger doPlay event
 					if( embedPlayer.sequenceProxy && embedPlayer.sequenceProxy.isInSequence ) {
 						embedPlayer.triggerHelper( 'doPlay' );
+						if( mw.getConfig( "EmbedPlayer.ForceNativeComponent") ) {
+							embedPlayer.play();
+						}
 						break;
 					}
 					if( embedPlayer.playerReadyFlag == false ){
@@ -1020,6 +1061,11 @@
 					embedPlayer.play();
 					break;
 				case 'doPause':
+					// If in ad, only trigger doPause event
+					if( embedPlayer.sequenceProxy && embedPlayer.sequenceProxy.isInSequence ) {
+						embedPlayer.triggerHelper( 'doPause' );
+						break;
+					}
 					embedPlayer.pause();
 					break;
 				case 'doStop':
@@ -1043,13 +1089,13 @@
 					embedPlayer.seek( percent, embedPlayer.paused );
 					break;
 				case 'changeVolume':
-					embedPlayer.setVolume( parseFloat( notificationData ) );
+					embedPlayer.setVolume( parseFloat( notificationData ),true );
 					break;
 				case 'openFullScreen':
-					embedPlayer.layoutBuilder.doFullScreenPlayer();
+					embedPlayer.layoutBuilder.fullScreenManager.doFullScreenPlayer();
 					break;
 				case 'closeFullScreen':
-					embedPlayer.layoutBuilder.restoreWindowPlayer();
+					embedPlayer.layoutBuilder.fullScreenManager.restoreWindowPlayer();
 					break;
 				case 'cleanMedia':
 					embedPlayer.emptySources();

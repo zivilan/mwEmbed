@@ -51,7 +51,6 @@ var kWidget = {
 	 * MUST BE CALLED AFTER all of the mwEmbedLoader.php includes.
 	 */
 	setup: function(){
-
 		var _this = this;
 		
 		/**
@@ -122,7 +121,6 @@ var kWidget = {
 			mw.setConfig( 'EmbedPlayer.NotPlayableDownloadLink', true );
 		}
 
-		// Loading kaltura native cordova component
 		if( ua.indexOf( 'kalturaNativeCordovaPlayer' ) != -1 ){
 			mw.setConfig('EmbedPlayer.ForceNativeComponent', true);
 
@@ -222,7 +220,7 @@ var kWidget = {
 		}
 
 		var player = document.getElementById( widgetId );
-		if( !player ){
+		if( !player || !player.evaluate ){
 			this.callJsCallback();
 			this.log("Error:: jsCallbackReady called on invalid player Id:" + widgetId );
 			return ;
@@ -296,14 +294,19 @@ var kWidget = {
 		// Check if we have flashvars object
 		if( ! settings.flashvars ) {
 			settings.flashvars = {};
-		}				
+		}
 
 		this.startTime[targetId] = new Date().getTime();
 		
 		// Check if we have flashvars object
 		if( ! settings.flashvars ) {
 			settings.flashvars = {};
-		}	
+		}
+
+		if( document.URL.indexOf('forceKalturaNativeComponentPlayer') !== -1 ){
+			settings.flashvars["nativeCallout"] = { plugin: true }
+		}
+
 		/**
 		 * Embed settings checks
 		 */
@@ -327,8 +330,21 @@ var kWidget = {
 		if( elm.getAttribute('name') == 'kaltura_player_iframe_no_rewrite' ){
 			return ;
 		}
+		// Check for "auto" localization and inject browser language. 
+		// We can't inject server side, because, we don't want to mangle the cached response 
+		// with params that are not in the request URL ( i.e AcceptLanguage headers )
+		if( settings.flashvars['localizationCode'] == 'auto' ){
+			var browserLangCode = window.navigator.userLanguage || window.navigator.language;
+			// Just take the first part of the code ( not the country code ) 
+			settings.flashvars['localizationCode'] = browserLangCode.split('-')[0];
+		}
+		
 		// Empty the target ( don't keep SEO links on Page while loading iframe )
-		elm.innerHTML = '';
+		try{
+			elm.innerHTML = '';
+		} catch ( e ){
+			// IE8 can't handle innerHTML on "read only" targets .
+		}
 		
 		// Check for size override in kWidget embed call
 		function checkSizeOveride( dim ){
@@ -454,10 +470,10 @@ var kWidget = {
 			'} ' + "\n" +
 			'.kWidgetPlayBtn { ' +
 				'cursor:pointer;' +
-				'height: 53px;' +
-				'width: 70px;' +
-				'top: 50%; left: 50%; margin-top: -26.5px; margin-left: -35px; ' + 
-				'background: url(\'' + imagePath + 'player_big_play_button.png\');' +
+				'height: 53px !important;;' +
+				'width: 70px !important;' +
+				'top: 50% !important;; left: 50% !important;; margin-top: -26.5px; margin-left: -35px; ' +
+				'background: url(\'' + imagePath + 'player_big_play_button.png\') !important;;' +
 				'z-index: 1;' +
 			'} ' + "\n" +
 			'.kWidgetPlayBtn:hover{ ' +
@@ -518,7 +534,7 @@ var kWidget = {
 			this.log( "Error could not find target id, for thumbEmbed" );
 		}
 		elm.innerHTML = '' +
-			'<div style="position: relative; width: 100%; height: 100%;">' + 
+			'<div style="position: relative; width: 100%; height: 100%;">' +
 			'<img class="kWidgetCentered" src="' + this.getKalturaThumbUrl( settings ) + '" >' +
 			'<div class="kWidgetCentered kWidgetPlayBtn" ' +
 				'id="' + targetId + '_playBtn"' +
@@ -843,7 +859,6 @@ var kWidget = {
 		iframe.scrolling = "no";
 		iframe.name = iframeId;
 		iframe.className = 'mwEmbedKalturaIframe';
-		iframe.setAttribute('role', 'applicaton');
 		iframe.setAttribute('aria-labelledby', 'Player ' + targetId);
 		iframe.setAttribute('aria-describedby', 'The Kaltura Dynamic Video Player');
 
@@ -1135,6 +1150,7 @@ var kWidget = {
 		
 		// don't bother with checks if no players exist: 
 		if( ! playerList.length ){
+			this.playerModeChecksDone();
 			return ;
 		}
 
@@ -1692,11 +1708,13 @@ var kWidget = {
 	 flashVarsToUrl: function( flashVarsObject ){
 		 var params = '';
 		 for( var i in flashVarsObject ){
-			 var curVal = typeof flashVarsObject[i] == 'object'?
-					 JSON.stringify( flashVarsObject[i] ):
-					 flashVarsObject[i]
-			 params+= '&' + 'flashvars[' + encodeURIComponent( i ) + ']=' +
-				encodeURIComponent(  curVal );
+			 if (i !== 'jsonConfig'){
+				 var curVal = typeof flashVarsObject[i] == 'object'?
+						 JSON.stringify( flashVarsObject[i] ):
+						 flashVarsObject[i]
+				 params+= '&' + 'flashvars[' + encodeURIComponent( i ) + ']=' +
+					encodeURIComponent(  curVal );
+			 }
 		 }
 		 return params;
 	 },
@@ -1861,10 +1879,11 @@ var kWidget = {
 	/**
 	 * Append a script to the dom:
 	 * @param {string} url
-	 * @param {function} callback
+	 * @param {function} done callback
 	 * @param {object} Document to append the script on
+	 * @param {function} error callback
 	 */
-	appendScriptUrl: function( url, callback, docContext ) {
+	appendScriptUrl: function( url, callback, docContext, callbackError ) {
 		if( ! docContext ){
 			docContext = window.document;
 		}
@@ -1875,16 +1894,31 @@ var kWidget = {
 		var done = false;
 
 		// Attach handlers for all browsers
-		script.onload = script.onreadystatechange = function() {
+		script.onload = script.onerror = script.onreadystatechange = function() {
 			if ( !done && (!this.readyState ||
 					this.readyState === "loaded" || this.readyState === "complete") ) {
 				done = true;
-				if( typeof callback == 'function'){
-					callback();
+
+				if (arguments &&
+					arguments[0] &&
+					arguments[0].type){
+					if (arguments[0].type == "error"){
+						if (typeof callbackError == "function"){
+							callbackError();
+						}
+					} else {
+						if (typeof callback == "function"){
+							callback();
+						}
+					}
+				} else {
+					if (typeof callback == "function"){
+						callback();
+					}
 				}
 
 				// Handle memory leak in IE
-				script.onload = script.onreadystatechange = null;
+				script.onload = script.onerror = script.onreadystatechange = null;
 				if ( head && script.parentNode ) {
 					head.removeChild( script );
 				}

@@ -12,7 +12,7 @@ $wgScriptCacheDirectory = realpath( dirname( __FILE__ ) ) . '/cache';
 $wgBaseMwEmbedPath = realpath( dirname( __FILE__ ) . '/../' );
 
 // The version of the library:
-$wgMwEmbedVersion = '2.5.rc5';
+$wgMwEmbedVersion = '2.17.rc2';
 
 // Default HTTP protocol from GET or SERVER parameters
 if( isset($_GET['protocol']) ) {
@@ -209,6 +209,9 @@ $wgKalturaAuthDomains = array( 'www.kaltura.com', 'kmc.kaltura.com' );
 // If google anlytics should be enabled, set to the ua string
 $wgKalturaGoogleAnalyticsUA = false;
 
+// for additional script includes. 
+$wgAdditionalDocsScriptInclude = false;
+
 //Remote web inspector URL such as: weinre, fireBug
 $wgRemoteWebInspector = false;
 
@@ -229,6 +232,7 @@ include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/api
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweApiUiConfJs.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweApiSleepTest.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweFeaturesList.php' );
+include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweApiLanguageSupport.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweUpgradePlayer.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../studio/studioService.php');
 /**

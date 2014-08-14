@@ -59,9 +59,11 @@ mw.FullScreenManager.prototype = {
         );
         embedPlayer.pause();
         // try and do a browser popup:
+        // Name argument for window.open in IE8 must be from supported set: _blank for example
+		// http://msdn.microsoft.com/en-us/library/ms536651%28v=vs.85%29.aspx
         var newwin = window.open(
             url,
-            embedPlayer.id,
+            '_blank',
             // Fullscreen window params:
             'width=' + screen.width +
                 ', height=' + ( screen.height - 90 ) +
@@ -109,7 +111,7 @@ mw.FullScreenManager.prototype = {
 		}
 
 		// Check for native support for fullscreen and we are in an iframe server
-		if( screenfull && screenfull.enabled(doc) && !mw.isMobileChrome() ) {
+		if( !this.fullScreenApiExcludes() && !mw.isAndroidChromeNativeBrowser() && screenfull && screenfull.enabled(doc) ) {
 			var fullscreenHeight = null;
 			var fsTarget = this.getFsTarget();
 			var escapeFullscreen = function( event ) {
@@ -179,13 +181,19 @@ mw.FullScreenManager.prototype = {
 
 		// Set the original parent page scale if possible:
 		this.orginalParnetViewPortContent = $doc.find( 'meta[name="viewport"]' ).attr( 'content' );
+
+		if( !this.orginalParnetViewPortContent ) {
+			this.orginalParnetViewPortContent = $doc.find('meta[name="viewport"]').attr('content', 'width=device-width, user-scalable=yes');
+		}
+
 		this.orginalTargetElementLayout = {
 			'style' : $target[0].style.cssText,
 			'width' : $target.width(),
 			'height' : $target.height()
 		};
 		mw.log("PlayerControls:: doParentIframeFullscreen> verticalScrollPosition:" + this.verticalScrollPosition);
-		context.scroll(0, 0);
+
+        this.doNativeScroll(context, 0, 0);
 
 		// Make sure the parent page page has a zoom of 1:
 		if( ! $doc.find('meta[name="viewport"]').length ){
@@ -234,7 +242,7 @@ mw.FullScreenManager.prototype = {
 		);
 
 		var updateTargetSize = function() {
-			context.scroll(0, 0);
+            _this.doNativeScroll(context, 0, 0);
 			var innerWidth = context.innerWidth || context.document.documentElement.clientWidth || context.document.body.clientWidth;
 			var innerHeight = context.innerHeight || context.document.documentElement.clientHeight || context.document.body.clientHeight;
 			// mobile android chrome has an off by one bug for inner window size: 
@@ -342,9 +350,23 @@ mw.FullScreenManager.prototype = {
 		} );
 		// Scroll back to the previews position ( in a timeout to allow dom to update )
 		setTimeout( function(){
-			context.scroll( 0, _this.verticalScrollPosition );
+            _this.doNativeScroll( context, 0, _this.verticalScrollPosition );
 		},100)
 	},
+
+    /**
+     * Use correct native browser scroll method in case native method is overriden
+     */
+    doNativeScroll: function(context, top, left){
+        if (context) {
+            $.each(['scroll', 'scrollTo'], function (i, funcName) {
+                if ($.isFunction(context[funcName])) {
+                    context[funcName](top, left);
+                    return false;
+                }
+            });
+        }
+    },
 
 	/**
 	 * Supports hybrid native fullscreen, player html controls, and fullscreen is native
@@ -480,7 +502,7 @@ mw.FullScreenManager.prototype = {
 		}
 	},
 	getDocTarget: function(){
-		if( mw.getConfig('EmbedPlayer.IsIframeServer' ) ){
+		if( mw.getConfig('EmbedPlayer.IsIframeServer' ) && mw.getConfig('EmbedPlayer.IsFriendlyIframe')){
 			return window['parent'].document;
 		} else {
 			return document;
@@ -506,7 +528,7 @@ mw.FullScreenManager.prototype = {
 
 		// Check for native support for fullscreen and support native fullscreen restore
 		var docTarget = this.getDocTarget();		
-		if ( screenfull && screenfull.enabled(docTarget) ) {
+		if ( !this.fullScreenApiExcludes() && screenfull && screenfull.enabled(docTarget) ) {
 			screenfull.exit(docTarget);
 		}
 
@@ -552,6 +574,13 @@ mw.FullScreenManager.prototype = {
 		};
 		// start monitoring for moving mouse
 		checkMovedMouse();
+	},
+
+	fullScreenApiExcludes: function(){
+		if (mw.isSilk()){
+			return true;
+		}
+		return false;
 	}
 
 };
