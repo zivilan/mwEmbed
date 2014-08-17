@@ -37,6 +37,9 @@
 .icon-google-plus {
 	background-position: -156px -79px;
 }
+.icon-linkedin {
+	background-position: -316px -79px;
+}
 
 @media all and (max-width: 340px){
 	.share input {
@@ -64,5 +67,9 @@
 
 	.icon-google-plus {
 		background-position: -78px -40px;
+	}
+
+	.icon-linkedin {
+		background-position: -159px -40px;
 	}
 }

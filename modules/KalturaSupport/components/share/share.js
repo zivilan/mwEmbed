@@ -17,6 +17,7 @@ mw.PluginManager.add( 'share', mw.KBaseScreen.extend({
 		shareOffset: true,
 		templatePath: 'components/share/share.tmpl.html'
 	},
+	generator: null,
 	iconBtnClass: "icon-share",
 	setup: function(){
 		this.setupPlayerURL();
@@ -94,13 +95,41 @@ mw.PluginManager.add( 'share', mw.KBaseScreen.extend({
 				cssClass: 'icon-google-plus',
 				url: 'https://plus.google.com/share?url='
 			});
-
+		if (socialNetworks.indexOf("linkedin") != -1)
+			networks.push({
+				id: 'linkedin',
+				name: 'LinkedIn',
+				cssClass: 'icon-linkedin',
+				url: 'https://www.linkedin.com/shareArticle?mini=true&url='
+			});
 		return {
 			'share' : this,
 			networks: networks
 		};
 	},
+	getEmbedCode:function(){
+		if ( !this.generator )
+		this.generator = new kEmbedCodeGenerator({
+			partnerId: this.getPlayer().kpartnerid
+		});
+
+		var cacheSt = Math.floor(new Date().getTime() / 1000) + (15 * 60); // start caching in 15 minutes
+
+		var params = {
+			protocol: 'http',
+			embedType: 'dynamic',
+			uiConfId: this.getPlayer().kuiconfid,
+			width: this.getPlayer().width,
+			height: this.getPlayer().height,
+			playerId: 'kaltura_player_' + cacheSt,
+			cacheSt: cacheSt,
+			entryId: this.getPlayer().kentryid
+		};
+		var flashVars = this.embedPlayer.playerConfig;
+		alert(this.generator.getCode(params));
+	},
 	openPopup: function( e ){
+
 		var url = $(e.target).parents('a').attr('href');
 		// Name argument for window.open in IE8 must be from supported set: _blank for example
 		// http://msdn.microsoft.com/en-us/library/ms536651%28v=vs.85%29.aspx

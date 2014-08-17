@@ -215,7 +215,7 @@
 			'kalturaPluginName' => 'related',
 		),
 		"share" => array(
-			'scripts' => "components/share/share.js",
+			'scripts' => array('components/share/KalturaEmbedCodeGenerator.js', 'components/share/share.js'),
 			'styles' =>  "components/share/share.css",
 			'templates' => "components/share/share.tmpl.html",
 			'dependencies' => array( 'mw.KBaseScreen' ),
