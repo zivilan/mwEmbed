@@ -773,11 +773,6 @@
 			// Auto select player based on default order
 			if( this.mediaElement.selectedSource ){
 
-				// Loading kaltura native cordova component only when it's media type
-				if( this.isImageSource() ) {
-					mw.setConfig('EmbedPlayer.ForceNativeComponent', false);
-				}
-
 				var targetPlayer = this.getPlayerByStreamerType(this.mediaElement.selectedSource);
 				this.selectPlayer( targetPlayer );
 

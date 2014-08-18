@@ -121,14 +121,18 @@ mw.MediaPlayers.prototype = {
 	 */
 	defaultPlayer : function( mimeType ) {
 		// mw.log( "get defaultPlayer for " + mimeType );
-		if ( mw.getConfig( 'EmbedPlayer.ForceNativeComponent' )) {
+		if ( mw.getConfig( 'EmbedPlayer.ForceNativeComponent' )
+			&& mw.EmbedTypes.getNativeComponentPlayerVideo().supportsMIMEType( mimeType ) ) {
 			return mw.EmbedTypes.getNativeComponentPlayerVideo();
 		}
-
-		if ( mw.getConfig( 'EmbedPlayer.ForceKPlayer' ) && this.isSupportedPlayer( 'kplayer' ) ) {
+		if ( mw.getConfig( 'EmbedPlayer.ForceKPlayer' )
+			&& this.isSupportedPlayer( 'kplayer' )
+			&& mw.EmbedTypes.getKplayer().supportsMIMEType( mimeType ) ) {
 			return mw.EmbedTypes.getKplayer();
 		}
-		if (mw.getConfig( 'EmbedPlayer.ForceSPlayer') && this.isSupportedPlayer('splayer')) {
+		if ( mw.getConfig( 'EmbedPlayer.ForceSPlayer')
+			&& this.isSupportedPlayer('splayer')
+			&& mw.EmbedTypes.getSilverlightPlayer().supportsMIMEType( mimeType ) ) {
 			return mw.EmbedTypes.getSilverlightPlayer();
 		}
 
