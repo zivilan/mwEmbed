@@ -13,12 +13,12 @@
  * loaded post player detection
  */
 //Native Mobile player
-var nativeComponentPlayerVideo = new mw.MediaPlayer( 'nativeComponentPlayer', ['video/h264', 'video/mp4', 'application/vnd.apple.mpegurl'], 'NativeComponent' );
+var nativeComponentPlayerVideo = new mw.MediaPlayer( 'nativeComponentPlayer', ['video/h264', 'video/mp4', 'application/vnd.apple.mpegurl', 'video/wvm', 'audio/mpeg', 'audio/mp3'], 'NativeComponent' );
 
 // Flash based players:
 var kplayer = new mw.MediaPlayer('kplayer', ['video/live', 'video/kontiki', 'video/wvm', 'video/x-flv', 'video/h264', 'video/mp4', 'audio/mpeg', 'application/x-shockwave-flash', 'application/vnd.apple.mpegurl'], 'Kplayer');
 // Silverlight
-var splayer = new mw.MediaPlayer('splayer', ['video/playreadySmooth', 'video/ism', 'video/multicast', 'video/h264', 'video/mp4'], 'Silverlight');
+var splayer = new mw.MediaPlayer('splayer', ['video/playreadySmooth',  'video/ism', 'video/multicast', 'video/h264', 'video/mp4'], 'Silverlight');
 
 // Java based player
 var cortadoPlayer = new mw.MediaPlayer( 'cortado', ['video/ogg', 'audio/ogg', 'application/ogg'], 'Java' );
