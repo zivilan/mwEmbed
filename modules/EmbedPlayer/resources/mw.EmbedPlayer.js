@@ -2542,7 +2542,7 @@
 					this.seek( seekPercent );
 				}
 			}
-			if ( !_this.isLive() ) {
+			if ( !_this.isLive() && !_this.isImageSource() ) {
 				if ( _this.isPlaying() && _this.currentTime == _this.getPlayerElementTime() ) {
 					_this.bufferStart();
 				} else if ( _this.buffering ) {
