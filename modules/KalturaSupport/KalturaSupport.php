@@ -186,11 +186,14 @@
 			'dependencies' => 'mw.KBaseComponent',
 			'kalturaPluginName' => 'airPlay',
 		),
+<<<<<<< HEAD
 		"nativeCallout" => array(
 			'scripts' => "components/nativeCallout.js",
 			'dependencies' => 'mw.KBasePlugin',
 			'kalturaPluginName' => 'nativeCallout',
 		),
+=======
+>>>>>>> chromecast-mobile
 		"closedCaptions" => array(
 			'scripts' => "resources/mw.ClosedCaptions.js",
 			'dependencies' => array( 

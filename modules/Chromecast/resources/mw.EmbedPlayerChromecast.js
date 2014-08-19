@@ -31,7 +31,7 @@
 		// override these functions so embedPlayer won't try to sync time
 		syncCurrentTime: function(){},
 		monitor: function(){},
-		isInSequence: function(){return false},
+		isInSequence: function(){return false;},
 
 		updatePlayhead: function (currentTime, duration) {
 			this.currentTime = currentTime;
@@ -48,7 +48,7 @@
 		},
 
 		clipDone: function() {
-			console.log("clip done");
+			mw.log("clip done");
 			if (this.vid.mediaFinishedCallback){
 				this.vid.mediaFinishedCallback();
 			}
@@ -86,12 +86,6 @@
 			if (this.vid.mediaLoadedCallback){
 				this.vid.mediaLoadedCallback(this.vid);
 			}
-			$(this).html(this.getPlayingScreen());
-			$(".chromecastThumb").load(function(){
-				setTimeout(function(){
-					_this.setPlayingScreen();
-				},0)
-			})
 		},
 
 		updateDuration: function(duration){
@@ -105,7 +99,7 @@
 		},
 
 		seek: function(percentage) {
-			console.log("seek "+percentage);
+			mw.log("seek "+percentage);
 			this.seeking = true;
 			$(this).trigger("chromecastSeek", [percentage * 100]);
 			$(this.vid).trigger("seek");
@@ -118,34 +112,6 @@
 		onPlayerSeekEnd: function () {
 			$( this ).trigger( 'seeked' );
 			this.seeking = false;
-		},
-
-		getPlayingScreen: function(){
-			var _this = this;
-			return '<div style="background-color: #000000; opacity: 0.7; width: 100%; height: 100%; font-family: Arial; position: absolute">' +
-				'<div class="chromecastPlayback">' +
-				'<div class="chromecastThumbBorder">' +
-				'<img class="chromecastThumb" src="' + this.poster + '"></img></div> ' +
-				'<span class="chromecastTitle"></span>' +
-				'<div class="chromecastPlayingIcon"><i class="icon-chromecast"></i></div>' +
-				'<span id="chromecastPlaying" class="chromecastPlaying">Now Playing on Chromecast</span>'+
-				'<span id="chromecastReceiverName" class="chromecastPlaying">Now Playing on Chromecast</span>'+
-				'</div></div>';
-		},
-
-		setPlayingScreen: function(){
-			var factor = $(".chromecastPlayback").height() / $(".chromecastThumb").naturalHeight();
-			$(".chromecastThumb").height($(".chromecastPlayback").height());
-			$(".chromecastThumbBorder").height($(".chromecastPlayback").height());
-			$(".chromecastThumb").width($(".chromecastThumb").naturalWidth() * factor);
-			$(".chromecastThumbBorder").width($(".chromecastThumb").naturalWidth() * factor);
-			var title = $(".titleLabel").html() != undefined ? $(".titleLabel").html() : "Untitled movie";
-			$(".chromecastTitle").text(title).css("margin-left",$(".chromecastThumbBorder").width()+14+'px');
-			$(".chromecastPlayingIcon").css("margin-left",$(".chromecastThumbBorder").width()+14+'px').css("margin-top",24+'px');
-			$("#chromecastPlaying").css("margin-left",$(".chromecastThumbBorder").width()+60+'px').css("margin-top",26+'px');
-			$("#chromecastReceiverName").text(this.receiverName);
-			$("#chromecastReceiverName").css("margin-left",$(".chromecastThumbBorder").width()+60+'px').css("margin-top",42+'px');
 		}
-
-	}
+	};
 } )( mediaWiki, jQuery );
