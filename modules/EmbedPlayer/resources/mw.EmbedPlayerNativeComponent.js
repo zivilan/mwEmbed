@@ -56,7 +56,7 @@ mw.EmbedPlayerNativeComponent = {
 		'progress',
 		'enterfullscreen',
 		'exitfullscreen',
-		'durationchange'
+		'durationchange',
 		'chromecastDeviceConnected',
 		'chromecastDeviceDisConnected'
 	],
