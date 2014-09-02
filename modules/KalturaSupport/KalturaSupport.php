@@ -49,6 +49,11 @@
 		"mw.KAnalytics"=> array( 
 			'scripts' => "resources/mw.KAnalytics.js"
 		),
+		'mw.KPluginSequenceManager'=> array(
+			'scripts' => "resources/mw.KPluginSequenceManager.js",
+			'dependencies' => array( 'mw.KBasePlugin' ),
+			'kalturaPluginName' => 'pluginSequenceManager'
+		),
 		"mw.PlaylistHandlerKaltura"=> array( 
 			'scripts' => "resources/mw.PlaylistHandlerKaltura.js",
 			'dependencies' => array(
