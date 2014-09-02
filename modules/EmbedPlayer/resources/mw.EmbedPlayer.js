@@ -1569,6 +1569,7 @@
 			this.triggeredEndDone = false;
 			this.preSequenceFlag = false;
 			this.postSequenceFlag = false;
+			this.ranPrePlaySequence = false;
 
 			// Add a loader to the embed player:
 			this.pauseLoading();
@@ -2036,6 +2037,7 @@
 		preSequenceFlag: false,
 		inPreSequence: false,
 		replayEventCount : 0,
+		ranPrePlaySequence: false,
 		play: function() {
 			if (this.currentState == "end"){
 				// prevent getting another clipdone event on replay
@@ -2050,6 +2052,17 @@
 			// Ignore play request if player error is displayed: 
 			if ( this.getError() ) {
 				return false;
+			}
+
+			// Run PrePlay sequence
+			// TODO: we should move Ads plugins to use sequenceManager
+			if( !this.ranPrePlaySequence ) {
+				this.ranPrePlaySequence = true;
+				console.error('runPrePlaySequence');
+				$( this ).triggerQueueCallback( 'psm:runSequence', 'prePlay', function(){
+					// After all sequence plugins completed, call play() again
+					_this.play();
+				});
 			}
 
 			// Check if thumbnail is being displayed and embed html
