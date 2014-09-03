@@ -96,6 +96,9 @@
 			}
 		},
 		enableContinue: function(){
+			this.getPlayer().triggerHelper("adBlockDetectedOverride");
+			//Unfreeze the UI
+			this.getPlayer().sendNotification("enableGui", true);
 			//Set player error to null allow playback
 			this.getPlayer().setError(null);
 			//Remove the error modal

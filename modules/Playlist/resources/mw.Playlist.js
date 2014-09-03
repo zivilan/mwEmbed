@@ -740,10 +740,10 @@ mw.Playlist.prototype = {
 	addPlaylistAdBindings: function(){
 		var _this = this;
 		var embedPlayer = this.getEmbedPlayer();
-		$( embedPlayer ).bind('AdSupport_StartAdPlayback' + this.bindPostfix, function(){
+		$( embedPlayer ).bind('AdSupport_StartAdPlayback adBlockDetected' + this.bindPostfix, function(){
 			_this.blockPlaylist();
 		});
-		$( embedPlayer ).bind('AdSupport_EndAdPlayback' + this.bindPostfix, function(){
+		$( embedPlayer ).bind('AdSupport_EndAdPlayback adBlockDetectedOverride' + this.bindPostfix, function(){
 			_this.restorePlaylist();
 		});
 	},
