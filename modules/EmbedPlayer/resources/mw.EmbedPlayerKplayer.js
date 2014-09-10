@@ -12,6 +12,8 @@ mw.EmbedPlayerKplayer = {
 	//Flag indicating we should cancel autoPlay on live entry
 	// (we set it to true as a workaround to make the Flash start the live checks call)
 	cancelLiveAutoPlay: false,
+	// If the media loaded event has been fired
+	mediaLoadedFlag: false,
 	// List of supported features:
 	supports : {
 		'playHead' : true,
@@ -29,6 +31,7 @@ mw.EmbedPlayerKplayer = {
 	selectedFlavorIndex : 0,
 	b64Referrer: base64_encode( window.kWidgetSupport.getHostPageUrl() ),
 	playerObject: null,
+	seekStarted: false,
 	//when playing live rtmp we increase the timeout until we display the "offline" alert, cuz player takes a while to identify "online" state
 	LIVE_OFFLINE_ALERT_TIMEOUT: 8000,
 	ignoreEnableGui: false,
@@ -127,7 +130,8 @@ mw.EmbedPlayerKplayer = {
 				'loadEmbeddedCaptions': 'onLoadEmbeddedCaptions',
 				'bufferChange': 'onBufferChange',
 				'audioTracksReceived': 'onAudioTracksReceived',
-				'audioTrackSelected': 'onAudioTrackSelected'
+				'audioTrackSelected': 'onAudioTrackSelected',
+				'videoMetadataReceived': 'onVideoMetadataReceived'
 			};
 			_this.playerObject = this.getElement();
 			$.each( bindEventMap, function( bindName, localMethod ) {
@@ -260,6 +264,8 @@ mw.EmbedPlayerKplayer = {
 
 	changeMediaCallback: function( callback ){
 		this.updateSources();
+		this.seekStarted = false;
+		this.mediaLoadedFlag = false;
 		this.flashCurrentTime = 0;
 		this.playerObject.setKDPAttribute( 'mediaProxy', 'isLive', this.isLive() );
 		this.playerObject.setKDPAttribute( 'mediaProxy', 'isMp4', this.isMp4Src() );
@@ -399,7 +405,7 @@ mw.EmbedPlayerKplayer = {
 
 		// trigger the html5 event:
 		$( this ).trigger( 'seeking' );
-
+		this.seekStarted = true;
 		// Run the onSeeking interface update
 		this.layoutBuilder.onSeek();
 
@@ -471,7 +477,10 @@ mw.EmbedPlayerKplayer = {
 	onPlayerSeekEnd: function () {
 		this.previousTime = this.currentTime = this.flashCurrentTime = this.playerObject.getCurrentTime();
 		this.seeking = false;
-		$( this ).trigger( 'seeked',[this.playerObject.getCurrentTime()]);
+		if (this.seekStarted){
+			this.seekStarted = false;
+			$( this ).trigger( 'seeked',[this.playerObject.getCurrentTime()]);
+		}
 	},
 
 	onSwitchingChangeStarted: function ( data, id ) {
@@ -558,6 +567,14 @@ mw.EmbedPlayerKplayer = {
 
 	onAudioTrackSelected: function ( data ) {
 		this.triggerHelper( 'audioTrackIndexChanged', data  );
+	},
+
+	onVideoMetadataReceived: function(){
+		// Trigger "media loaded"
+		if( ! this.mediaLoadedFlag ){
+			$( this ).trigger( 'mediaLoaded' );
+			this.mediaLoadedFlag = true;
+		}
 	},
 
 	/**
