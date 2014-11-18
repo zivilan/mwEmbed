@@ -77,6 +77,7 @@
 				callback();
 				return;
 			}
+
 			// Load the freewheel ad manager then setup the ads
 			if (!window['tv'] || !tv.freewheel) {
 				var isLoaded = false;
@@ -302,8 +303,8 @@
 							}
 							_this.overlaySlotActive = true;
 						}
-					}
 				}
+			}
 			});
 		},
 		playSlot: function (slot) {
@@ -696,8 +697,8 @@
 							);
 							break;
 					}
-				}
 			}
+		}
 		}
 	};
 
