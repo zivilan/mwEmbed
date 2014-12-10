@@ -22,6 +22,7 @@
 				'layout': 'vertical',
 				'mediaItemWidth': null,
 				'mediaItemHeight': null,
+				'MinClips': 2,
 				'mediaItemRatio': (16 / 9),
 				'horizontalHeaderHeight': 0,
 				'onPage': false,
@@ -173,7 +174,7 @@
 					}
 
 					if ( this.getConfig( 'containerPosition' ) == 'top' || this.getConfig( 'containerPosition' ) == 'bottom' ) {
-						var playlistHeight = this.getLayout() === "vertical" ? this.getConfig( "mediaItemHeight" ) * 2 : this.getConfig( "mediaItemHeight" ) + this.getConfig('horizontalHeaderHeight');
+						var playlistHeight = this.getLayout() === "vertical" ? this.getConfig( "mediaItemHeight" ) * this.getConfig( "MinClips" ) + this.getMedialistHeaderComponent().height() : this.getConfig( "mediaItemHeight" ) + this.getConfig('horizontalHeaderHeight');
 						this.getComponent().height(playlistHeight);
 						$( ".mwPlayerContainer" ).css( "height", this.$mediaListContainer.height() - playlistHeight + "px" );
 						this.getPlayer().getVideoHolder().css( "height", this.$mediaListContainer.height() - playlistHeight - $( ".controlBarContainer" ).height() + "px" );
@@ -196,7 +197,7 @@
 					$( ".mwPlayerContainer" ).css( "float", "left" );
 				}
 				if ( this.getConfig( 'containerPosition' ) == 'top' || this.getConfig( 'containerPosition' ) == 'bottom' ) {
-					this.getComponent().height( this.getConfig( "mediaItemHeight" ) * 2 );
+					this.getComponent().height( this.getConfig( "mediaItemHeight" ) * this.getConfig( "MinClips" ) + this.getMedialistHeaderComponent().height() );
 					this.getComponent().css( "display", "block" );
 				}
 			}
@@ -275,13 +276,7 @@
 			if (this.getConfig("onPage")){
 				componentHeight = this.getComponent().parent().height();
 			}
-			if (this.getLayout() === "vertical" && (this.getConfig("containerPosition") === "top" || this.getConfig("containerPosition") === "bottom")){
-				this.getMedialistComponent().height(componentHeight);
-			}else{
-
-				this.getMedialistComponent().height(componentHeight - this.getMedialistHeaderComponent().height());
-			}
-
+			this.getMedialistComponent().height(componentHeight - this.getMedialistHeaderComponent().height());
 		},
 		setMediaBoxesDimensions: function(){
 			var height = this.getMedialistComponent().height();
