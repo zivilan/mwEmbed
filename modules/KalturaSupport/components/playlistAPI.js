@@ -41,11 +41,13 @@
 		playlistSet: [],        // array holding all the play lists returned from the server
 
 		videoWidth: null,        // used to save the video width when exiting to full screen and returning
+		minClips: null,          // saves the MinClips Flashvar when we switch playlists
 
 		setup: function (embedPlayer) {
 			if (this.getConfig('includeInLayout') === false) { // support hidden playlists - force onPage and hide its div.
 				this.setConfig('onPage', true);
 			}
+			this.minClips = parseInt(this.getConfig('MinClips'));
 			//Backward compatibility setting - set autoplay on embedPlayer instead of playlist
 			this.getPlayer().autoplay = (this.getConfig('autoPlay') == true);
 
@@ -430,12 +432,16 @@
 			this.embedPlayer.setKalturaConfig('playlistAPI', 'dataProvider', {'content': this.playlistSet, 'selectedIndex': this.getConfig('selectedIndex')}); // for API backward compatibility
 			this.mediaList = [];
 			var items = this.playlistSet[playlistIndex].items;
+
 			items = items.length > parseInt(this.getConfig('MaxClips')) ? items.slice(0, parseInt(this.getConfig('MaxClips'))) : items; // support MaxClips Flashvar
-			if (items.length < parseInt(this.getConfig('MinClips'))){ // support the MinClips Flashvar
+			this.setConfig('MinClips', this.minClips);
+			if (items.length < this.minClips){              // support the MinClips Flashvar
 				this.setConfig('MinClips', items.length);	// set MinClips Flashvar to the number of items in the playlist
-				this.$mediaListContainer = null;            // remove currently rendered media items so it will re re-calculated on the renderMediaList() call
-				this.getMedialistContainer();
 			}
+			alert(items.length * this.getConfig("mediaItemHeight")+","+this.$mediaListContainer.height());
+			this.$mediaListContainer = null;                // remove currently rendered media items so it will re re-calculated on the renderMediaList() call
+			this.getMedialistContainer();
+
 			this.addMediaItems(items);   // prepare the data to be compatible with KBaseMediaList
 			this.getMedialistHeaderComponent().empty();
 			if (this.getLayout() === "vertical") {
