@@ -438,7 +438,10 @@
 			if (items.length < this.minClips){              // support the MinClips Flashvar
 				this.setConfig('MinClips', items.length);	// set MinClips Flashvar to the number of items in the playlist
 			}
-			alert(items.length * this.getConfig("mediaItemHeight")+","+this.$mediaListContainer.height());
+			// make sure we leave enough space for the video
+			while (this.$mediaListContainer.height() - parseInt(this.getConfig('MinClips')) * this.getConfig("mediaItemHeight") < 200){
+				this.setConfig('MinClips',parseInt(this.getConfig('MinClips'))-1);
+			}
 			this.$mediaListContainer = null;                // remove currently rendered media items so it will re re-calculated on the renderMediaList() call
 			this.getMedialistContainer();
 
