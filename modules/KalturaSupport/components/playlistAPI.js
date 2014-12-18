@@ -135,7 +135,9 @@
 					_this.$mediaListContainer = null;
 					_this.getMedialistContainer();
 					_this.renderMediaList();
-					_this.setMultiplePlayLists();
+					if (_this.playlistSet.length > 1) {
+						_this.setMultiplePlayLists(); // support multiple play lists
+					}
 				}
 			});
 
@@ -353,7 +355,7 @@
 					} else {
 						_this.openPlaylistDropdown();
 					}
-				}).show();
+				});
 				this.getMedialistComponent().prepend('<div class="playlistSelector"></div>');
 				$.each(this.playlistSet, function (i, el) {
 					var numOfClips = el.content.split(",").length;
@@ -367,6 +369,9 @@
 				this.getComponent().find(".playlistItem").on("click", function () {
 					_this.switchPlaylist($(this).attr('data-index'));
 				});
+				setTimeout(function(){
+					_this.getComponent().find(".dropDownIcon").show();
+				},100);
 			}
 		},
 

@@ -271,16 +271,32 @@
 				//Attach media items handlers
 				this.attachMediaListHandlers();
 				//Add scroll if applicable
-				this.shouldAddScroll( );
+				this.shouldAddScroll();
 				$( this.embedPlayer ).trigger( "mediaListLayoutReady" );
 			}
 		},
 		setMedialistComponentHeight: function(){
 			var componentHeight = this.getComponent().height();
 			if (this.getConfig("onPage")){
-				componentHeight = this.getComponent().parent().height();
+				if (this.getConfig("clipListTargetId")){
+					var iframeParent = window['parent'].document.getElementById( this.embedPlayer.id );
+					var targetHeight = $( iframeParent ).parent().find( "#" + this.getConfig( 'clipListTargetId' ) ).height();
+					$( iframeParent ).parent().find(".onpagePlaylistInterface").height(targetHeight);
+					this.getMedialistComponent().height(targetHeight - this.getMedialistHeaderComponent().height());
+				}else{
+					if (this.getLayout() === "vertical"){
+						this.getMedialistComponent().height(this.getConfig("MinClips") * this.getConfig("mediaItemHeight"));
+					}else{
+						this.getMedialistComponent().height(this.getConfig("mediaItemHeight"));
+					}
+				}
+			}else{
+				if (this.getLayout() === "vertical"){
+					this.getMedialistComponent().height(componentHeight - this.getMedialistHeaderComponent().height());
+				}else{
+					this.getMedialistComponent().height(this.getConfig("mediaItemHeight"));
+				}
 			}
-			this.getMedialistComponent().height(componentHeight - this.getMedialistHeaderComponent().height());
 		},
 		setMediaBoxesDimensions: function(){
 			var height = this.getMedialistComponent().height();
@@ -530,6 +546,7 @@
 					scroll: 1,
 					speed: speed
 				} );
+				$cc.find('ul').width((this.getMediaItemBoxWidth()+1)*this.mediaList.length);
 				$cc.find('.k-carousel').css('width', $cc.width() );
 			}
 		},
