@@ -50,8 +50,9 @@
 			this.minClips = parseInt(this.getConfig('MinClips'));
 			//Backward compatibility setting - set autoplay on embedPlayer instead of playlist
 			this.getPlayer().autoplay = (this.getConfig('autoPlay') == true);
-
-			this.setConfig('horizontalHeaderHeight', 43);
+			if (this.getConfig("includeHeader")){
+				this.setConfig('horizontalHeaderHeight', 43);
+			}
 			this.addBindings();
 			this.loadPlaylists();
 		},
