@@ -1,5 +1,6 @@
 (function(){
 // Get the current url path for "self"
+	console.log("loaded");
 var getQunitPath = function(){
 	var scripts = document.getElementsByTagName('script');
 	for(var i=0;i< scripts.length; i++){
@@ -22,7 +23,19 @@ var getModuleName = function(){
 };
 // Always include jQuery ( unless already included )
 if( !window.jQuery ){
-	document.write( '<script type="text/javascript" src="' + getQunitPath()+ '../../resources/jquery/jquery.min.js"></script>');
+	var script = document.createElement('script');
+	var basePath = getQunitPath();
+	if (!basePath){
+		basePath = 'http://localhost/html5.kaltura/mwEmbed';
+	}else{
+		basePath += '../..';
+	}
+	script.src = basePath+ '/resources/jquery/jquery.min.js';
+
+// now append the script into HEAD, it will fetched and executed
+	document.documentElement.firstChild.appendChild(script);
+
+	//document.write( '<script type="text/javascript" src="' + getQunitPath()+ '../../resources/jquery/jquery.min.js"></script>');
 }
 
 var qunitWaitCount =0;
@@ -48,12 +61,30 @@ if( document.URL.indexOf('runFlashQunitTests') != -1 ){
 }
 
 // Check for the url for runQunitTests argument
-if( document.URL.indexOf('runQunitTests') != -1 || document.URL.indexOf('runFlashQunitTests') != -1 ){
-	document.write('' +
-			'<link rel="stylesheet" href="' + getQunitPath() + 'lib/qunit.css" type="text/css" media="screen" />' +
-			'<script type="text/javascript" src="' + getQunitPath() + 'lib/qunit.js"></script>' +
-			'<script type="text/javascript" src="' + getQunitPath() + 'lib/inject.js"></script>'
-	);
+if( true ){
+	//document.write('' +
+	//		'<link rel="stylesheet" href="' + getQunitPath() + 'lib/qunit.css" type="text/css" media="screen" />' +
+	//		'<script type="text/javascript" src="' + getQunitPath() + 'lib/qunit.js"></script>' +
+	//		'<script type="text/javascript" src="' + getQunitPath() + 'lib/inject.js"></script>'
+	//);
+
+	var script1 = document.createElement('script');
+	var basePath = getQunitPath();
+	if (!basePath){
+		basePath = 'http://localhost/html5.kaltura/mwEmbed/tests/qunit/';
+	}
+	script1.src = basePath + 'lib/qunit.js';
+	//document.documentElement.firstChild.appendChild(script1);
+
+
+	var script2 = document.createElement('script');
+	script2.src = basePath + 'lib/inject.js';
+	document.documentElement.firstChild.appendChild(script2);
+
+	//var script3 = document.createElement('link');
+	//script3.href = getQunitPath() + 'lib/qunit.css';
+	//document.documentElement.firstChild.appendChild(script2);
+
 	window.qunitSetup = function(){
 		// get the module name we are testing
 		var orgModule = window.module;

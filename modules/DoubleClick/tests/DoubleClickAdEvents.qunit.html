@@ -100,10 +100,17 @@
 			QUnit.module( "doubleclickEvents" );
 			var kdp = $('#' + videoId )[0];
 			var $iframe = $('#' + videoId + '_ifp').contents();
-			QUnit.asyncTest( "Ad events test", function(assert) {
+			QUnit.test("hello test", function (assert) {
+				console.log("hi\n");
+				assert.ok(1 == "1", "Passed!");
+			});
+
+			QUnit.test( "Ad events test", function(assert) {
+				var done1 = assert.async();
 				kdp.addJsListener("AdSupport_PostSequenceComplete", function(){
-					ok( firedEvents.length == 9 , "All events triggered. Fired events count = " + firedEvents.length);
-					QUnit.start();
+					console.log("hello doubleclick");
+					assert.equal( firedEvents.length, 9 , "All events triggered. Fired events count = " + firedEvents.length);
+					done1();
 				});
 			});
 
@@ -170,12 +177,14 @@
 <div id="myVideoTarget" style="width:400px;height:330px;"></div>
 
 <script>
+//	$("body").append('<div id="myVideoTarget" style="width:400px;height:330px;"></div>');
+//itay
 	kWidget.featureConfig({
-		'targetId': 'myVideoTarget',
-		'wid': '_243342',
-		'uiconf_id' : '13306622',
-		'entry_id' : '0_uka1msg4',
-		'readyCallback': onReadyCallback,
+				'targetId': 'myVideoTarget',
+			'wid': '_243342',
+			'uiconf_id' : '13306622',
+			'entry_id' : '0_uka1msg4',
+			'readyCallback': onReadyCallback,
 		'flashvars': {
 			'doubleClick':{
 				'plugin':true,
@@ -189,7 +198,7 @@
 			},
 			'adsOnReplay':true
 		}
-	})
+	});
 </script>
 <br>
 <p>Event log for DoubleClick ads:  </p>

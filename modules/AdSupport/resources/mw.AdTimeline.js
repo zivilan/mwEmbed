@@ -187,10 +187,7 @@
 					_this.displaySlots( 'preroll', function(){
 						// Trigger ad complete for prerolls if an ad was played
 						// ( and we are going to play a bumper )
-						if( _this.displayedSlotCount > 0
-							&&
-							! $.isEmptyObject( _this.getSequenceProxy( 'bumper' ) )
-							){
+						if( _this.displayedSlotCount > 0 &&	! $.isEmptyObject( _this.getSequenceProxy( 'bumper' ) ) ){
 							_this.embedPlayer.triggerHelper( 'AdSupport_EndAdPlayback', 'preroll' );
 						}
 						// Show bumpers:

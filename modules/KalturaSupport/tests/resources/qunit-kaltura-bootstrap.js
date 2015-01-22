@@ -9,7 +9,7 @@ if( window.QUnit ){
 		mw.setConfig( 'forceMobileHTML5', true );
 	}
 
-	window.QUnit.start();
+	//window.QUnit.start();
 	jsCallbackCalledId = null;
 	asyncTest( "KalturaSupport::PlayerLoaded", function(){
 		// Player time out in 90 seconds:

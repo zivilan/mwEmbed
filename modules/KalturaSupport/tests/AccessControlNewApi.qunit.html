@@ -9,18 +9,20 @@
 function jsKalturaPlayerTest( videoId ){
 	
 	// Name this module
-	module( "Access Control Preview" );
+	QUnit.module( "Access Control Preview" );
 
 	var $iframe = $('#' + videoId + '_ifp').contents();
-	
-	test( "Iframe in DOM", function() {
-		ok( $('#' + videoId + '_ifp').length , 'iframe found' );
+
+	QUnit.test( "Iframe in DOM", function() {
+		QUnit.ok( $('#' + videoId + '_ifp').length , 'iframe found' );
 	});
 
-	asyncTest("error message element", function(){
+	QUnit.test("error message element", function(){
+		var done1 = QUnit.async();
 		kalturaQunitWaitForPlayer(function(){
-			ok( $iframe.find('.error').length, ".error found" );
-			start();
+			QUnit.ok( $iframe.find('.error').length, ".error found" );
+//			done1();
+//			start();
 		});
 	});
 }
@@ -40,6 +42,7 @@ function jsKalturaPlayerTest( videoId ){
             'uiconf_id' : '7752572',
             'entry_id' : '1_xkcw4th2'
         });
+		QUnit.reset();
 </script>
 <br />
 </body>
