@@ -8,7 +8,7 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '/mwEmbed',
+    basePath: '',
 
 
     // frameworks to use
@@ -18,13 +18,21 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'mwEmbed/resources/jquery/jquery.min.js',
+      'mwEmbed/tests/qunit/testsPresequence.js'
 
-      'resources/jquery/jquery.min.js',
 
-      'tests/qunit/testsPresequence.js',
 
-      //'http://localhost/html5.kaltura/mwEmbed/modules/DoubleClick/tests/DoubleClickAdEvents.qunit.html',
-      'http://localhost/html5.kaltura/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'
+      //'mwEmbed/resources/jquery/jquery.min.js',
+      //'mwEmbed/tests/qunit/testsPresequence.js',
+      //'http://localhost/html5.kaltura/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'
+      //'mwEmbed/resources/jquery/jquery.min.js',
+      //'mwEmbed/tests/qunit/testsPresequence.js',
+      //'http://localhost/html5.kaltura/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'
+
+
+
+      //'http://localhost/html5.kaltura/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'
     ],
 
 
@@ -44,8 +52,11 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress','dots'],
-
+    //reporters: ['progress','dots'],
+    reporters : ['dots', 'junit'],
+    junitReporter : {
+      outputFile: 'test-results.xml'
+    },
 
     // web server port
     port: 9876,
@@ -57,7 +68,7 @@ module.exports = function(config) {
     browserNoActivityTimeout: 5000,
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
+    logLevel: config.LOG_ERROR,
 
 
     // enable / disable watching file and executing tests whenever any file changes
@@ -71,6 +82,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
   });
 };

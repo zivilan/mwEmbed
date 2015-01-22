@@ -101,14 +101,13 @@
 			var kdp = $('#' + videoId )[0];
 			var $iframe = $('#' + videoId + '_ifp').contents();
 			QUnit.test("hello test", function (assert) {
-				console.log("hi\n");
-				assert.ok(1 == "1", "Passed!");
+				assert.ok(1 == "2", "Passed!");
 			});
 
 			QUnit.test( "Ad events test", function(assert) {
 				var done1 = assert.async();
 				kdp.addJsListener("AdSupport_PostSequenceComplete", function(){
-					console.log("hello doubleclick");
+					console.log("Ad events test async");
 					assert.equal( firedEvents.length, 9 , "All events triggered. Fired events count = " + firedEvents.length);
 					done1();
 				});
