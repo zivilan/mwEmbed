@@ -18,8 +18,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'mwEmbed/resources/jquery/jquery.min.js',
-      'mwEmbed/tests/qunit/testsPresequence.js'
+      'resources/jquery/jquery.min.js',
+      'tests/qunit/testsPresequence.js'
 
 
 
