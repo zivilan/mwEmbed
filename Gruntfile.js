@@ -32,7 +32,7 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks('grunt-karma');
     //grunt.loadNpmTasks('grunt-qunit-junit');
-    grunt.registerTask(['karma:category1','karma:category2']);//
+    grunt.registerTask('default',['karma:category1','karma:category2']);//
 
 };
 
