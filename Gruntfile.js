@@ -10,7 +10,7 @@ module.exports = function(grunt) {
                     files: [
                         'mwEmbed/resources/jquery/jquery.min.js',
                         'mwEmbed/tests/qunit/testsPresequence.js',
-                        'http://localhost/mwEmbed/modules/DoubleClick/tests/DoubleClickAdEvents.qunit.html'],
+                        'http://localhost/Sites/mwEmbed/modules/DoubleClick/tests/DoubleClickAdEvents.qunit.html'],
                     junitReporter : {
                       outputFile: 'test-results1.xml'
                     }
@@ -21,7 +21,7 @@ module.exports = function(grunt) {
                     files: [
                         'mwEmbed/resources/jquery/jquery.min.js',
                         'mwEmbed/tests/qunit/testsPresequence.js',
-                        'http://localhost/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'],
+                        'http://localhost/Sites/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'],
                     junitReporter : {
                         outputFile: 'test-results2.xml'
                     }
