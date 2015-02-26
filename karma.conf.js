@@ -8,18 +8,15 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '../',
 
-
-    // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['qunit'],
     //plugins: ['karma-qunit'],
 
     // list of files / patterns to load in the browser
     files: [
-      'mwEmbed/resources/jquery/jquery.min.js',
-      'mwEmbed/tests/qunit/testsPresequence.js'
+      'resources/jquery/jquery.min.js',
+      'tests/qunit/testsPresequence.js'
 
 
 

@@ -8,19 +8,19 @@ module.exports = function(grunt) {
             category1: {
                 options: {
                     files: [
-                        'mwEmbed/resources/jquery/jquery.min.js',
-                        'mwEmbed/tests/qunit/testsPresequence.js',
+                        'resources/jquery/jquery.min.js',
+                        'tests/qunit/testsPresequence.js',
                         'http://localhost/~browsertest/mwEmbed/modules/DoubleClick/tests/DoubleClickAdEvents.qunit.html'],
                     junitReporter : {
-                      outputFile: 'test-results1.xml'
+                        outputFile: 'test-results1.xml'
                     }
                 }
             },
             category2: {
                 options: {
                     files: [
-                        'mwEmbed/resources/jquery/jquery.min.js',
-                        'mwEmbed/tests/qunit/testsPresequence.js',
+                        'resources/jquery/jquery.min.js',
+                        'tests/qunit/testsPresequence.js',
 
                         'http://localhost/~browsertest/mwEmbed/modules/KalturaSupport/tests/AccessControlNewApi.qunit.html'],
                     junitReporter : {
@@ -36,5 +36,3 @@ module.exports = function(grunt) {
     grunt.registerTask('default',['karma:category1','karma:category2']);//
 
 };
-
-
