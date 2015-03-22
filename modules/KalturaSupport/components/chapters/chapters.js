@@ -197,6 +197,13 @@
 			return (!this.getPlayer().useNativePlayerControls() &&
 				( ( this.getPlayer().isLive() && mw.getConfig("EmbedPlayer.LiveCuepoints") ) || cuePointsExist));
 		},
+		getMedialistContainer: function () {
+			//Only support external onPage medialist container
+			if (this.getConfig('onPage')) {
+				return this._super();
+			}
+		},
+		//Media item model
 		getCuePoints: function(){
 			var cuePoints = [];
 			var _this = this;
@@ -212,52 +219,6 @@
 				return a.startTime - b.startTime;
 			});
 			return cuePoints;
-		},
-		getMedialistContainer: function () {
-			//Only support external onPage medialist container
-			if (this.getConfig('onPage')) {
-				return this._super();
-			}
-		},
-		createMediaItems: function (mediaListItems) {
-			var _this = this;
-			//Fetch slides template
-			var slideTemplate = this.getTemplatePartialHTML("slides");
-			//Generate slide from each new medialist item
-			var mediaList = $.map(mediaListItems, function(mediaListItem){
-				return slideTemplate({mediaItem: mediaListItem, meta: _this.getMetaData()});
-			});
-			//Concat the template strings array to a full string
-			var mediaListString = mediaList.join("");
-			//Return DOM
-			return $(mediaListString );
-		},
-		getTemplateHTML: function(data){
-			//Fetch templates
-			var chapterTemplate = this.getTemplatePartialHTML("chapters");
-			var slideTemplate = this.getTemplatePartialHTML("slides");
-			var listTemplate = this.getTemplatePartialHTML("list");
-			//Return new list HTML string
-			return listTemplate({
-				renderChapter: chapterTemplate,
-				renderSlide: slideTemplate,
-				meta: data.meta,
-				mediaList: data.mediaList
-			});
-		},
-		getMetaData: function(){
-			var metaData = this._super();
-			metaData.titles = {
-				chapterNumber: gM("ks-chapters-chapterNumber"),
-				chapterStartTime: gM("ks-chapters-chapter-start-time"),
-				chapterDuration: gM("ks-chapters-chapter-duration"),
-				chapterToggle: gM("ks-chapters-toggle-chapter"),
-				slideNumber: gM("ks-chapters-slideNumber"),
-				slideStartTime: gM("ks-chapters-slide-start-time"),
-				slideDuration: gM("ks-chapters-slide-duration")
-
-			};
-			return metaData;
 		},
 		addMediaItems: function (items) {
 			var _this = this;
@@ -318,72 +279,6 @@
 			//order to support live cuepoints which adds up as stream progress
 			this.mediaList = this.mediaList.concat(mediaList);
 		},
-		getMediaBoxHeight: function(mediaItem){
-			//Get media box height by mediaItemRatio and by media item type (Chapter/Slide)
-			var	width = this.getMedialistComponent().width();
-			var	newHeight = width * (1 / this.getConfig("mediaItemRatio"));
-			newHeight = (mediaItem.type === mw.KCuePoints.THUMB_SUB_TYPE.CHAPTER)?
-				newHeight :
-				(newHeight * this.getConfig('chapterSlideBoxRatio'));
-			return newHeight;
-		},
-		getMediaBoxWidth: function(mediaItem){
-			//Get media box width by mediaItemRatio and by media item type (Chapter/Slide)
-			var	height = this.getMedialistComponent().height();
-			var	newWidth = height * (1 / this.getConfig("mediaItemRatio"));
-			newWidth = (mediaItem.type === mw.KCuePoints.THUMB_SUB_TYPE.CHAPTER)?
-				newWidth :
-				(newWidth * this.getConfig('chapterSlideBoxRatio'));
-			return newWidth;
-		},
-		disableChapterToggle: function(){
-			this.chapterToggleEnabled = false;
-			this.getMediaListDomElements()
-				.filter(".chapterBox")
-				.addClass("disableChapterToggle" )
-				.attr("data-chapter-collapsed", true);
-			this.getMedialistFooterComponent().find(".toggleAll").addClass("disabled");
-		},
-		enableChapterToggle: function(){
-			this.chapterToggleEnabled = true;
-			this.getMediaListDomElements()
-				.filter(".chapterBox")
-				.removeClass("disableChapterToggle");
-			this.getMedialistFooterComponent().find(".toggleAll").removeClass("disabled");
-		},
-		markMediaItemsAsDisplayed: function (mediaItems) {
-			$.each(mediaItems, function (index, item) {
-				item.displayed = true;
-			});
-		},
-		getMediaItemThumbs: function (callback) {
-			var _this = this;
-			var requestArray = [];
-			var response = [];
-			$.each(this.mediaList, function (index, item) {
-				requestArray.push(
-					{
-						'service': 'thumbAsset',
-						'action': 'getUrl',
-						'id': item.thumbnail.thumbAssetId
-					}
-				);
-				response[index] = { id: item.id, url: null};
-			});
-
-			// do the api request
-			this.getKalturaClient().doRequest(requestArray, function (data) {
-				// Validate result
-				if (!_this.isValidResult(data)) {
-					return;
-				}
-				$.each(data, function (index, url) {
-					response[index].url = url;
-
-				});
-				callback.apply(_this, [response]);
-			});
-		},
 		setMediaItemTime: function () {
 			var _this = this;
 			$.each(this.chaptersMap, function (index, item) {
@@ -423,404 +318,133 @@
 			}
 			return time;
 		},
-		renderSearchBar: function(){
-			if (this.getConfig('enableSearch')) {
-				var _this = this;
-
-				// Clear search bar before adding
-				this.getMedialistHeaderComponent().empty();
-
-				// Build the search element
-				var magnifyGlassContainer = $( "<div/>", {"class": "searchIcon icon-magnifyGlass", id: 'searchBoxIcon'} );
-				var searchBox = $( "<input/>", {
-					id: 'searchBox',
-					type: 'text',
-					placeholder: gM('ks-chapters-search-placeholder'),
-					autocapitalize: "off",
-					autocorrect :"off",
-					autocomplete: "off"} );
-				var searchBoxWrapper = $( "<div/>", {"id": "searchBoxWrapper"} )
-					.append( searchBox );
-				var clearSearchBoxContainer = $( "<div/>", {
-						'class': 'searchIcon icon-clear tooltipBelow',
-						'id': 'searchBoxCancelIcon',
-						'title': gM('ks-chapters-search-clear'),
-						'data-show-tooltip': true
-					} )
-					.on( "click touchend", function (e) {
-						e.preventDefault();
-						e.stopPropagation();
-						document.activeElement.blur();
-						updateSearchUI("");
-						typeahead.typeahead( "val", "" ).focus();
-						return false;
-					} );
-				var searchFormWrapper = this.$searchFormWrapper = $( "<div/>", {"class": "searchFormWrapper"} )
-					//Magnifying glass icon
-					.append( magnifyGlassContainer )
-					//Search input box
-					.append( searchBoxWrapper )
-					//clear icon
-					.append( clearSearchBoxContainer );
-
-				//Add tooltip
-				this.getPlayer().layoutBuilder.setupTooltip(searchFormWrapper.find("#searchBoxCancelIcon"), "arrowTop");
-
-				// Add the searchbar to the medialist header
-				this.getMedialistHeaderComponent().append( searchFormWrapper );
-
-				// Helper function for autocomplete
-				var findMatches = function ( q, cb ) {
-					// Fetch results from API
-					_this.getSearchData( q, function ( strs ) {
-						var matches, substrRegex;
-						// an array that will be populated with substring matches
-						matches = [];
-						// regex used to determine if a string contains the substring `q`
-						var regexExp = q.replace(/^\s+/, '').replace(/\s+$/, '').replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-						substrRegex = new RegExp( regexExp, 'i' );
-						// iterate through the pool of strings and for any string that
-						// contains the substring `q`, add it to the `matches` array
-						$.each( strs, function ( index, str ) {
-							if ( substrRegex.test( str ) ) {
-								// the typeahead jQuery plugin expects suggestions to a
-								// JavaScript object, refer to typeahead docs for more info
-								matches.push( { value: str } );
-							}
-						} );
-						cb( matches );
-					} );
-				};
-
-				// Helper function for parsing search result length
-				var parseData = function ( data, searchTerm ) {
-					var startOfMatch = data.toLowerCase().indexOf( searchTerm.toLowerCase() );
-					if ( startOfMatch > -1 ) {
-						var expLen = searchTerm.length;
-						var dataLen = data.length;
-						var restOfExpLen = dataLen - (startOfMatch + expLen);
-						var hintLen = Math.floor( restOfExpLen * 0.2 );
-						if (hintLen === 0 || hintLen/dataLen > 0.7 || hintLen < 40){
-							hintLen = restOfExpLen;
-						}
-						return data.substr( startOfMatch, expLen + hintLen );
-					} else {
-						return data;
-					}
-				};
-
-				//Update icon state and dropdown menu state
-				var updateSearchUI = function(expression){
-					switch ( expression.length ) {
-						case 0:
-							clearSearchBoxContainer.removeClass("active");
-							magnifyGlassContainer.removeClass("active");
-							_this.resetSearchResults();
-							break;
-						case 1:
-						case 2:
-							clearSearchBoxContainer.addClass("active");
-							magnifyGlassContainer.addClass("active");
-							_this.resetSearchResults();
-							break;
-						default:
-							clearSearchBoxContainer.addClass("active");
-							magnifyGlassContainer.addClass("active");
-					}
-				};
-
-				//Get all search results for current search term
-				var getDropdownResults = function(){
-					//Untill typeahead expose event or API to query this data we need to use this HACK to access inner
-					//objects and data inside the lib
-					var dropdown = typeahead.data( 'ttTypeahead' ).dropdown;
-					var objIds = [];
-					var suggestionsElms = dropdown._getSuggestions();
-					// Only update if there are available suggestions
-					if ( suggestionsElms.length ) {
-						suggestionsElms.each( function ( i, suggestionsElm ) {
-							var suggestionsData = dropdown.getDatumForSuggestion( $( suggestionsElm ) );
-							objIds = objIds.concat( _this.dataSet[suggestionsData.raw.value] );
-						} );
-					}
-					return objIds;
-				};
-
-				//Init typeahead lib
-				var typeahead = searchBox.typeahead( {
-						minLength: 3,
-						highlight: true,
-						hint: false
-					},
-					{
-						name: 'label',
-						displayKey: function ( obj ) {
-							return parseData( obj.value, typeahead.val() );
-						},
-						templates: {
-							suggestion: function ( obj ) {
-								return parseData( obj.value, typeahead.val() );
-							},
-							empty: [
-								'<div class="empty-message">',
-								gM("ks-chapters-search-empty-result"),
-								'</div>'
-							].join('\n')
-						},
-						source: findMatches
-					} )
-					.on( "typeahead:selected", function ( e, obj ) {
-						e.preventDefault();
-						e.stopPropagation();
-						_this.showSearchResults( _this.dataSet[obj.value] );
-						return false;
-					} )
-					.on( 'change keyup paste input', function (e) {
-						updateSearchUI(this.value);
-						// On "enter" key press:
-						// 1. If multiple suggestions and none was chosen - display results for all suggestions
-						// 2. Close dropdown menu
-						if ( e.type === "keyup" && e.keyCode === 13 ) {
-							var results = getDropdownResults();
-							_this.showSearchResults( results );
-							typeahead.typeahead( "close" );
-						}
-					} )
-					.on( "focus", function () {
-						_this.getPlayer().triggerHelper( "onDisableKeyboardBinding" );
-						//On each focus render width of dropdown menu
-						searchBoxWrapper.find(".tt-dropdown-menu" ).width(searchFormWrapper.width());
-						_this.maximizeSearchBar();
-					} )
-					.on( "blur", function () {
-						_this.getPlayer().triggerHelper( "onEnableKeyboardBinding" );
-					} );
-			}
+		markMediaItemsAsDisplayed: function (mediaItems) {
+			$.each(mediaItems, function (index, item) {
+				item.displayed = true;
+			});
 		},
-		minimizeSearchBar: function(){
-			this.$searchFormWrapper.addClass("minimized");
-			this.getMedialistFooterComponent().addClass("minimized");
-			if (this.scrollUpdateTimeout){
-				clearTimeout(this.scrollUpdateTimeout);
-				this.scrollUpdateTimeout = null;
-			}
+		//View
+		//====
+		//Media List
+		getTemplateHTML: function(data){
+			//Fetch templates
+			var chapterTemplate = this.getTemplatePartialHTML("chapters");
+			var slideTemplate = this.getTemplatePartialHTML("slides");
+			var listTemplate = this.getTemplatePartialHTML("list");
+			//Return new list HTML string
+			return listTemplate({
+				renderChapter: chapterTemplate,
+				renderSlide: slideTemplate,
+				meta: data.meta,
+				mediaList: data.mediaList
+			});
+		},
+		createMediaItems: function (mediaListItems) {
 			var _this = this;
-			this.scrollUpdateTimeout = setTimeout(function(){
-				_this.scrollUpdateTimeout = null;
-				_this.setMedialistComponentHeight();
-			}, 100);
-
+			//Fetch slides template
+			var slideTemplate = this.getTemplatePartialHTML("slides");
+			//Generate slide from each new medialist item
+			var mediaList = $.map(mediaListItems, function(mediaListItem){
+				return slideTemplate({mediaItem: mediaListItem, meta: _this.getMetaData()});
+			});
+			//Concat the template strings array to a full string
+			var mediaListString = mediaList.join("");
+			//Return DOM
+			return $(mediaListString );
 		},
-		maximizeSearchBar: function(){
-			this.$searchFormWrapper.removeClass("minimized");
-			this.getMedialistFooterComponent().removeClass("minimized");
-			this.setMedialistComponentHeight();
-		},
-		getSearchData: function(expression, callback){
-			var liveCheck = this.getPlayer().isLive() && mw.getConfig("EmbedPlayer.LiveCuepoints");
-			// If results are cached then return from cache, unless in live session
-			expression = expression.replace(/^\s+/, '').replace(/\s+$/, '' ).toLowerCase();
-			var cacheExp = expression.substr(0,3);
-			if (!liveCheck && this.cache[cacheExp]){
-				this.dataSet = this.cache[cacheExp].hash;
-				return callback(this.cache[cacheExp].sortedKeys);
-			}
+		getMetaData: function(){
+			var metaData = this._super();
+			metaData.titles = {
+				chapterNumber: gM("ks-chapters-chapterNumber"),
+				chapterStartTime: gM("ks-chapters-chapter-start-time"),
+				chapterDuration: gM("ks-chapters-chapter-duration"),
+				chapterToggle: gM("ks-chapters-toggle-chapter"),
+				slideNumber: gM("ks-chapters-slideNumber"),
+				slideStartTime: gM("ks-chapters-slide-start-time"),
+				slideDuration: gM("ks-chapters-slide-duration")
 
-			var _this = this;
-			var request = {
-				'service': 'cuepoint_cuepoint',
-				'action': 'list',
-				'filter:entryIdEqual': _this.embedPlayer.kentryid,
-				'filter:objectType': 'KalturaCuePointFilter',
-				'filter:freeText': expression + "*"
 			};
-			// If in live mode, then search only in cuepoints which are already available at current live timeline
-			if (liveCheck){
-				request['filter:updatedAtLessThanOrEqual'] = this.getPlayer().kCuePoints.getLastUpdateTime();
-			}
-
-			this.getKalturaClient().doRequest(request,
-				function (data) {
-					if (!_this.isValidResult(data)) {
-						return;
-					}
-					// Validate result
-					var results = {
-						hash: {},
-						sortedKeys: []
-					};
-
-					$.each(data.objects, function (index, res) {
-						if (!_this.isValidResult(res)) {
-							data[index] = null;
-						}
-
-						var searchData = [res.title, res.description];
-						//Check if res tags is not empty before adding data
-						if (res.tags) {
-							var tags = res.tags.split( "," );
-							tags = $.grep( tags, function ( n ) {
-								return(n);
-							} );
-
-							searchData = searchData.concat( tags );
-						}
-
-						$.each(searchData, function(index, data){
-							if (results.hash[data]) {
-								results.hash[data].push(res.id);
-							} else {
-								results.hash[data] = [res.id];
-								results.sortedKeys.push(data);
-							}
-						});
-					});
-					results.sortedKeys.sort();
-
-					_this.dataSet = results.hash;
-					_this.cache[expression] = results;
-
-					if (callback) {
-						callback(results.sortedKeys);
-					}
-				}
-			);
+			return metaData;
 		},
-		showSearchResults: function(searchResults){
-			this.searchResultShown = true;
-			if ( !$.isArray( searchResults ) ) {
-				searchResults = [searchResults];
-			}
-			if (searchResults.length > 0) {
-				this.disableChapterToggle();
-				var mediaBoxes = this.getMediaListDomElements();
-
-				mediaBoxes.each( function ( i, mediaBox ) {
-					var mediaBoxObj = $( mediaBox );
-					var objId = mediaBoxObj.attr( "data-obj-id" );
-					if ( $.inArray( objId, searchResults ) > -1 ) {
-						mediaBoxObj.removeClass( "resultNoMatch" );
-					} else {
-						mediaBoxObj
-							.addClass( "resultNoMatch" )
-							.filter("[data-chapter-index!=-1]" ) //Only collapse slides under chapters
-							.addClass("collapsed");
-					}
-				} );
-				var _this = this;
-
-				//Remove search results slide collapsed state
-				var slidesSearchResults = mediaBoxes.filter( ":not(.resultNoMatch).slideBox.collapsed" );
-				_this.inSlideAnimation = slidesSearchResults.length ? true : false;
-				if ( _this.inSlideAnimation ) {
-					_this.transitionsToBeFired = slidesSearchResults.length;
-					_this.initSlideAnimation( slidesSearchResults );
-					slidesSearchResults.removeClass( "collapsed" );
-				}
-			}
+		getMediaBoxHeight: function(mediaItem){
+			//Get media box height by mediaItemRatio and by media item type (Chapter/Slide)
+			var	width = this.getMedialistComponent().width();
+			var	newHeight = width * (1 / this.getConfig("mediaItemRatio"));
+			newHeight = (mediaItem.type === mw.KCuePoints.THUMB_SUB_TYPE.CHAPTER)?
+				newHeight :
+				(newHeight * this.getConfig('chapterSlideBoxRatio'));
+			return newHeight;
 		},
-		resetSearchResults: function(){
-			if (this.searchResultShown) {
-				this.searchResultShown = false;
-				this.enableChapterToggle();
-				var mediaBoxes = this.getMediaListDomElements();
-				//Remove search results slide collapsed state (only to slides under chapters)
-				var slidesSearchResults = mediaBoxes.filter(":not(.resultNoMatch.collapsed).slideBox[data-chapter-index!=-1]");
-				this.inSlideAnimation = slidesSearchResults.length ? true : false;
-				this.transitionsToBeFired = slidesSearchResults.length;
-				slidesSearchResults.addClass("collapsed");
-				mediaBoxes.filter(".chapterBox" ).addClass( "resultNoMatch" );
-				this.doOnSlideAnimationEnded(function() {
-					mediaBoxes.removeClass( "resultNoMatch" );
-					var chapters = this.getMediaListDomElements().filter( ".chapterBox" );
-					var expandedChapters = chapters.filter( "[data-chapter-collapsed=false]" );
-					this.toggleChapter( expandedChapters );
-				});
-			}
+		getMediaBoxWidth: function(mediaItem){
+			//Get media box width by mediaItemRatio and by media item type (Chapter/Slide)
+			var	height = this.getMedialistComponent().height();
+			var	newWidth = height * (1 / this.getConfig("mediaItemRatio"));
+			newWidth = (mediaItem.type === mw.KCuePoints.THUMB_SUB_TYPE.CHAPTER)?
+				newWidth :
+				(newWidth * this.getConfig('chapterSlideBoxRatio'));
+			return newWidth;
 		},
-		renderScroller: function(options){
-			if (this.$scroll){
-				//Fix bug with nanoScroller dynamic elements rendering by resetting z-index
-				this.$scroll.find(".nano-content" ).css("z-index", -1);
-				if (options) {
-					this.$scroll.nanoScroller( options );
+		toggleChapter: function(chapters){
+			var _this = this;
+			$.each(chapters, function(index, chapter){
+				chapter = $(chapter);
+				chapter.toggleClass( "collapsed" );
+				var chapterToggleId = parseInt( chapter.attr( "data-chapter-index" ), 10 );
+				var targets = _this.getComponent().find( ".slideBox[data-chapter-index=" + chapterToggleId + "]" );
+				_this.renderScroller({stop: true});
+				_this.inSlideAnimation = true;
+				_this.transitionsToBeFired = targets.length;
+				if (chapter.attr("data-chapter-collapsed") === "true") {
+					chapter.attr("data-chapter-collapsed", false);
+					_this.initSlideAnimation(targets);
+					targets.removeClass( "collapsed" );
 				} else {
-					this.$scroll.nanoScroller( );
+					chapter.attr("data-chapter-collapsed", true);
+					targets.addClass( "collapsed" );
 				}
-				this.$scroll.find(".nano-content" ).css("z-index", "");
-			}
+			});
 		},
-		getMedialistFooterComponent: function(){
-			if (!this.$bottomBar){
-				this.$bottomBar = $("<div/>", {"class": "footer"});
-				this.getComponent().append(this.$bottomBar);
-			}
-			return this.$bottomBar;
+		disableChapterToggle: function(){
+			this.chapterToggleEnabled = false;
+			this.getMediaListDomElements()
+				.filter(".chapterBox")
+				.addClass("disableChapterToggle" )
+				.attr("data-chapter-collapsed", true);
+			this.getMedialistFooterComponent().find(".toggleAll").addClass("disabled");
 		},
-		renderBottomBar: function(){
-			this.getMedialistFooterComponent().empty();
-			var bottomBar = $("<div/>", {"class": "footerWrapper"} )
-				.append($("<span/>", {"class": "slideLocator icon-locator", "title": gM("ks-chapters-locate-active-media")}))
-				.append($("<span/>", {"class": "toggleAll icon-toggleAll", "title": gM("ks-chapters-toggle-all-chapter")}));
-			this.getMedialistFooterComponent().append(bottomBar);
+		enableChapterToggle: function(){
+			this.chapterToggleEnabled = true;
+			this.getMediaListDomElements()
+				.filter(".chapterBox")
+				.removeClass("disableChapterToggle");
+			this.getMedialistFooterComponent().find(".toggleAll").removeClass("disabled");
 		},
-		isValidResult: function (data) {
-			// Check if we got error
-			if (!data){
-				this.error = true;
-				this.log("Error retrieving data");
-				return false;
-			} else if ( data.code && data.message ) {
-				this.error = true;
-				this.log("Error code: " + data.code + ", error message: " + data.message);
-				return false;
-			}
-			this.error = false;
-			return true;
-		},
-		//UI Handlers
-		mediaClicked: function (mediaIndex) {
-			// start playback
-			this.getPlayer().sendNotification('doPlay');
-			// see to start time and play ( +.1 to avoid highlight of prev chapter )
-			this.getPlayer().sendNotification('doSeek', ( this.mediaList[mediaIndex].startTime ) + 0.1);
-		},
-		doOnScrollerUpdate: function(data){
-			//If maximum scroll has changed then reset last position
-			if (this.maximumScroll !== data.maximum ||
-				this.previousDirection !== data.direction){
-				this.lastScrollPosition = data.position;
-			}
-			//Save data for comparison on next iteration
-			this.maximumScroll = data.maximum;
-			this.previousDirection = data.direction;
-			//Set anchor position after maximize/minimize was performed
-			if (this.lastScrollPosition === -1){
-				//Set initial location of scroll bar
-				this.lastScrollPosition = data.position;
-			}
-			if ((data.direction === "up") || (data.position === 0)){
-				//On scroll up maximize searchbar after 10% scroll from max scroll height
-				//or when scroll to top
-				if (this.barsMinimized && ((this.lastScrollPosition - data.position) / this.maximumScroll) > 0.05){
-					this.barsMinimized = false;
-					this.maximizeSearchBar();
-					this.lastScrollPosition = -1;
-				}
+		initSlideAnimation: function(slides){
+			var _this = this;
+			var delay = 0.1;
+			if (mw.getConfig( 'EmbedPlayer.AnimationSupported')) {
+				slides.each( function () {
+					$( this ).css( {transitionDelay: delay + 's'} ); // apply sequential trans delay to each character
+					delay += 0.1;
+				} );
 			} else {
-				//On scroll down minimize searchbar after 20% scroll from max scroll height
-				//or when scroll to bottom
-				if ((!this.barsMinimized &&
-					((data.position - this.lastScrollPosition) / this.maximumScroll) > 0.1) ||
-					(data.position === data.maximum)){
-					this.barsMinimized = true;
-					this.minimizeSearchBar();
-					this.lastScrollPosition = -1;
-				}
+				setTimeout(function(){
+					_this.inSlideAnimation = false;
+					_this.renderScroller({stop: false});
+					_this.getPlayer().triggerHelper("slideAnimationEnded");
+				}, 500);
 			}
-			//Remove focus from searchbox to enable maximize on focus
-			this.$searchFormWrapper.blur();
-			this.$searchFormWrapper.find("#searchBox").blur();
+		},
+		doOnSlideAnimationEnded: function(fn){
+			if (this.inSlideAnimation){
+				var _this = this;
+				this.bind("slideAnimationEnded", function(){
+					_this.unbind("slideAnimationEnded");
+					fn.apply(_this);
+				});
+			} else {
+				fn.apply(this);
+			}
 		},
 		updateActiveItem: function () {
 			if (!this.freezeTimeIndicators) {
@@ -904,6 +528,198 @@
 			this.updateActiveItemDuration( remainingDuration );
 			this.setSelectedMedia( actualMediaBoxIndex );
 		},
+		mediaClicked: function (mediaIndex) {
+			// start playback
+			this.getPlayer().sendNotification('doPlay');
+			// see to start time and play ( +.1 to avoid highlight of prev chapter )
+			this.getPlayer().sendNotification('doSeek', ( this.mediaList[mediaIndex].startTime ) + 0.1);
+		},
+		//Scroll bar
+		renderScroller: function(options){
+			if (this.$scroll){
+				//Fix bug with nanoScroller dynamic elements rendering by resetting z-index
+				this.$scroll.find(".nano-content" ).css("z-index", -1);
+				if (options) {
+					this.$scroll.nanoScroller( options );
+				} else {
+					this.$scroll.nanoScroller( );
+				}
+				this.$scroll.find(".nano-content" ).css("z-index", "");
+			}
+		},
+		scrollToCurrent: function(index){
+			var item = this.mediaList[index];
+			var _this = this;
+			if (item) {
+				this.resetSearchResults();
+				this.doOnSlideAnimationEnded(function(){
+					var mediaBox = _this.getMediaListDomElements()
+						.filter( ".mediaBox[data-mediaBox-index=" + item.order + "]" );
+					if ( item.type === mw.KCuePoints.THUMB_SUB_TYPE.SLIDE ) {
+						if ( item.hasParent ) {
+							if ( mediaBox.hasClass( "collapsed" ) ) {
+								var chapter = _this.getMediaListDomElements()
+									.filter( ".chapterBox[data-chapter-index=" + item.chapterNumber + "]" );
+								_this.toggleChapter( chapter );
+							}
+						}
+					}
+					_this.doOnSlideAnimationEnded(function(){
+						_this.lastScrollPosition = -1;
+						_this.$scroll.nanoScroller( { scrollTo: mediaBox, flash: true } );
+					});
+				});
+			}
+		},
+		doOnScrollerUpdate: function(data){
+			//If maximum scroll has changed then reset last position
+			if (this.maximumScroll !== data.maximum ||
+				this.previousDirection !== data.direction){
+				this.lastScrollPosition = data.position;
+			}
+			//Save data for comparison on next iteration
+			this.maximumScroll = data.maximum;
+			this.previousDirection = data.direction;
+			//Set anchor position after maximize/minimize was performed
+			if (this.lastScrollPosition === -1){
+				//Set initial location of scroll bar
+				this.lastScrollPosition = data.position;
+			}
+			if ((data.direction === "up") || (data.position === 0)){
+				//On scroll up maximize searchbar after 10% scroll from max scroll height
+				//or when scroll to top
+				if (this.barsMinimized && ((this.lastScrollPosition - data.position) / this.maximumScroll) > 0.05){
+					this.barsMinimized = false;
+					this.maximizeSearchBar();
+					this.lastScrollPosition = -1;
+				}
+			} else {
+				//On scroll down minimize searchbar after 20% scroll from max scroll height
+				//or when scroll to bottom
+				if ((!this.barsMinimized &&
+					((data.position - this.lastScrollPosition) / this.maximumScroll) > 0.1) ||
+					(data.position === data.maximum)){
+					this.barsMinimized = true;
+					this.minimizeBars();
+					this.lastScrollPosition = -1;
+				}
+			}
+			//Remove focus from searchbox to enable maximize on focus
+			this.searchBar.blur();
+		},
+		//Search bar
+		renderSearchBar: function(){
+			if (this.getConfig('enableSearch')) {
+				var _this = this;
+				this.searchBar = new mw.searchBox( {
+					embedPlayer: this.getPlayer(),
+					target: this.getMedialistHeaderComponent(),
+					kalturaClient: this.getKalturaClient()
+				} );
+				this.bind( "searchBoxFocus", function () {
+					_this.maximizeBars();
+				} );
+				this.bind( "searchBoxResultsUpdate", function ( e, results ) {
+					if ( results && $.isArray(results) && results.length > 0 ) {
+						_this.showSearchResults( results );
+					} else {
+						_this.resetSearchResults();
+					}
+				} );
+			}
+		},
+		showSearchResults: function(searchResults){
+			this.searchResultShown = true;
+			if ( !$.isArray( searchResults ) ) {
+				searchResults = [searchResults];
+			}
+			if (searchResults.length > 0) {
+				this.disableChapterToggle();
+				var mediaBoxes = this.getMediaListDomElements();
+
+				mediaBoxes.each( function ( i, mediaBox ) {
+					var mediaBoxObj = $( mediaBox );
+					var objId = mediaBoxObj.attr( "data-obj-id" );
+					if ( $.inArray( objId, searchResults ) > -1 ) {
+						mediaBoxObj.removeClass( "resultNoMatch" );
+					} else {
+						mediaBoxObj
+							.addClass( "resultNoMatch" )
+							.filter("[data-chapter-index!=-1]" ) //Only collapse slides under chapters
+							.addClass("collapsed");
+					}
+				} );
+				var _this = this;
+
+				//Remove search results slide collapsed state
+				var slidesSearchResults = mediaBoxes.filter( ":not(.resultNoMatch).slideBox.collapsed" );
+				_this.inSlideAnimation = slidesSearchResults.length ? true : false;
+				if ( _this.inSlideAnimation ) {
+					_this.transitionsToBeFired = slidesSearchResults.length;
+					_this.initSlideAnimation( slidesSearchResults );
+					slidesSearchResults.removeClass( "collapsed" );
+				}
+			}
+		},
+		resetSearchResults: function(){
+			if (this.searchResultShown) {
+				this.searchResultShown = false;
+				this.enableChapterToggle();
+				var mediaBoxes = this.getMediaListDomElements();
+				//Remove search results slide collapsed state (only to slides under chapters)
+				var slidesSearchResults = mediaBoxes.filter(":not(.resultNoMatch.collapsed).slideBox[data-chapter-index!=-1]");
+				this.inSlideAnimation = slidesSearchResults.length ? true : false;
+				this.transitionsToBeFired = slidesSearchResults.length;
+				slidesSearchResults.addClass("collapsed");
+				mediaBoxes.filter(".chapterBox" ).addClass( "resultNoMatch" );
+				this.doOnSlideAnimationEnded(function() {
+					mediaBoxes.removeClass( "resultNoMatch" );
+					var chapters = this.getMediaListDomElements().filter( ".chapterBox" );
+					var expandedChapters = chapters.filter( "[data-chapter-collapsed=false]" );
+					this.toggleChapter( expandedChapters );
+				});
+			}
+		},
+		//Footer bar
+		getMedialistFooterComponent: function(){
+			if (!this.$bottomBar){
+				this.$bottomBar = $("<div/>", {"class": "footer"});
+				this.getComponent().append(this.$bottomBar);
+			}
+			return this.$bottomBar;
+		},
+		renderBottomBar: function(){
+			this.getMedialistFooterComponent().empty();
+			var bottomBar = $("<div/>", {"class": "footerWrapper"} )
+				.append($("<span/>", {"class": "slideLocator icon-locator", "title": gM("ks-chapters-locate-active-media")}))
+				.append($("<span/>", {"class": "toggleAll icon-toggleAll", "title": gM("ks-chapters-toggle-all-chapter")}));
+			this.getMedialistFooterComponent().append(bottomBar);
+		},
+		//Bars UI control
+		minimizeBars: function(){
+			if (this.getConfig('enableSearch')) {
+				this.searchBar.minimizeSearchBar();
+			}
+			this.getMedialistFooterComponent().addClass("minimized");
+			if (this.scrollUpdateTimeout){
+				clearTimeout(this.scrollUpdateTimeout);
+				this.scrollUpdateTimeout = null;
+			}
+			var _this = this;
+			this.scrollUpdateTimeout = setTimeout(function(){
+				_this.scrollUpdateTimeout = null;
+				_this.setMedialistComponentHeight();
+			}, 100);
+
+		},
+		maximizeBars: function(){
+			if (this.getConfig('enableSearch')) {
+				this.searchBar.maximizeSearchBar();
+			}
+			this.getMedialistFooterComponent().removeClass("minimized");
+			this.setMedialistComponentHeight();
+		},
+		//UI Handlers
 		attachMediaListHandlers: function(){
 			var _this = this;
 			this._super();
@@ -954,77 +770,7 @@
 				.off("click").on("click", function(){
 					_this.scrollToCurrent(_this.selectedMediaItemIndex);
 				});
-		},
-		toggleChapter: function(chapters){
-			var _this = this;
-			$.each(chapters, function(index, chapter){
-				chapter = $(chapter);
-				chapter.toggleClass( "collapsed" );
-				var chapterToggleId = parseInt( chapter.attr( "data-chapter-index" ), 10 );
-				var targets = _this.getComponent().find( ".slideBox[data-chapter-index=" + chapterToggleId + "]" );
-				_this.renderScroller({stop: true});
-				_this.inSlideAnimation = true;
-				_this.transitionsToBeFired = targets.length;
-				if (chapter.attr("data-chapter-collapsed") === "true") {
-					chapter.attr("data-chapter-collapsed", false);
-					_this.initSlideAnimation(targets);
-					targets.removeClass( "collapsed" );
-				} else {
-					chapter.attr("data-chapter-collapsed", true);
-					targets.addClass( "collapsed" );
-				}
-			});
-		},
-		initSlideAnimation: function(slides){
-			var _this = this;
-			var delay = 0.1;
-			if (mw.getConfig( 'EmbedPlayer.AnimationSupported')) {
-				slides.each( function () {
-					$( this ).css( {transitionDelay: delay + 's'} ); // apply sequential trans delay to each character
-					delay += 0.1;
-				} );
-			} else {
-				setTimeout(function(){
-					_this.inSlideAnimation = false;
-					_this.renderScroller({stop: false});
-					_this.getPlayer().triggerHelper("slideAnimationEnded");
-				}, 500);
-			}
-		},
-		scrollToCurrent: function(index){
-			var item = this.mediaList[index];
-			var _this = this;
-			if (item) {
-				this.resetSearchResults();
-				this.doOnSlideAnimationEnded(function(){
-					var mediaBox = _this.getMediaListDomElements()
-						.filter( ".mediaBox[data-mediaBox-index=" + item.order + "]" );
-					if ( item.type === mw.KCuePoints.THUMB_SUB_TYPE.SLIDE ) {
-						if ( item.hasParent ) {
-							if ( mediaBox.hasClass( "collapsed" ) ) {
-								var chapter = _this.getMediaListDomElements()
-									.filter( ".chapterBox[data-chapter-index=" + item.chapterNumber + "]" );
-								_this.toggleChapter( chapter );
-							}
-						}
-					}
-					_this.doOnSlideAnimationEnded(function(){
-						_this.lastScrollPosition = -1;
-						_this.$scroll.nanoScroller( { scrollTo: mediaBox, flash: true } );
-					});
-				});
-			}
-		},
-		doOnSlideAnimationEnded: function(fn){
-			if (this.inSlideAnimation){
-				var _this = this;
-				this.bind("slideAnimationEnded", function(){
-					_this.unbind("slideAnimationEnded");
-					fn.apply(_this);
-				});
-			} else {
-				fn.apply(this);
-			}
 		}
+
 	}));
 })(window.mw, window.jQuery);

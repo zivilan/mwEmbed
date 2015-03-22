@@ -92,11 +92,18 @@
 			'templates' => array(
 			    "list" => "components/chapters/list.tmpl.html",
 			    "chapters" => "components/chapters/chapters.tmpl.html",
-			    "slides" => "components/chapters/slides.tmpl.html"
+			    "slides" => "components/chapters/slides.tmpl.html",
+			    "searchBox" => "components/chapters/searchBox.tmpl.html"
 			),
-			'dependencies' => array( 'mw.KBaseMediaList', 'typeahead', 'dotdotdot' ),
+			'dependencies' => array( 'mw.KBaseMediaList', 'dotdotdot', "searchBox" ),
 			'kalturaPluginName' => 'chapters'
 		),
+        "searchBox" => array(
+            'scripts' => "components/chapters/searchBox.js",
+            'styles' =>  "components/chapters/searchBox.css",
+            'templates' => array("searchBox" => "components/chapters/searchBox.tmpl.html"),
+            'dependencies' => array('typeahead')
+        ),
 		/* Core plugins */
 		"keyboardShortcuts" => array(
 			'scripts' => "resources/mw.KeyboardShortcuts.js",

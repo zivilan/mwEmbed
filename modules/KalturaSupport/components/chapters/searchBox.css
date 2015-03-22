@@ -1,0 +1,178 @@
+.search.medialistContainer{
+    width: 100%;
+    height: auto;
+}
+.twitter-typeahead{
+    width:100%;
+}
+.touch .searchFormWrapper{
+    /*height: 48px;*/
+}
+.searchFormWrapper{
+    display: table;
+    border-spacing:0;
+    width:100%;
+    /*height: 40px;*/
+    background-color: rgb(245, 245, 245);
+    box-shadow: 0px 0px 16px 0px rgba(0, 0, 0, 0.2);
+}
+.searchFormWrapper > div {
+    display: table-cell;
+    height: 40px;
+    -webkit-transition-property: height;
+    -webkit-transition-duration: 1s;
+    -webkit-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+    -moz-transition-property: height;
+    -moz-transition-duration: 1s;
+    -moz-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+    -ms-transition-property: height;
+    -ms-transition-duration: 1s;
+    -ms-transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+    transition-property: height;
+    transition-duration: 1s;
+    transition-timing-function: cubic-bezier(0, 1, 0.5, 1);
+}
+.touch .searchFormWrapper > div {
+    height: 48px;
+}
+.searchFormWrapper.minimized > div {
+    height: 20px;
+}
+.touch .searchFormWrapper > div.searchIcon {
+    margin: 16px 11px;
+}
+.searchFormWrapper > div.searchIcon {
+    font-size: 16px;
+    width: 26px;
+    vertical-align: middle;
+}
+.touch .twitter-typeahead{
+    height: 48px;
+}
+.twitter-typeahead{
+    height: 40px;
+}
+.minimized > * > .twitter-typeahead{
+    height: 20px;
+}
+.touch #searchBox, .touch.tt-hint {
+    margin: 16px 0px;
+}
+#searchBox, .tt-hint{
+    margin: 10px 0px;
+    height: 20px;
+    width: 100%;
+    border: none;
+    color: rgb(0, 0, 0);
+    outline: none;
+    box-shadow:none;
+    font-size: 15px;
+    font-weight: 400;
+    padding: 0;
+    background: rgb(255, 255, 255);
+    background: rgba(255, 255, 255, 0);
+    z-index: 2;
+}
+.minimized > * > * > #searchBox {
+    margin: 1px 2px;
+    font-size: 13px;
+}
+.tt-hint {
+    color: rgb(136, 136, 136);
+    background-color: rgb(238, 238, 238);
+}
+input#searchBox:invalid::-webkit-input-placeholder {
+    box-shadow: none;
+    color: #999999;
+}
+/*Fix for > IE9 x mark in textbox*/
+input#searchBox::-ms-clear {
+    width : 0;
+    height: 0;
+    display: none;
+}
+#searchBoxIcon{
+    color: #999999;
+    text-align: right;
+}
+#searchBoxIcon.active {
+    color: rgb(0,0,0);
+}
+#searchBoxCancelIcon{
+    visibility: hidden;
+    cursor: pointer;
+    color: rgb(136, 136, 136);
+    text-align: center;
+}
+#searchBoxCancelIcon.active{
+    visibility: visible;
+}
+/*Search results*/
+.twitter-typeahead{
+    width: 100%;
+}
+.tt-dropdown-menu {
+    background-color: rgb(218, 218, 218);
+    filter: alpha(opacity=100);
+    width: 100%;
+    left: -26px !important;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.touch .tt-dropdown-menu {
+    max-height: 240px;
+}
+.tt-suggestions {
+    width: 100%;
+    background-color: rgb(218, 218, 218);
+}
+.touch .tt-suggestion {
+    height: 44px;
+}
+.tt-suggestion, .empty-message {
+    display: block;
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 2em;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: rgb(0, 0, 0);
+}
+.tt-suggestion.tt-cursor {
+    background-color: rgb(194, 194, 194);
+}
+.tt-suggestion p {
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap !important;
+    text-overflow: ellipsis;
+}
+
+.tt-highlight {
+    font-weight: 400;
+}
+
+.k-chapters-container .searchResultsBox {
+    background: rgba(240,240,240,.8);
+    background: rgb(240,240,240);
+    filter: alpha(opacity=80);
+    background: #eee\9;
+    cursor: pointer;
+    position: relative;
+    list-style-type: none;
+    float: left;
+    height: auto;
+    overflow: hidden;
+    width: auto;
+}
+.k-chapters-container.k-vertical .searchResultsBox {
+    width: 100%;
+}
+.k-chapters-container.k-vertical .searchResultsBox:not(:last-child) {
+    margin-bottom: 2px;
+}
