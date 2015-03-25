@@ -364,6 +364,12 @@ return array(
 				'type' => 'number',
 				'initvalue' => 25
 			),
+			'horizontalScrollItems' => array(
+				'label' => "Number of scrolled items",
+				'doc' => "Number of items to scroll in horizontal playlist.",
+				'type' => 'number',
+				'initvalue' => 1
+			),
 			'initItemEntryId' => array(
 				'doc' => "The entryId that should be played first."
 			),

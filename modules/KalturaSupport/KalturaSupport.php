@@ -320,7 +320,7 @@
 			'kalturaPluginName' => "download"
 		),
 		"jCarouse"=> array( 
-			'scripts' => "resources/uiConfComponents/jcarousellite_1.0.1.js",
+			'scripts' => "resources/uiConfComponents/jcarousellite_1.1.js",
 			 'dependencies' => array('touchSwipe')
 		),
 		"mw.KLayout"=> array( 

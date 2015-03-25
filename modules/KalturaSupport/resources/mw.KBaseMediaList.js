@@ -36,6 +36,7 @@
 				'fullScreenDisplayOnly': false,
 				'minDisplayWidth': 0,
 				'minDisplayHeight': 0,
+				'horizontalScrollItems': 1,
 				'scrollerCssPath': "resources/nanoScroller/nanoScroller.css"
 			});
 		},
@@ -564,6 +565,7 @@
 			return sliceIndex;
 		},
 		addScroll: function(){
+			var _this = this;
 			var isVertical = ( this.getLayout() == 'vertical' );
 			if (isVertical) {
 				this.getScrollComponent();
@@ -581,9 +583,17 @@
 					circular: false,
 					vertical: isVertical,
 					start: this.startFrom,
-					scroll: 1,
+					scroll: parseInt(this.getConfig('horizontalScrollItems')),
 					speed: speed
-				} );
+				}).unbind("complete").bind( "complete", function( event, data ) {
+						var ml = _this.mediaList;
+						for (var i=0; i<4; i++){
+							ml.push(ml[i]);
+						}
+						_this.startFrom = data.itemLength-1;
+						_this.renderMediaList();
+					// load more entries
+				});
 				$cc.find('ul').width((this.getMediaItemBoxWidth()+1)*this.mediaList.length);
 				$cc.find('.k-carousel').css('width', $cc.width() );
 			}
