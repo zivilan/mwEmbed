@@ -583,15 +583,18 @@
 					circular: false,
 					vertical: isVertical,
 					start: this.startFrom,
-					scroll: parseInt(this.getConfig('horizontalScrollItems')),
+					scroll: 1,//_this.mediaItemVisible,
 					speed: speed
 				}).unbind("complete").bind( "complete", function( event, data ) {
 						var ml = _this.mediaList;
 						for (var i=0; i<4; i++){
 							ml.push(ml[i]);
 						}
-						_this.startFrom = data.itemLength-1;
-						_this.renderMediaList();
+						_this.startFrom = data.itemLength-_this.mediaItemVisible;
+						setTimeout(function(){
+							_this.renderMediaList();
+						},300);
+
 					// load more entries
 				});
 				$cc.find('ul').width((this.getMediaItemBoxWidth()+1)*this.mediaList.length);
