@@ -583,7 +583,7 @@
 					circular: false,
 					vertical: isVertical,
 					start: this.startFrom,
-					scroll: 1,//_this.mediaItemVisible,
+					scroll: _this.getConfig('horizontalScrollItems'),
 					speed: speed
 				}).unbind("complete").bind( "complete", function( event, data ) {
 						var ml = _this.mediaList;

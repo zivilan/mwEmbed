@@ -233,12 +233,12 @@
 
 			function disableOrEnableButtons() {
 				$(options.btnPrev + "," + options.btnNext).removeClass("disabled");
-				$( (calculatedTo-options.scroll<0 && options.btnPrev)
-					||
-					(calculatedTo+options.scroll > itemLength-numVisible && options.btnNext)
-					||
-					[]
-				).addClass("disabled");
+				if (calculatedTo == 0 && options.btnPrev ){
+					$(options.btnPrev).addClass("disabled");
+				}
+				if ((calculatedTo + numVisible) >= itemLength && options.btnNext ){
+					$(options.btnNext).addClass("disabled");
+				}
 				if (calculatedTo+options.scroll > itemLength-numVisible){
 					div.trigger("complete",{"itemLength": itemLength});
 				}
