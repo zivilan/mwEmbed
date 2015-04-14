@@ -154,6 +154,29 @@
 				window.redrawTimeOutID = setTimeout(function(){_this.redrawOnResize = true;},2000);
 			});
 
+			this.getComponent().bind("horizontalScrollEnd", function(){
+				var data = _this.mediaList.slice();
+				_this.mediaList = $.merge( _this.mediaList, data );
+
+				var medialist = _this.getTemplateHTML( {meta: _this.getMetaData(), mediaList: data});
+				_this.getMedialistComponent().find("ul").append(medialist.find("li"));
+				// update "data-mediabox-index" attribute
+				_this.getMedialistComponent().find("li").each(function(index, elm){
+					$(elm).attr("data-mediabox-index", index);
+				});
+
+				_this.getMedialistComponent().find('ul').width((_this.getMediaItemBoxWidth()+1)*_this.mediaList.length);
+				_this.getMedialistComponent().find('.k-carousel').css('width', _this.getMedialistComponent().width() );
+
+				var scrollLeft = Math.abs(parseInt(_this.getComponent().find("ul").css("left")));
+				var hiddenItems = parseInt(scrollLeft / _this.getConfig( 'mediaItemWidth'));
+
+				_this.configMediaListFeatures(true);
+				_this.getMedialistComponent().find('ul').trigger("refresh",[hiddenItems]);
+
+				$( _this.embedPlayer ).trigger( "mediaListLayoutReady" );
+			});
+
 			// set responsiveness
 			if ( !mw.isIOS7()) {
 				this.bind( 'resizeEvent' , function () {
@@ -164,7 +187,7 @@
 			$(this.embedPlayer).bind('mediaListLayoutReady', function (event) {
 				_this.embedPlayer.triggerHelper('playlistReady');
 				// keep aspect ratio of thumbnails - crop and center
-				_this.getComponent().find('.k-thumb').each(function () {
+				_this.getComponent().find('.k-thumb').not('.resized').each(function () {
 					var img = $(this)[0];
 					img.onload = function () {
 						if (img.naturalWidth / img.naturalHeight > 16 / 9) {
@@ -179,6 +202,7 @@
 							var deltaHeight = ($(this).height() - 48) / 2 * -1;
 							$(this).css("margin-top", deltaHeight)
 						}
+						$(this).addClass('resized');
 					};
 				});
 			});

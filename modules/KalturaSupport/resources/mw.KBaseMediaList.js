@@ -279,7 +279,7 @@
 				$( this.embedPlayer ).trigger( "mediaListLayoutReady" );
 			}
 		},
-		configMediaListFeatures: function(){
+		configMediaListFeatures: function(scrollRefresh){
 			//Adjust container size
 			this.setMedialistContainerSize();
 			this.setMedialistComponentHeight();
@@ -288,7 +288,9 @@
 			//Attach media items handlers
 			this.attachMediaListHandlers();
 			//Add scroll if applicable
-			this.shouldAddScroll( );
+			if ( !scrollRefresh ){
+				this.shouldAddScroll();
+			}
 		},
 		setMedialistComponentHeight: function(){
 			var _this = this;
@@ -448,7 +450,7 @@
 			var hoverInterval = null;
 			var mediaBoxes = this.getMediaListDomElements();
 			mediaBoxes
-				.off('click' )
+				.off('click touchmove touchend' )
 				.on('click', function(){
 					if ( !_this.isDisabled && !_this.isTouchDisabled){
 						// set active media item
@@ -586,16 +588,7 @@
 					scroll: _this.getConfig('horizontalScrollItems'),
 					speed: speed
 				}).unbind("complete").bind( "complete", function( event, data ) {
-						var ml = _this.mediaList;
-						for (var i=0; i<4; i++){
-							ml.push(ml[i]);
-						}
-						_this.startFrom = data.itemLength-_this.mediaItemVisible;
-						setTimeout(function(){
-							_this.renderMediaList();
-						},300);
-
-					// load more entries
+					_this.getComponent().trigger("horizontalScrollEnd");
 				});
 				$cc.find('ul').width((this.getMediaItemBoxWidth()+1)*this.mediaList.length);
 				$cc.find('.k-carousel').css('width', $cc.width() );

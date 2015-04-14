@@ -180,6 +180,15 @@
 				if(options.auto) {
 					setupAutoScroll();
 				}
+
+				ul.on("refresh", function(e, start){
+					options.start = start;
+					initVariables();
+					initStyles();
+					initSizes();
+					disableOrEnableButtons();
+					calculatedTo += options.scroll;
+				})
 			}
 
 			function setupAutoScroll() {
