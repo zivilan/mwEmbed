@@ -57,7 +57,11 @@
 
 			if ( !this.getConfig( 'mediaItemWidth') ){
 				this.widthSetByUser = false;           // user did not specify a required width. We will set to 320 and apply responsive logic on resizeEvent event
-				this.setConfig( 'mediaItemWidth',320); // set default width to 320 if not defined by user
+				if ( this.getLayout() === "horizontal" ){
+					this.setConfig( 'mediaItemWidth', Math.floor($( ".playlistInterface" ).width() / this.getConfig("MinClips")) );
+				}else{
+					this.setConfig( 'mediaItemWidth',320); // set default width to 320 if not defined by user
+				}
 			}
 
 			if (this.getConfig("includeHeader")){
@@ -158,23 +162,27 @@
 				var data = _this.mediaList.slice();
 				_this.mediaList = $.merge( _this.mediaList, data );
 
-				var medialist = _this.getTemplateHTML( {meta: _this.getMetaData(), mediaList: data});
-				_this.getMedialistComponent().find("ul").append(medialist.find("li"));
-				// update "data-mediabox-index" attribute
-				_this.getMedialistComponent().find("li").each(function(index, elm){
-					$(elm).attr("data-mediabox-index", index);
-				});
+				_this.getTemplateHTML( {meta: _this.getMetaData(), mediaList: data})
+					.then(function(medialist) {
+						_this.getMedialistComponent().find("ul").append(medialist.find("li"));
+						// update "data-mediabox-index" attribute
+						_this.getMedialistComponent().find("li").each(function(index, elm){
+							$(elm).attr("data-mediabox-index", index);
+						});
 
-				_this.getMedialistComponent().find('ul').width((_this.getMediaItemBoxWidth()+1)*_this.mediaList.length);
-				_this.getMedialistComponent().find('.k-carousel').css('width', _this.getMedialistComponent().width() );
+						_this.getMedialistComponent().find('ul').width((_this.getMediaItemBoxWidth()+1)*_this.mediaList.length);
+						_this.getMedialistComponent().find('.k-carousel').css('width', _this.getMedialistComponent().width() );
 
-				var scrollLeft = Math.abs(parseInt(_this.getComponent().find("ul").css("left")));
-				var hiddenItems = parseInt(scrollLeft / _this.getConfig( 'mediaItemWidth'));
+						var scrollLeft = Math.abs(parseInt(_this.getComponent().find("ul").css("left")));
+						var hiddenItems = parseInt(scrollLeft / _this.getConfig( 'mediaItemWidth'));
 
-				_this.configMediaListFeatures(true);
-				_this.getMedialistComponent().find('ul').trigger("refresh",[hiddenItems]);
+						_this.configMediaListFeatures(true);
+						_this.getMedialistComponent().find('ul').trigger("refresh",[hiddenItems]);
 
-				$( _this.embedPlayer ).trigger( "mediaListLayoutReady" );
+						$( _this.embedPlayer ).trigger( "mediaListLayoutReady" );
+					}, function(msg) {
+						mw.log( msg );
+					});
 			});
 
 			// set responsiveness
@@ -186,6 +194,8 @@
 
 			$(this.embedPlayer).bind('mediaListLayoutReady', function (event) {
 				_this.embedPlayer.triggerHelper('playlistReady');
+				_this.setMultiplePlayLists();
+				_this.getComponent().find(".k-description-container").dotdotdot();
 				// keep aspect ratio of thumbnails - crop and center
 				_this.getComponent().find('.k-thumb').not('.resized').each(function () {
 					var img = $(this)[0];
@@ -206,6 +216,31 @@
 					};
 				});
 			});
+
+
+			// This API is to allow external plugin to replace the current playlist content.
+			// Previous content is not saved. player will switch to new playlist when autoInsert is set to true
+			// params will have inner objects for playlistParams, autoInsert, playerName and initItemEntryId
+			this.bind('loadExternalPlaylist', function (e,params) {
+				if(params.initItemEntryId){
+					_this.firstLoad = true;
+					_this.setConfig("initItemEntryId" ,params.initItemEntryId )
+				}
+				_this.getKClient().doRequest(params.playlistParams, function (playlistDataResult) {
+					_this.playlistSet[_this.currentPlaylistIndex].items = playlistDataResult; //apply data to the correct playlist in the playlistSet
+					if(params.playlistName){
+						_this.playlistSet[_this.currentPlaylistIndex].name = params.playlistName; //apply data to the correct playlist in the playlistSet
+					}
+					_this.selectPlaylist(_this.currentPlaylistIndex);
+					_this.currentClipIndex = -1; //reset index of current clip so "next" will play the first item of the new loaded playlist
+					if(params.autoInsert){
+						_this.playNext();
+					}
+				})
+			});
+
+
+
 		},
 		redrawPlaylist: function(){
 			var _this = this;
@@ -225,10 +260,6 @@
 				this.$mediaListContainer = null;
 				this.getMedialistContainer();
 				this.renderMediaList();
-				this.setMultiplePlayLists();
-				setTimeout(function(){
-					_this.getComponent().find(".k-description-container").dotdotdot();
-				},100);
 			}
 		},
 		// called from KBaseMediaList when a media item is clicked - trigger clip play
@@ -397,7 +428,7 @@
 			if (this.isDisabled || this.loadingEntry) {
 				return;
 			}
-			if (this.getConfig("loop") == true && this.currentClipIndex != null && this.currentClipIndex === this.mediaList.length - 1) { // support loop
+			if (this.getConfig("loop") == true && this.currentClipIndex != null && parseInt(this.currentClipIndex) == this.mediaList.length - 1) { // support loop
 				this.currentClipIndex = -1;
 			}
 			if (this.currentClipIndex != null && this.currentClipIndex < this.mediaList.length - 1) {
