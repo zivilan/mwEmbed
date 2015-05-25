@@ -81,7 +81,7 @@ mw.FullScreenManager.prototype = {
 	doFullScreenPlayer: function( callback ) {
 		mw.log("FullScreenManager:: doFullScreenPlayer" );
 		var vid = this.embedPlayer.getPlayerElement();
-		if ( mw.isMobileChrome() && vid && vid.webkitRequestFullscreen ) {
+		if ( mw.isMobileChrome() && mw.getConfig('EmbedPlayer.EnableNativeChromeFullscreen') && vid && vid.webkitRequestFullscreen ) {
 			vid.webkitRequestFullscreen();
 			return ;
 		}
@@ -130,7 +130,7 @@ mw.FullScreenManager.prototype = {
 			screenfull.request(fsTarget, doc);
 		};
 		// Check for native support for fullscreen and we are in an iframe server
-		if( !this.fullScreenApiExcludes() && !mw.isAndroidChromeNativeBrowser() && screenfull && screenfull.enabled(doc) ) {
+		if( !this.fullScreenApiExcludes() && screenfull && screenfull.enabled(doc) ) {
 			callFullScreenAPI();
 		} else {
 			if(!this.fullScreenApiExcludes() && mw.isAndroidChromeNativeBrowser()){
