@@ -80,6 +80,11 @@ mw.FullScreenManager.prototype = {
 	*/
 	doFullScreenPlayer: function( callback ) {
 		mw.log("FullScreenManager:: doFullScreenPlayer" );
+		var vid = this.embedPlayer.getPlayerElement();
+		if ( mw.isMobileChrome() && vid && vid.webkitRequestFullscreen ) {
+			vid.webkitRequestFullscreen();
+			return ;
+		}
         if( mw.getConfig('EmbedPlayer.NewWindowFullscreen') && !screenfull &&
             !(mw.getConfig('EmbedPlayer.EnableIpadNativeFullscreen') && mw.isIpad())){
             this.openNewWindow();
@@ -132,7 +137,6 @@ mw.FullScreenManager.prototype = {
 				callFullScreenAPI();
 			}
 			// Check for hybrid html controls / native fullscreen support:
-			var vid = this.embedPlayer.getPlayerElement();
 			if( mw.getConfig('EmbedPlayer.EnableIpadNativeFullscreen')
 					&&
 				vid && vid.webkitSupportsFullscreen
