@@ -109,6 +109,9 @@
 .chapters > .k-chapters-container .mediaBox.resultNoMatch{
     display: none;
 }
+.chapters > .k-chapters-container .mediaBox:focus{
+
+}
 .chapters > .k-chapters-container .boxImg{
     float: left;
     height: 100%;

@@ -97,6 +97,9 @@
 			var _this = this;
 			this._propagateEvents = true;
 			$(this.getPlayerElement()).css('position', 'absolute');
+			if (this.inline) {
+				$(this.getPlayerElement()).attr('webkit-playsinline', '');
+			}
 			readyCallback();
 
 			// disable network errors on unload:
@@ -145,8 +148,11 @@
 			}
 			var _this = this;
 			// Hide the player offscreen:
-			this.hidePlayerOffScreen();
-			this.keepPlayerOffScreenFlag = true;
+			if (!this.inline) {
+				this.hidePlayerOffScreen();
+				this.keepPlayerOffScreenFlag = true;
+			}
+
 
 			// Add an image poster:
 			var posterSrc = ( this.poster ) ? this.poster :
@@ -161,6 +167,7 @@
 						.addClass('playerPoster')
 						.load(function () {
 							_this.applyIntrinsicAspect();
+							$('.playerPoster').attr('alt', _this.posterAlt);
 						})
 				);
 			}
@@ -176,12 +183,14 @@
 			// If switching a Persistent native player update the source:
 			// ( stop and play won't refresh the source  )
 			_this.switchPlaySource(this.getSource(), function () {
-				if (!_this.autoplay && !mw.isMobileDevice()) {
-					// pause is need to keep pause sate, while
+				if (!_this.autoplay  || ( _this.autoplay && mw.isMobileDevice()) ) {
+					// pause is need to keep pause state, while
 					// switch source calls .play() that some browsers require.
-					// to reflect source swiches.
+					// to reflect source switches. Playlists handle pause state so no need to pause in playlist
 					_this.ignoreNextNativeEvent = true;
-					_this.pause();
+					if ( !_this.playlist ){
+						_this.pause();
+					}
 					_this.updatePosterHTML();
 				}
 				if (!(mw.isIOS7() && mw.isIphone())) {
@@ -444,6 +453,10 @@
 						} else {
 							_this.log("player can't seek - video duration not available, wait for video duration update");
 						}
+					});
+					// manually trigger the loadedmetadata since stopEventPropagation was called but we must have this event triggered during seek operation (SUP-4237)
+					vidObj.off('loadedmetadata.seekPrePlay').one('loadedmetadata.seekPrePlay', function () {
+						_this._onloadedmetadata();
 					});
 					this.log("player can't seek - try to init video element ready state");
 					vid.load();
@@ -1323,7 +1336,7 @@
 			vid.play();
 		},
 		isVideoSiblingEnabled: function () {
-			if (mw.isIphone() || mw.isAndroid2() || mw.isAndroid40() || mw.isMobileChrome()
+			if (mw.isIphone() || mw.isAndroid2() || mw.isWindowsPhone() || mw.isAndroid40() || mw.isMobileChrome()
 				||
 				( mw.isIpad() && !mw.isIpad3() )
 				) {
@@ -1354,6 +1367,9 @@
 				this.addStartTimeCheck();
 				this.play();
 			}
+		},
+		setInline: function ( state ) {
+			this.getPlayerElement().attr('webkit-playsinline', '');
 		}
 	};
 })(mediaWiki, jQuery);

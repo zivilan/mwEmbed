@@ -66,7 +66,7 @@
 			this.updateSources();
 
 			var flashvars = {};
-			this.getEntryUrl().then(function (srcToPlay) {
+		this.getEntryUrl().then(function (srcToPlay) {
 				flashvars.widgetId = "_" + _this.kpartnerid;
 				flashvars.partnerId = _this.kpartnerid;
 				flashvars.autoMute = _this.muted || mw.getConfig('autoMute');
@@ -160,7 +160,7 @@
 						'bitrateChange': 'onBitrateChange',
                         'textTracksReceived': 'onTextTracksReceived'
 					};
-					_this.playerObject = this.getElement();
+				_this.playerObject = this.getElement();
 					$.each(bindEventMap, function (bindName, localMethod) {
 						_this.playerObject.addJsListener(bindName, localMethod);
 					});
@@ -411,6 +411,7 @@
 		},
 		onClipDone: function () {
 			this.parent_onClipDone();
+			this.flashCurrentTime = 0;
 		},
 
 		onAlert: function (data, id) {
@@ -576,7 +577,7 @@
 			this.onBitrateChange( data );
 			// TODO if we need to track source index should be top level method per each play interface having it's own adaptive logic
 			//this.mediaElement.setSourceByIndex(data.newIndex);
-			$(this).trigger('sourceSwitchingEnd', [ data ]);
+            $(this).trigger('sourceSwitchingEnd', [ data.newIndex ]);
 		},
 
 		onBitrateChange: function ( data ) {
@@ -753,6 +754,15 @@
 				srcUrl = srcUrl + "&seekFrom=" + parseInt(this.startTime) * 1000;
 			}
 
+			srcUrl = srcUrl +"&playSessionId="  + this.evaluate('{configProxy.sessionId}');
+
+            //copy clientTag from original playManifest
+            if (originalSrc.indexOf("&clientTag=") !== -1) {
+                var clientTag = originalSrc.slice(originalSrc.indexOf("clientTag"));
+                clientTag = clientTag.slice(0, clientTag.indexOf("&"))
+                srcUrl = srcUrl + "&" + clientTag;
+            }
+
 			var refObj = {src: srcUrl};
 			this.triggerHelper('SourceSelected', refObj);
 			deferred.resolve(refObj.src);
@@ -801,7 +811,11 @@
 				});
 				return;
 			}
-			this.playerObject.sendNotification('doSwitch', { flavorIndex: this.getSourceIndex(source) });
+            var sourceIndex = -1; //autoDynamicStreamSwitch = true for adaptive bitrate (Auto)
+            if( source !== -1 ){
+                sourceIndex = this.getSourceIndex(source);
+            }
+			this.playerObject.sendNotification('doSwitch', { flavorIndex: sourceIndex });
 		},
 		canAutoPlay: function () {
 			return true;

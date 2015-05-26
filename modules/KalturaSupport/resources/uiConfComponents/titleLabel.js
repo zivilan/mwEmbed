@@ -16,7 +16,7 @@
 					_this.getConfig('text')
 				);
 				var availableWidth = _this.getAvailableWidth(); // available width for title including buttons space and extra space for clarity
-				if (_this.getConfig('truncateLongTitles') && _this.getComponent().width() > availableWidth) {
+				if (_this.getConfig('truncateLongTitles') && _this.getComponent().width() >= availableWidth) {
 					_this.getComponent()
 						.attr('title', _this.getConfig('text'))
 						.width(availableWidth)
@@ -24,24 +24,26 @@
 				}
 			});
 
-			this.bind('updateLayout', function(){
+			this.bind('layoutBuildDone', function(){
 					var availableWidth = _this.getAvailableWidth(); // available width for title including buttons space and extra space for clarity
 					if (_this.getConfig('truncateLongTitles') && _this.getComponent().width() >= availableWidth) {
 						_this.getComponent()
 							.attr('title', _this.getConfig('text'))
 							.width(availableWidth)
+							.css('text-align',_this.getConfig('align'))
 							.addClass('truncateText');
 					} else {
 						_this.getComponent()
 							.attr('title', _this.getConfig('text'))
 							.width(availableWidth)
+							.css('text-align',_this.getConfig('align'))
 							.removeClass('truncateText');
 					}
 				}
 			);
 		},
 		getAvailableWidth:function(){
-			return this.embedPlayer.getWidth() - ($('.topBarContainer .btn').length + 1) * 30;
+			return this.embedPlayer.getWidth() - ($('.' + this.getConfig('parent') + ' .btn').length + 1) * 30;
 		},
 		getComponent: function() {
 			if( !this.$el ) {

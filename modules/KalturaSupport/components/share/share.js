@@ -95,6 +95,7 @@
 		shareScreenOpened: false,
 
 		setup: function () {
+			this.setShareConfig();
 			this.setupPlayerURL();
 			this.addBindings();
 
@@ -104,90 +105,7 @@
 			}
 		},
 
-		addBindings: function () {
-			var _this = this;
-			var embedPlayer = this.getPlayer();
-			this.bind('playerReady', function () {
-				_this.setupPlayerURL();
-			});
-			this.bind('preShowScreen', function (event, screenName) {
-				if ( screenName === "share" ){
-					_this.getScreen().addClass('semiTransparentBkg'); // add semi-transparent background for share plugin screen only. Won't affect other screen based plugins
-					_this.shareScreenOpened = true;
-					// add blur effect to video and poster
-					$("#"+embedPlayer.getPlayerElement().id).addClass("blur");
-					embedPlayer.getPlayerPoster().addClass("blur");
-					// prevent keyboard key actions to allow typing in share screen fields
-					embedPlayer.triggerHelper( 'onDisableKeyboardBinding' );
-					// disable all player controls except play button, scrubber and volume control
-					embedPlayer.disablePlayControls(["volumeControl","scrubber","playPauseBtn"]);
-					// setup embed code when the screen opens
-					_this.setupEmbedCode();
-					// set embed code in the UI as the template doesn't load it correctly when using data binding because of the double quotes inside the text
-					$(".embed-input").val(_this.getConfig('embedCode'));
-					// send event for analytics
-					$(embedPlayer).trigger("showShareEvent");
-					// enable playback when the share screen is opened
-					_this.enablePlayDuringScreen = true;
-					// set responsive size
-					if (embedPlayer.getVideoHolder().width() < 400){
-						$(".share").addClass("small");
-					}
-				}
-			});
-			this.bind('preHideScreen', function (event, screenName) {
-				if ( screenName === "share" ){
-					if ( !_this.enablePlayDuringScreen ){
-						_this.shareScreenOpened = false;
-					}
-					// restore keyboard actions
-					embedPlayer.triggerHelper( 'onEnableKeyboardBinding' );
-					// re-enable player controls
-					embedPlayer.enablePlayControls();
-				}
-			});
-
-			// add API support: register to the "doShare" notification and dispatch the "shareEvent" event with the share link data
-			this.bind( 'doShare', function(event, data){
-				var shareUrl = _this.getConfig('shareURL');
-				if ( data && data.timeOffset ){
-					shareUrl += "#t="+data.timeOffset;
-				}
-				embedPlayer.triggerHelper( 'shareEvent', { "shareLink" : shareUrl } );
-			});
-
-			this.bind( 'onplay', function(event, data){
-				if ( _this.shareScreenOpened ){
-					setTimeout(function(){
-						embedPlayer.disablePlayControls(["volumeControl","scrubber","playPauseBtn"]);
-					},0);
-				}
-			});
-
-			this.bind( 'onpause', function(event, data){
-				if ( _this.shareScreenOpened ){
-					$("#"+embedPlayer.getPlayerElement().id).addClass("blur");
-					embedPlayer.getPlayerPoster().addClass("blur");
-				}
-			});
-
-			this.bind( 'updateLayout', function(event, data){
-				if ( _this.shareScreenOpened ){
-					if (embedPlayer.getVideoHolder().width() < 400){
-						$(".share").addClass("small");
-					}else{
-						$(".share").removeClass("small");
-					}
-				}
-			});
-		},
-
-		hideScreen: function(){
-			this._super();
-			$("#"+this.getPlayer().getPlayerElement().id).removeClass("blur");
-			this.getPlayer().getPlayerPoster().removeClass("blur");
-		},
-		getTemplateData: function () {
+		setShareConfig: function() {
 			var networks = this.getConfig('shareConfig');
 
 			// in order to support the legacy socialNetworks Flashvar, we will go through it and remove networks that are not specified in socialNetworks
@@ -209,8 +127,115 @@
 			}
 
 			// save networks to config
-			this.setConfig( 'shareConfig' , networks );
+			this.setConfig( 'shareConfig' , networks );			
+		},
 
+		addBindings: function () {
+			var _this = this;
+			var embedPlayer = this.getPlayer();
+			this.bind('playerReady', function () {
+				_this.setupPlayerURL();
+				_this.getScreen();
+			});
+			this.bind('preShowScreen', function (event, screenName) {
+				if ( screenName === "share" ){
+					_this.getScreen().then(function(screen){
+						screen.addClass('semiTransparentBkg'); // add semi-transparent background for share plugin screen only. Won't affect other screen based plugins
+						_this.shareScreenOpened = true;
+						// add blur effect to video and poster
+						$("#"+embedPlayer.getPlayerElement().id).addClass("blur");
+						embedPlayer.getPlayerPoster().addClass("blur");
+						// prevent keyboard key actions to allow typing in share screen fields
+						embedPlayer.triggerHelper( 'onDisableKeyboardBinding' );
+						// disable all player controls except play button, scrubber and volume control
+						embedPlayer.disablePlayControls(["volumeControl","scrubber","playPauseBtn","playlistAPI"]);
+						// setup embed code when the screen opens
+						_this.setupEmbedCode();
+						// set embed code in the UI as the template doesn't load it correctly when using data binding because of the double quotes inside the text
+						$(".embed-input").val(_this.getConfig('embedCode'));
+						// send event for analytics
+						$(embedPlayer).trigger("showShareEvent");
+						// enable playback when the share screen is opened
+						_this.enablePlayDuringScreen = true;
+						// set responsive size
+						if (embedPlayer.getVideoHolder().width() < 400){
+							$(".share").addClass("small");
+						}
+					});
+				}
+			});
+			this.bind('preHideScreen', function (event, screenName) {
+				if ( screenName === "share" ){
+					if ( !_this.enablePlayDuringScreen ){
+						_this.shareScreenOpened = false;
+					}
+					// restore keyboard actions
+					embedPlayer.triggerHelper( 'onEnableKeyboardBinding' );
+					// re-enable player controls
+					embedPlayer.enablePlayControls();
+				}
+			});
+
+			// Allow plugins to trigger share for specific platform/network
+			this.bind( 'shareByPlatform', function(e, platform) {
+				var platforms = _this.getConfig('shareConfig');
+				if( platforms[platform] ) {
+					var url = embedPlayer.evaluate(platforms[platform].template);
+					_this.openPopup(null, {
+						id: platform,
+						url: url
+					});
+				}
+			});
+
+			// add API support: register to the "doShare" notification and dispatch the "shareEvent" event with the share link data
+			this.bind( 'doShare', function(event, data){
+				var shareUrl = _this.getConfig('shareURL');
+				if ( data && data.timeOffset ){
+					shareUrl += "#t="+data.timeOffset;
+				}
+				embedPlayer.triggerHelper( 'shareEvent', { "shareLink" : shareUrl } );
+			});
+
+			this.bind( 'onplay', function(event, data){
+				if ( _this.shareScreenOpened ){
+					setTimeout(function(){
+						embedPlayer.disablePlayControls(["volumeControl","scrubber","playPauseBtn","playlistAPI"]);
+					},0);
+				}
+			});
+
+			this.bind( 'onpause', function(event, data){
+				if ( _this.shareScreenOpened ){
+					$("#"+embedPlayer.getPlayerElement().id).addClass("blur");
+					embedPlayer.getPlayerPoster().addClass("blur");
+				}
+			});
+
+			this.bind( 'AdSupport_StartAdPlayback', function(){
+				_this.closeScreen();
+			});
+
+			this.bind( 'updateLayout', function(event, data){
+				if ( _this.shareScreenOpened ){
+					if (embedPlayer.getVideoHolder().width() < 400){
+						$(".share").addClass("small");
+					}else{
+						$(".share").removeClass("small");
+					}
+				}
+			});
+		},
+
+		hideScreen: function(){
+			this._super();
+			if (this.getPlayer().getPlayerElement()) {
+				$( "#" + this.getPlayer().getPlayerElement().id ).removeClass( "blur" );
+				this.getPlayer().getPlayerPoster().removeClass( "blur" );
+			}
+		},
+
+		getTemplateData: function () {
 			return {
 				'share': this,
 				'socialShareEnabled': this.getConfig('socialShareEnabled'),
@@ -218,7 +243,7 @@
 				'allowTimeOffset': this.getConfig('allowTimeOffset'),
 				'allowSecuredEmbed': this.getConfig('allowSecuredEmbed'),
 				'shareURL': this.getConfig('shareURL'),
-				'networks': networks
+				'networks': this.getConfig('shareConfig')
 			};
 		},
 
@@ -386,15 +411,24 @@
 			this.hideScreen();
 		},
 
-		openPopup: function (e) {
+		openPopup: function (e, network) {
+
+			// Maintain backward compatibility 
+			if( e && e.originalEvent ) {
+				network = {
+					id: $(e.target).attr('id'),
+					url: $(e.target).parents('a').attr('href')
+				};
+			}
+
 			var embedPlayer = this.getPlayer();
-			var url = $(e.target).parents('a').attr('href');
+			var url = network.url;
 			url = decodeURIComponent(url);        // url was encoded to keep curly brackets for template tokens
 			url = this.getPlayer().evaluate(url); // replace tokens
 
 			if (mw.isNativeApp()) {
 				var networks = this.getConfig('shareConfig');
-				var id = $(e.target).attr('id');
+				var id = network.id;
 				var shareParams = {
 					actionType: 'share',
 					id: id[0].toUpperCase() + id.substr(1),

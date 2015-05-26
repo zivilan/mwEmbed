@@ -158,6 +158,10 @@
 				window['iframePlayer'] = event.target;
 				_this.setDuration();
 				_this._playContorls = true;
+				//autoMute
+				if(mw.getConfig('autoMute')){
+					_this.setVolume(0);
+				}
 				//autoplay
 				if(mw.getConfig('autoPlay')){
 					_this.play();
@@ -185,6 +189,10 @@
 				flashPlayer.addEventListener("onStateChange", "onPlayerStateChange");
 				flashPlayer.addEventListener("onError", "onError");
 				_this._playContorls = true;
+				//autoMute
+				if(mw.getConfig('autoMute')){
+					_this.setVolume(0);
+				}
 				//autoplay
 				if(mw.getConfig('autoPlay')){
 					_this.play();
@@ -289,7 +297,7 @@
 			this.youtubeProtocol = location.protocol;
 			this.youtubePreFix = this.youtubeProtocol+this.youtubePreFix;
 
-			if( this.supportsFlash() && mw.getConfig("forceIframe") != 1 ){
+			if( this.supportsFlash() && mw.getConfig("forceIframe") == 0 ){
 				// embed chromeless flash
 				if(window['KeyValueParams']){
 					var dataUrl = this.youtubePreFix + this.youtubeEntryId +'&amp;showinfo=0&amp;version=3&ampiv_load_policy=3&amp;' +
@@ -508,10 +516,8 @@
 			var yt = this.getPlayerElement();
 			yt.seekTo( seekTime );
 			this.layoutBuilder.onSeek();
-			// Since Youtube don't have a seeked event on mobile devices, we must turn off the seeking flag on mobile devices
-			if ( mw.isMobileDevice() ){
-				this.seeking = false;
-			}
+			// Since Youtube don't have a seeked event , we must turn off the seeking flag
+			this.seeking = false;
 		},
 
 		/**

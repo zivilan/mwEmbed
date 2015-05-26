@@ -79,7 +79,7 @@
 					source: function(query, done){return _this.findMatches(query, done);}
 				} )
 				.on( "typeahead:selected", function ( e, obj ) {
-					console.e.preventDefault();
+					e.preventDefault();
 					e.stopPropagation();
 					_this.trigger("searchBoxResultsUpdate", [_this.dataSet[obj.value]]);
 					return false;
@@ -270,10 +270,20 @@
 			this.error = false;
 			return true;
 		},
-		blur: function(){
+		deselect: function(){
 			//Remove focus from searchbox to enable maximize on focus
 			this.$searchBar.blur();
 			this.components.searchBox.blur();
-		}
+		},
+		focus: function(){
+			if (this.searchBox && !mw.isMobileDevice()){
+				this.searchBox.focus();
+			}
+		},
+		blur: function(){
+			if (this.searchBox && !mw.isMobileDevice()){
+				this.searchBox.blur();
+			}
+		},
 	};
 })( window.mw, window.jQuery );
