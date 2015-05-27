@@ -210,10 +210,14 @@
 			this.bind('onShowSideBar', function(){
 				//Enable keyboard bindings when menu is visible
 				_this.maskKeyboardShortcuts = false;
-				_this.searchBar && _this.searchBar.focus();
+				if (_this.searchBar){
+					_this.searchBar.focus();
+				}
 			});
 			this.bind('onHideSideBar', function(){
-				_this.searchBar && _this.searchBar.blur();
+				if (_this.searchBar){
+					_this.searchBar.blur();
+				}
 				//Prevent keyboard bindings when menu is hidden
 				_this.maskKeyboardShortcuts = true;
 			});

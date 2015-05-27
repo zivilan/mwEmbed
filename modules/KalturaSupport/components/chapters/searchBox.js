@@ -276,13 +276,13 @@
 			this.components.searchBox.blur();
 		},
 		focus: function(){
-			if (this.searchBox && !mw.isMobileDevice()){
-				this.searchBox.focus();
+			if (!mw.isMobileDevice()){
+				this.components.searchBox.focus();
 			}
 		},
 		blur: function(){
-			if (this.searchBox && !mw.isMobileDevice()){
-				this.searchBox.blur();
+			if (!mw.isMobileDevice()){
+				this.components.searchBox.blur();
 			}
 		},
 	};
