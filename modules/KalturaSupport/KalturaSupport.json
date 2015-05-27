@@ -111,14 +111,23 @@
 		"templates": {
 			"list": "components/chapters/list.tmpl.html",
 			"chapters": "components/chapters/chapters.tmpl.html",
-			"slides": "components/chapters/slides.tmpl.html"
+			"slides": "components/chapters/slides.tmpl.html",
+			"searchBox": "components/chapters/searchBox.tmpl.html"
 		},
 		"dependencies": [
 			"mw.KBaseMediaList",
-			"typeahead",
-			"dotdotdot"
+			"dotdotdot",
+			"searchBox"
 		],
 		"kalturaPluginName": "chapters"
+	},
+	"searchBox": {
+		"scripts": "components/chapters/searchBox.js",
+		"styles": "components/chapters/searchBox.css",
+		"templates": {
+			"searchBox": "components/chapters/searchBox.tmpl.html"
+		},
+		"dependencies": ["typeahead"]
 	},
 	"keyboardShortcuts": {
 		"scripts": "resources/mw.KeyboardShortcuts.js",
