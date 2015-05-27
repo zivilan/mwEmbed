@@ -64,6 +64,10 @@
 			this.bind('KalturaSupport_ThumbCuePointsReady', function () {
 				if (!_this.maskChangeStreamEvents) {
 					//Get chapters data from cuepoints
+					if (_this.getPlayer().isLive()){
+						//Live mode doesn't support chapters so disable toggling
+						_this.disableChapterToggle();
+					}
 					var chaptersRawData = _this.getCuePoints();
 					if ( chaptersRawData.length ) {
 						//Sort by time and/or cuepoint type
@@ -98,10 +102,6 @@
 							_this.renderMediaList();
 							_this.updateActiveItem();
 						}
-					}
-					if (_this.getPlayer().isLive()){
-						//Live mode doesn't support chapters so disable toggling
-						_this.disableChapterToggle();
 					}
 				}
 			});
@@ -805,6 +805,9 @@
 			var bottomBar = $("<div/>", {"class": "footerWrapper"} )
 				.append($("<span/>", {"class": "slideLocator icon-locator", "title": gM("ks-chapters-locate-active-media")}))
 				.append($("<span/>", {"class": "toggleAll icon-toggleAll", "title": gM("ks-chapters-toggle-all-chapter")}));
+			if (!this.chapterToggleEnabled){
+				bottomBar.find(".toggleAll").addClass("disabled");
+			}
 			this.getMedialistFooterComponent().append(bottomBar);
 		},
 		//Bars UI control
