@@ -157,6 +157,7 @@
 			});
 
 			this.getSlider().slider( this.getSliderConfig() );
+			this.$el.find('.ui-slider-handle').addClass('PIE');
 			if ( this.getConfig( 'accessibilityLabels' ) ){
 				var percent = this.getPlayer().getPlayerElementVolume() * 100;
 				var title = gM('mwe-embedplayer-volume-value', percent );
