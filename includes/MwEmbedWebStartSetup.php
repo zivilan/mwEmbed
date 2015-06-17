@@ -74,8 +74,7 @@ require_once( "$IP/$IP_BASE/includes/DefaultSettings.php" );
 if ( !defined('MW_CONFIG_FILE') ){
 	define('MW_CONFIG_FILE', "$IP/$IP_BASE/LocalSettings.php");
 }
-ChromePhp::info($IP_BASE);
-ChromePhp::info($IP);
+
 # LocalSettings.php is the per site customization file. If it does not exist
 # error out
 if( !file_exists( MW_CONFIG_FILE ) ) {
