@@ -11,7 +11,7 @@ class MwEmbedResourceLoader extends ResourceLoader {
 	 * Registers core modules and runs registration hooks.
 	 */
 	public function __construct() {
-		global $IP, $wgScriptPath, $wgResourceModules, $wgResourceLoaderSources, $wgLoadScript, $wgEnableJavaScriptTest;
+		global $IP, $IP_BASE, $wgScriptPath, $wgResourceModules, $wgResourceLoaderSources, $wgLoadScript, $wgEnableJavaScriptTest;
 
 		wfProfileIn( __METHOD__ );
 		// Add 'local' source first
@@ -21,10 +21,10 @@ class MwEmbedResourceLoader extends ResourceLoader {
 		$this->addSource( $wgResourceLoaderSources );
 
 		// Register modules shared between mwEmbed and mediaWiki:
-		$MwEmbedSharedResourcesUrl = "{$IP}/{$wgScriptPath}resources/MwEmbedSharedResources.json";
+		$MwEmbedSharedResourcesUrl = "{$IP}/{$IP_BASE}/resources/MwEmbedSharedResources.json";
         $MwEmbedSharedResources = json_decode( file_get_contents($MwEmbedSharedResourcesUrl), TRUE );
         $this->register( $MwEmbedSharedResources );
-        $skinResourcesUrl = "{$IP}/{$wgScriptPath}skins/SkinResources.json";
+        $skinResourcesUrl = "{$IP}/{$IP_BASE}/skins/SkinResources.json";
         $skinResources = json_decode( file_get_contents($skinResourcesUrl), TRUE );
         $this->register( $skinResources );
 

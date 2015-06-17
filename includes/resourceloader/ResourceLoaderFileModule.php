@@ -148,8 +148,8 @@ class ResourceLoaderFileModule extends ResourceLoaderModule {
 	public function __construct( $options = array(), $localBasePath = null,
 		$remoteBasePath = null )
 	{
-		global $IP, $wgScriptPath, $wgResourceBasePath;
-		$this->localBasePath = $localBasePath === null ? $IP."/".$wgScriptPath : $localBasePath;
+		global $IP, $IP_BASE, $wgScriptPath, $wgResourceBasePath;
+		$this->localBasePath = $localBasePath === null ? $IP."/".$IP_BASE."/" : $localBasePath;
 		if ( $remoteBasePath !== null ) {
 			$this->remoteBasePath = $remoteBasePath;
 		} else {

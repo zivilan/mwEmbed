@@ -56,34 +56,36 @@ $IP = getenv( 'MW_INSTALL_PATH' );
 if ( $IP === false ) {
 	$IP = realpath( dirname( __FILE__ ) . '/../');
 }
-
+$IP_BASE = basename($IP);
+$IP = dirname( $IP );
 
 # Start the autoloader, so that extensions can derive classes from core files
-require_once( "$IP/includes/MwEmbedAutoLoader.php" );
+require_once( "$IP/$IP_BASE/includes/MwEmbedAutoLoader.php" );
 
 # Include the mediaWiki stubs.php file ( will stub out un-needed functionality from mediaWiki
-require_once( "$IP/includes/MwEmbedMediaWikiStubs.php" );
+require_once( "$IP/$IP_BASE/includes/MwEmbedMediaWikiStubs.php" );
 
 # Include global mediaWiki functions
-require_once( "$IP/includes/MwEmbedMediaWikiGlobalFunctions.php" );
+require_once( "$IP/$IP_BASE/includes/MwEmbedMediaWikiGlobalFunctions.php" );
 
 # Load default settings
-require_once( "$IP/includes/DefaultSettings.php" );
+require_once( "$IP/$IP_BASE/includes/DefaultSettings.php" );
 
 if ( !defined('MW_CONFIG_FILE') ){
-	define('MW_CONFIG_FILE', "$IP/LocalSettings.php");
+	define('MW_CONFIG_FILE', "$IP/$IP_BASE/LocalSettings.php");
 }
-
+ChromePhp::info($IP_BASE);
+ChromePhp::info($IP);
 # LocalSettings.php is the per site customization file. If it does not exist
 # error out
 if( !file_exists( MW_CONFIG_FILE ) ) {
 	print "if( console && typeof console.log == 'function' ){ console.log('MwEmbed could not find LocalSettings.php ( using default configuration )'); }\n";
 } else {
 	# Load local settings
-	require_once( "$IP/LocalSettings.php" );
+	require_once( "$IP/$IP_BASE/LocalSettings.php" );
 }
 # Include utility files: 
-require_once( "$IP/includes/Hooks.php");
+require_once( "$IP/$IP_BASE/includes/Hooks.php");
 
 /**
  * Legay mappings for mwEmbed config 
@@ -103,12 +105,10 @@ $wgLang = new UserLang();
 if( in_array( "MwEmbedSupport",  $wgMwEmbedEnabledModules ) == false ){
 	array_push( $wgMwEmbedEnabledModules, "MwEmbedSupport" );
 }
-$ORG_IP = $IP;
-$IP = realpath( $IP . '/..' );
-global $wgScriptPath;
+
 # Register / load all the mwEmbed modules
 foreach( $wgMwEmbedEnabledModules as $moduleName ){
-	$modulePath = $wgScriptPath."modules/$moduleName";
+	$modulePath = "$IP_BASE/modules/$moduleName";
 	if( is_file( "$IP/$modulePath/$moduleName.json" ) || is_file( "$IP/$modulePath/$moduleName.php" ) ){
 		MwEmbedResourceManager::register( $modulePath );
 	}

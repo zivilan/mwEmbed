@@ -8,7 +8,7 @@
 
 // The default cache directory
 $wgScriptCacheDirectory = realpath( dirname( __FILE__ ) ) . '/cache';
-
+require_once( realpath( dirname( __FILE__ ) ) . '/../ChromePhp.php' );
 $wgBaseMwEmbedPath = realpath( dirname( __FILE__ ) . '/../' );
 
 // The version of the library:
