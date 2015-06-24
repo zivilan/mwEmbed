@@ -281,7 +281,13 @@ mw.KWidgetSupport.prototype = {
 				return;
 			} else if ( mw.EmbedTypes.getMediaPlayers().isSupportedPlayer( 'kplayer' ) ) {
 				var streamerType;
-				if ( hasLivestreamConfig( 'hdnetworkmanifest' )) {
+				var streamerTypeFV = embedPlayer.getKalturaConfig( null, 'streamerType' );
+				if ( streamerTypeFV && hasLivestreamConfig( streamerTypeFV ) ) {
+					streamerType = streamerTypeFV;
+				}
+				else if ( hasLivestreamConfig('rtmfp')) {
+					streamerType = 'rtmfp';
+				} else if ( hasLivestreamConfig( 'hdnetworkmanifest' )) {
 					streamerType = 'hdnetworkmanifest';
 				} else if ( hasLivestreamConfig( 'hds' ) ){
 					streamerType = 'hds';

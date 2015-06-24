@@ -690,7 +690,7 @@
 			//currently only kplayer can handle other streamerTypes
 			if ( !mw.getConfig( 'EmbedPlayer.IgnoreStreamerType')
 				&& !this.isImageSource()   //not an image entry
-				&& this.streamerType != 'http'
+				&& (this.streamerType != 'http' || this.streamerType == 'rtmfp')
 				&& mw.EmbedTypes.getMediaPlayers().isSupportedPlayer( 'kplayer' ) ) {
 				targetPlayer =  mw.EmbedTypes.getKplayer();
 			} else {
