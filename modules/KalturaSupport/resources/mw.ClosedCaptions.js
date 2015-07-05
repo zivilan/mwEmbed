@@ -111,6 +111,22 @@
 						} );
 					} );
 				}
+				nonEmbededCaptionsEventHandlers.call(this);
+
+			}
+			if (this.getConfig("useExternalClosedCaptions")) {
+				this.bind( 'loadExternalClosedCaptions', function ( e, data ) {
+					if ( !(data && $.isArray( data.languages ) ) ) {
+						data.languages = [];
+					}
+					_this.destory();
+					_this.buildMenu( data.languages );
+				} );
+				nonEmbededCaptionsEventHandlers.call(this);
+			}
+
+			var nonEmbededCaptionsEventHandlers = function(){
+				var _this = this;
 				this.bind( 'timeupdate', function(){
 					if( _this.getConfig('displayCaptions') === true && _this.selectedSource ){
 						_this.monitor();
@@ -124,16 +140,7 @@
 				this.bind( 'playing', function(){
 					_this.ended = false;
 				});
-			}
-			if (this.getConfig("useExternalClosedCaptions")) {
-				this.bind( 'loadExternalClosedCaptions', function ( e, data ) {
-					if ( !(data && $.isArray( data.languages ) ) ) {
-						data.languages = [];
-					}
-					_this.destory();
-					_this.buildMenu( data.languages );
-				} );
-			}
+			};
 
 			this.bind( 'onplay', function(){
 				_this.playbackStarted = true;
