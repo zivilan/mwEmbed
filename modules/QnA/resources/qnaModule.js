@@ -54,9 +54,15 @@
                     if (replyText() === gM("qna-reply-here")){
                         return;
                     }
-                    _this.qnaService.submitQuestion(replyText(), qnaThread.entries()[qnaThread.entries().length-1]());
-                    qnaThread.replyText(gM("qna-reply-here"));
-                    qnaThread.isTypingAnswer(false);
+
+                    if (_this.qnaPlugin.getPlayer().isOffline() && !_this.qnaPlugin.getConfig( 'allowNewQuestionWhenNotLive' )){
+                        alert(gM('qna-cant-ask-while-not-live'));
+                    } else {
+
+                        _this.qnaService.submitQuestion(replyText(), qnaThread.entries()[qnaThread.entries().length - 1]());
+                        qnaThread.replyText(gM("qna-reply-here"));
+                        qnaThread.isTypingAnswer(false);
+                    }
                 };
 
                 this.clearTextArea = function(qnaThread, event){
