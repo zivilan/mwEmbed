@@ -297,7 +297,8 @@ DAL for Q&A Module
                     "cuePoint:startTime": embedPlayer.currentTime,
                     "cuePoint:text": question,
                     "cuePoint:tags": _this.QandA_cuePointTag,
-                    'cuePoint:isPublic': 1
+                    "cuePoint:isPublic": 1,
+                    "cuePoint:searchableOnEntry": 0
                 };
                 if (parent) {
                     createCuePointRequest["cuePoint:parentId"] = parent.cuePoint().id;
@@ -486,12 +487,12 @@ DAL for Q&A Module
                 return;
             }
 
-            while (parseInt(_this.AnswerOnAirQueue()[0]().cuePoint().endTime) < currentPlayerTime*1000){
+            while( _this.AnswerOnAirQueue().length > 0 && parseInt(_this.AnswerOnAirQueue()[0]().cuePoint().endTime) < currentPlayerTime*1000 && parseInt(_this.AnswerOnAirQueue()[0]().cuePoint().endTime) !== 0){
                 _this.AnswerOnAirQueue.shift();
             }
 
             if (_this.AnswerOnAirQueue().length > 0){
-                if (_this.AnswerOnAirQueue()[0]().cuePoint().endTime !== undefined){
+                if (_this.AnswerOnAirQueue()[0]().cuePoint().endTime !== undefined && _this.AnswerOnAirQueue()[0]().cuePoint().endTime > 0){
 
                     setTimeout(function() {
                         _this.AnswerOnAirQueueUpdate(_this.qnaPlugin.embedPlayer.currentTime);
