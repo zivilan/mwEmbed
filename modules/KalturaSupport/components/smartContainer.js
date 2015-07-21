@@ -42,7 +42,7 @@
 			this.bind( 'layoutBuildDone updatePropertyEvent', function(){
 				// hide specified plugins
 				var config = _this.getConfig('config');
-				config.plugins.forEach(function (plugin, index) {
+				$.each(config.plugins, function (index, plugin) {
 					_this.embedPlayer.setKalturaConfig( plugin.pluginName, "visible", false );
 				});
 			});
@@ -108,9 +108,9 @@
 		renderMenu: function(){
 			var _this = this;
 			var config = this.getConfig('config');
-			config.plugins.forEach(function (plugin, index) {
+			$.each(config.plugins, function (index, plugin) {
 				var iconClass = _this.embedPlayer.getKalturaConfig( plugin.pluginName, "iconClass" );
-				plugin.properties.forEach(function (property, index) {
+				$.each(plugin.properties, function (index, property) {
 					var initialValue = _this.embedPlayer.getKalturaConfig( plugin.pluginName, property.property );
 					switch (property.type){
 						case 'boolean':
