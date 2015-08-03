@@ -21,8 +21,10 @@
 		updateEnabled: true,
 
 		isSliderPreviewEnabled: function () {
-			
-			return this.getConfig("sliderPreview") && !this.isDisabled && !this.embedPlayer.isLive();
+            if(this.embedPlayer.isLive() && !this.isDisabled ){
+                return true;
+            }
+			return this.getConfig("sliderPreview") && !this.isDisabled;
 		},
 		setup: function (embedPlayer) {
 			// make sure insert mode reflects parent type:
@@ -231,7 +233,7 @@
 				);
 		},
 		showThumbnailPreview: function (data) {
-			var showOnlyTime = this.getConfig("showOnlyTime");
+            var showOnlyTime = this.embedPlayer.isLive() ? true : this.getConfig("showOnlyTime");
 			if (!this.isSliderPreviewEnabled() || !this.thumbnailsLoaded) {
 				return;
 			}
