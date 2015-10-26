@@ -1,0 +1,11 @@
+{
+    "mw.LocalMedia": {
+        "scripts": "resources/mw.LocalMedia.js",
+         "styles": [
+        	"resources/css/LocalMedia.css"
+        ],
+        "dependencies": ["mw.KBaseScreen"],
+        "kalturaPluginName": "localMedia",
+        "templates": "../LocalMedia/resources/LocalMedia.tmpl.html"
+    }
+}

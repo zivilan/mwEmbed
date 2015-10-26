@@ -1,0 +1,9 @@
+.appscreen{
+	display:none;
+}
+.appscreen a:visited { 
+	color: #FFF;
+}
+.screen.localMedia{
+	padding-top:0px;
+}

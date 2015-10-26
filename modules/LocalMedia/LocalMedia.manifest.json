@@ -1,0 +1,17 @@
+{
+    "localMedia": {
+        "label": "Local media.",
+        "description": "Adds an inteface for local caching of the media file",
+        "attributes": {
+            "parent": {
+                "doc": "Parent container for component. Components include default placement, leave as null if unsure.",
+                "type": "enum",
+                "enum": [
+                    "topBarContainer",
+                    "videoHolder",
+                    "controlsContainer"
+                ]
+            }
+        }
+    }
+}
