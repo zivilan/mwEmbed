@@ -12,7 +12,7 @@
 	</head>
 
 	<body>
-		<h2> Local Media download & playback </h2>
+		<h2> Local Media download & playback DRM content ( chrome only )</h2>
 		<div id="kaltura_player" style="width:560px;height:395px;"></div>
 		<script>
 		kWidget.embed({
@@ -21,6 +21,9 @@
 			"wid": "_1788671",
 			"uiconf_id": 30484161,
 			"flashvars": {
+				'localMedia': {
+					'plugin': true
+				},
 				"streamerType": "auto"
 			}
 		});
