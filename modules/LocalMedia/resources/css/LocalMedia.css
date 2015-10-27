@@ -7,3 +7,13 @@
 .screen.localMedia{
 	padding-top:0px;
 }
+.state{
+	padding-top:20px;
+}
+.state .download-progress-holder{
+	padding-left:10px;
+	padding-right:10px;
+	border: solid thin white;
+	border-radius: 5px;
+	height:20px;
+}
