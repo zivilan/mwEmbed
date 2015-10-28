@@ -223,7 +223,11 @@ Still have doubts? <a href="http://corp.kaltura.com/content/technical-support">C
 			return urlString.split( '/html5/html5lib/')[1];
 		}
 		// check for kgit style tags:
-		return urlString.split('http://kgit.html5video.org/tags/')[1];
+		var tagBasedVersion = urlString.indexOf('http://kgit.html5video.org/tags/')[1];
+		if( tagBasedVersion ){
+			return tagBasedVersion;
+		}
+		return 'custom-version';
 	}
 	function selectVersion( version ){
 		//console.log( 'selectVersion: ' + version );
@@ -270,7 +274,11 @@ Still have doubts? <a href="http://corp.kaltura.com/content/technical-support">C
 				// show error
 				$('#html5Url')
 					.val( orgUrl )
-					.before('<div class="html5UrlError alert alert-error">Error: could not validate html5 lib, \ please retry</div>');
+					.before('<div class="html5UrlError alert">Could not validate html5 lib</div>')
+				setTimeout(function(){
+					$('#html5Url .html5UrlError').fadeOut('fast');
+				},3000)
+				
 			});
 		} )
 	}
