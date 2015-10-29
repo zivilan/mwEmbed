@@ -21,9 +21,12 @@
 					var clDashPlayerUrl = embedPlayer.getKalturaConfig( "multiDrm", "clDashPlayerUrl" ) || mw.getMwEmbedPath() + "node_modules/mwEmbed-Dash-Everywhere/video.js";
 					var dashJsUrl = embedPlayer.getKalturaConfig( "multiDrm", "dashJsUrl" ) || mw.getMwEmbedPath() + "node_modules/mwEmbed-Dash-Everywhere/cldasheverywhere.min.js";
 					if (clDashPlayerUrl && dashJsUrl) {
-						$.getScript( clDashPlayerUrl)
-							.then(function(){return $.getScript( dashJsUrl)})
-							.done(function(){
+						var fail = function() {
+							mw.log("Error::Playback engine couldn't be found");
+							callback();
+						};
+						kWidget.appendScriptUrl( clDashPlayerUrl, function(){
+							kWidget.appendScriptUrl( dashJsUrl, function(){
 								mw.log("DASH player loaded, setting configuration");
 								//Get user configuration
 								var drmUserConfig = embedPlayer.getKalturaConfig("multiDrm");
@@ -37,11 +40,8 @@
 									player: videojs
 								};
 								callback();
-							})
-							.fail(function( ) {
-								mw.log("Error::Playback engine couldn't be found");
-								callback();
-							});
+							}, document, fail);
+						}, document, fail)
 					} else {
 						mw.log("Playback engine couldn't be found, not loading DASH player");
 						callback();

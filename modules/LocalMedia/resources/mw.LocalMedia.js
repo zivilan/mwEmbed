@@ -8,7 +8,7 @@
 			displayImportance: "low",
 			showTooltip: true,
 			templatePath: '../LocalMedia/resources/LocalMedia.tmpl.html',
-			tooltip: gM('lm-manage-title'),
+			tooltip: "Manage local media", // why is GM not working?  gM('lm-manage-title'),
 		 	order: 50,
 		 	requestedStorageSize: 1024*1024*1024  /* 1GB by default, if over available space should return all that is available */, 
 		},
@@ -16,10 +16,8 @@
 		iconBtnClass: "icon-download",
 		setup:function(){
 			var _this = this;
-			// override XHR requests:
-			this.bind("playerReady", function(){
-				_this.overrideXHR();
-			})
+			// override XHR requests before manifest request:
+			_this.overrideXHR();
 		},
 		showUnsupported:function( errorMsg ){
 			$('.browser-unsupported').show().find('.error-msg').text( errorMsg )
@@ -117,18 +115,21 @@
 			} else{
 				// download manifest ( TODO why is $.get not working if override is clean ? )
 				// TODO do we want to download manifest every time? 
-				var oReq = new _XMLHttpRequest();
+				/*var oReq = new _XMLHttpRequest();
 				oReq.addEventListener("load", function(){
 					_this.parseManifest( this.responseText );
 				});
 				oReq.open("GET", this.getPlayer().getSrc() );
-				oReq.send();
+				oReq.send();*/
+				$.get( this.getPlayer().getSrc(), function(xml){
+					debugger;
+				})
 			}
 		},
 		downloadSegments: function(){
 			//$.each( this.getSegments() ...
 		},
-		parseManifest: function( xml){
+		getUrlsFromManifest: function( xml){
 			this.segmentUrls = [];
 			var xmlDoc = $.parseXML( xml ),
 			$xml = $( xmlDoc );
@@ -138,15 +139,23 @@
 			$.each( adaptionSet, function(inx, set ){
 				var $set = $(set);
 				if( $set.attr('id') == "1" ){
-					debugger;
+					
 					var media = $set.find('SegmentTemplate')[0].getAttribute('media');
 					var init = $set.find('SegmentTemplate')[0].getAttribute('init');
+				
+				// sample of urls to cache: 
+				// http://cfvod.kaltura.com/edash/p/1788671/sp/178867100/serveFlavor/entryId/0_caq7yan7/v/12/flavorId/0_,k0ele2pr,q01f1r61,z1rx89bz,89bdkm7h,/forceproxy/true/name/a.mp4.urlset/init-f2-v1.mp4
+				// http://cfvod.kaltura.com/edash/p/1788671/sp/178867100/serveFlavor/entryId/0_caq7yan7/v/12/flavorId/0_,k0ele2pr,q01f1r61,z1rx89bz,89bdkm7h,/forceproxy/true/name/a.mp4.urlset/fragment-1-f2-v1.m4s
+				// audio:
+				// http://cfvod.kaltura.com/edash/p/1788671/sp/178867100/serveFlavor/entryId/0_caq7yan7/v/12/flavorId/0_,k0ele2pr,q01f1r61,z1rx89bz,89bdkm7h,/forceproxy/true/name/a.mp4.urlset/fragment-1-f2-a1.m4s
+				// http://cfvod.kaltura.com/edash/p/1788671/sp/178867100/serveFlavor/entryId/0_caq7yan7/v/12/flavorId/0_,k0ele2pr,q01f1r61,z1rx89bz,89bdkm7h,/forceproxy/true/name/a.mp4.urlset/fragment-2-f2-a1.m4s
 				}
 			})
+			return ;
 		},
-		getManifestPath: function( src ){
+		getManifestPath: function( url ){
 			// TODO the parent context should not be needed here; why is MD5 not on this side of the iframe already? 
-			return window.parent.md5( this.getPlayer().getSrc().split('?')[0] ) + '/a.mpd'; 
+			return window.parent.md5( url.split('?')[0] ) + '/a.mpd'; 
 		},
 		// abstract get set storage
 		storageSet: function( path, value, writeDone, writeError){
@@ -157,6 +166,21 @@
 		},
 		storageGet: function( path ){
 			return false;
+		},
+		isManifest: function( url ){
+			// Sample manifest url: 
+			// http://cdnapi.kaltura.com/p/1788671/sp/178867100/playManifest/entryId/0_caq7yan7/flavorIds/0_k0ele2pr,0_q01f1r61,0_z1rx89bz,0_89bdkm7h/format/mpegdash/protocol/http/a.mpd?referrer=aHR0cDovL2xvY2FsaG9zdA==&playSessionId=90a6bed1-4b99-863d-7102-3fcac3e34f16&clientTag=html5:v2.35&uiConfId=30484161
+			try{
+				if( url.split('?')[0].substring( url.lastIndexOf( '/' ) + 1 ) ){
+					return true;
+				}
+			} catch ( e ){
+				// probably not a kaltura dash manifest
+				return false;
+			}
+		},
+		isMainfestAvaliableOffline: function( url ){
+			return !!( this.storageGet( this.getManifestPath( url ) ) );
 		},
 		overrideXHR: function(){
 			window._XMLHttpRequest = window.XMLHttpRequest;
@@ -171,8 +195,13 @@
 					(function ( x ) {
 						obj[x] = function () {
 							if ( returnObj[x] ) {
-								if ( x === "onloadend" && !obj.localFileFound ) {
-									debugger;
+								// make sure the return object has response URL copied over: 
+								returnObj.responseURL = obj.responseURL;
+								
+								// check if a manifest ( cache against base url )
+								
+								// remove this logic ( we pre-cache now )
+								/*if ( x === "onloadend" && !obj.localFileFound ) {
 									if ( obj.responseURL ) {
 										
 										var fileName = obj.responseURL.substring( obj.responseURL.lastIndexOf( '/' ) + 1 );
@@ -190,7 +219,7 @@
 											} );
 										} );
 									}
-								}
+								}*/
 								return returnObj[x]( arguments );
 							}
 						}
@@ -300,6 +329,73 @@
 				return returnObj;
 			}
 		}
+		/*overrideXHR: function(){
+		var _this = this;
+		var oldXMLHttpRequest = XMLHttpRequest;
+		
+		// define constructor for my proxy object
+		XMLHttpRequest = function() {
+			var actual = new oldXMLHttpRequest();
+			var self = this;
+
+			this.onreadystatechange = null;
+
+			// this is the actual handler on the real XMLHttpRequest object ( allows for response overrides )
+			actual.onreadystatechange = function() {
+				if (this.readyState == 4) {
+					// Check if we are handling result of a manifest result:
+					if( _this.isManifest( this.responseURL ) ){
+						// if its a manifest keep it it around
+						
+					}
+					// actual.responseText is the ajax result
+					self.responseText = actual.responseText;
+					// update the response URL as well: 
+					self.responseURL = actual.responseURL
+				}
+				if (self.onreadystatechange) {
+					return self.onreadystatechange();
+				}
+			};
+			// add all proxy getters
+			["status", "statusText", "response",
+			 "readyState", "responseXML", "upload"].forEach(function(item) {
+				Object.defineProperty(self, item, {
+					get: function() {return actual[item];}
+				});
+			});
+
+			// add all proxy getters/setters
+			["ontimeout, timeout", "withCredentials", "onload", "onerror", "onprogress", "responseType"].forEach(function(item) {
+				Object.defineProperty(self, item, {
+					get: function() {return actual[item];},
+					set: function(val) {actual[item] = val;}
+				});
+			});
+
+			// Proxy XHR object methods ( https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest#Methods_2 )
+			["addEventListener", "send", "open", "abort", "getAllResponseHeaders",
+			 "getResponseHeader", "overrideMimeType", "setRequestHeader"].forEach(function(item) {
+				Object.defineProperty(self, item, {
+					value: function() {
+						// special case "open" to intercept XHR requests
+						if( item == "open" ){
+							// when in off line mode intercept manifest requests:
+							if( arguments[1] && this.isManifest( arguments[1] ) ){
+								// advance virtual XHR order: 
+								// self.onload(eventObj);
+								// self.onreadystatechange()
+								// self.onloadend(eventObj)
+							}
+						}
+						// normally just pass through
+						return actual[item].apply(actual, arguments);
+					}
+				});
+			});
+		}
+		
+	},*/
 	}));
 
 } )( window.mw, window.jQuery );
