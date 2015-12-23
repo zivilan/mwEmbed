@@ -137,6 +137,11 @@
 		onKeyDown: function( e ){
 			var ranCallback = false;
 			var keyCode = e.keyCode || e.which;
+
+			//we need to ignore shortcuts if text area or input have input (space, P are not support to be triggered)
+			if ( $("*:focus").is("textarea, input") ) {
+				return true;
+			}
 			// Handle combinations
 			if (this.enableComboKeyBindings) {
 				if ( e.ctrlKey && e.altKey && keyCode !== this.CTRL_KEY_CODE && keyCode !== this.ALT_KEY_CODE && !ranCallback ) {
@@ -156,7 +161,7 @@
 
 			// Handle single keys
 			if( !ranCallback && this.enableSingleKeyBindings) {
-				this.runCallbackByKeysArr( keyCode, this.singleKeys );
+				ranCallback = this.runCallbackByKeysArr( keyCode, this.singleKeys );
 			}
 			if( ranCallback ){
 				// Prevent the default behavior
@@ -281,7 +286,7 @@
 			}
 		},
 		closeFullscreenkeyCallback: function(){
-			if( this.getPlayer().getInterface().hasClass('fullscreen') ){
+			if( this.getPlayer().getInterface().hasClass('fullscreen') && this.getPlayer().layoutBuilder.fullScreenManager.inFullScreen ){
 				this.getPlayer().toggleFullscreen();
 			}
 		},

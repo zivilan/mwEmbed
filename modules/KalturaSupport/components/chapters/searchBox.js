@@ -93,9 +93,11 @@
 					// 1. If multiple suggestions and none was chosen - display results for all suggestions
 					// 2. Close dropdown menu
 					if ( e.type === "keyup" && e.keyCode === 13 ) {
-						var results = _this.getDropdownResults();
-						_this.trigger("searchBoxResultsUpdate", [results]);
-						typeahead.typeahead( "close" );
+						if (_this.isDropDownOpen()) {
+							var results = _this.getDropdownResults();
+							_this.trigger("searchBoxResultsUpdate", [results]);
+							typeahead.typeahead("close");
+						}
 					}
 				} )
 				.on( "focus", function () {
@@ -147,6 +149,10 @@
 		},
 		maximizeSearchBar: function(){
 			this.$searchBar.removeClass("minimized");
+		},
+		isDropDownOpen: function() {
+			var dropdown = this.components.searchBox.data('ttTypeahead').dropdown;
+			return dropdown.isOpen;
 		},
 		//Get all search results for current search term
 		getDropdownResults: function(){
@@ -284,6 +290,6 @@
 			if (!mw.isMobileDevice()){
 				this.components.searchBox.blur();
 			}
-		},
+		}
 	};
 })( window.mw, window.jQuery );

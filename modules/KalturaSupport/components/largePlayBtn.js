@@ -5,6 +5,7 @@
 		isDisabled: false,
 		defaultConfig: {
 			'parent': 'videoHolder',
+			'togglePause': true,
 			'order': 1
 		},
 		setup: function() {
@@ -15,37 +16,54 @@
 		 * cases where a native player is dipalyed such as iPhone.
 		 */
 		isPersistantPlayBtn: function(){
-			return mw.isAndroid2() || this.getPlayer().isLinkPlayer() || 
-					( mw.isIphone() && mw.getConfig( 'EmbedPlayer.iPhoneShowHTMLPlayScreen' ) );
+			return (mw.isAndroid2() || this.getPlayer().isLinkPlayer() || ( mw.isIphone() && mw.getConfig( 'EmbedPlayer.iPhoneShowHTMLPlayScreen' )) && !mw.isWindowsPhone() );
 		},
 		addBindings: function() {
 			var _this = this;
 			this.bind('showInlineDownloadLink', function(e, linkUrl){
 				_this.getComponent().attr({
-					'href': linkUrl,
+					'href': linkUrl.replace('playSessionId=','playSessionId=noev-'),
 					'target': '_blank'
 				});
 			});
 			
-			this.bind('onChangeMediaDone playerReady onpause onEndedDone onRemovePlayerSpinner', function(){
+			this.bind('onChangeMediaDone playerReady onpause onEndedDone onRemovePlayerSpinner showPlayerControls showLargePlayBtn', function(e){
 				if( !_this.embedPlayer.isPlaying() && !_this.embedPlayer.isInSequence() ){
+					_this.getComponent().removeClass("icon-pause").addClass("icon-play");
 					_this.show();
 				}
 			});
-			this.bind('playing AdSupport_StartAdPlayback onAddPlayerSpinner', function(){
+
+			this.bind('onShowControlBar', function(){
+				if( !mw.isIE8() && _this.getConfig("togglePause") && _this.embedPlayer.isPlaying() && !_this.embedPlayer.isInSequence() ){
+					_this.getComponent().removeClass("icon-play").addClass("icon-pause");
+					_this.show();
+				}
+			});
+			this.bind('playing AdSupport_StartAdPlayback onAddPlayerSpinner onHideControlBar onChangeMedia', function(e){
 				_this.hide();
 			});
 			this.bind('onPlayerStateChange', function(e, newState, oldState){
-				if( newState == 'load' ){
+				if( newState == 'load' || newState == 'play' ){
 					_this.hide(true);
 				}
 				if( newState == 'pause' && _this.getPlayer().isPauseLoading ){
 					_this.hide();
 				}
 			});
+			this.bind( 'hideScreen', function(){
+				if (mw.isMobileDevice() && _this.getPlayer().paused){
+					_this.show();
+				}
+			});
+            this.bind('liveOnline', function(){
+                if( _this.getPlayer().isLive && !_this.getPlayer().isDVR() ) {
+                    _this.hide();
+                }
+            });
 		},
 		show: function(){
-			if ( !this.isDisabled ) {
+			if ( !this.isDisabled && !this.embedPlayer.changeMediaStarted ) {
 				this.getComponent().show();
 			}
 			this.shouldShow = true;
@@ -69,13 +87,17 @@
 
 			event.preventDefault();
 			event.stopPropagation();
-			this.getPlayer().triggerHelper( 'goingtoplay' );
-			this.getPlayer().sendNotification('doPlay');
+			if ( this.getConfig("togglePause") && this.getPlayer().isPlaying() ){
+				this.getPlayer().sendNotification('doPause');
+			}else{
+				this.getPlayer().triggerHelper( 'goingtoplay' );
+				this.getPlayer().sendNotification('doPlay');
+			}
 		},
 		onEnable: function(){
 			this.isDisabled = false;
 			if ( this.shouldShow ) {
-				this.getComponent().show();
+				this.show();
 			}
 		},
 		onDisable: function(){
@@ -85,8 +107,8 @@
 		getComponent: function() {
 			var _this = this;
 			var eventName = 'click';
-			if (mw.isMobileDevice() && !mw.isWindowsPhone()){
-				eventName = 'touchstart';
+			if ( mw.isAndroid() ){
+				eventName += ' touchstart';
 			}
 			if( !this.$el ) {
 				this.$el = $( '<a />' )

@@ -28,7 +28,7 @@ mw.MediaPlayers.prototype = {
 		this.loadPreferences();
 
 		// Set up default players order for each library type
-		this.defaultPlayers['video/wvm'] = ['Kplayer', 'NativeComponent'];
+		this.defaultPlayers['video/wvm'] = ['NativeComponent'];
 		this.defaultPlayers['video/live'] = ['Kplayer'];
 		this.defaultPlayers['video/kontiki'] = ['Kplayer'];
 		this.defaultPlayers['video/x-flv'] = ['Kplayer', 'Vlc'];
@@ -53,7 +53,6 @@ mw.MediaPlayers.prototype = {
 
 		this.defaultPlayers['image/jpeg'] = ['ImageOverlay'];
 		this.defaultPlayers['image/png'] = ['ImageOverlay'];
-
 		if ( mw.getConfig("LeadWithHLSOnFlash") ) {
 			this.defaultPlayers['application/vnd.apple.mpegurl'].push('Kplayer');
 		}
@@ -134,23 +133,42 @@ mw.MediaPlayers.prototype = {
 	 */
 	getDefaultPlayer : function( mimeType ) {
 		// mw.log( "get defaultPlayer for " + mimeType );
-		if ( mw.getConfig( 'EmbedPlayer.ForceNativeComponent' )) {
-			return mw.EmbedTypes.getNativeComponentPlayerVideo();
+		var mimePlayers = this.getMIMETypePlayers( mimeType );
+		if (mw.getConfig( 'chromecastReceiver')) {
+			return this.getPlayerById('chromecastReceiver');
 		}
-		if ( (mw.getConfig( 'EmbedPlayer.ForceKPlayer' ) || ( mw.getConfig( 'ForceFlashOnDesktopSafari') && mw.isDesktopSafari() ) )
-			&& this.isSupportedPlayer( 'kplayer' ) && mimeType !== "video/youtube" ) {
-			return mw.EmbedTypes.getKplayer();
+		if ( mw.getConfig( 'EmbedPlayer.ForceNativeComponent' ) && this.isSupportedPlayer( 'nativeComponentPlayer' )) {
+			var nativeComponentPlayer = mw.EmbedTypes.getNativeComponentPlayerVideo();
+			if (this.isPlayerSupportMimeType(mimePlayers, nativeComponentPlayer)) {
+				mimePlayers = [nativeComponentPlayer];
+			} else {
+				mimePlayers = [];
+			}
+		}
+		if ( ( mw.getConfig( 'EmbedPlayer.ForceKPlayer' ) ||
+			( mw.getConfig( 'ForceFlashOnDesktopSafari') && mw.isDesktopSafari() ) ) &&
+			this.isSupportedPlayer( 'kplayer' ) && mimeType !== "video/youtube" ) {
+			var kplayer = mw.EmbedTypes.getKplayer();
+			if (this.isPlayerSupportMimeType(mimePlayers, kplayer)) {
+				mimePlayers = [kplayer];
+			} else {
+				mimePlayers = [];
+			}
 		}
 		if (mw.getConfig( 'EmbedPlayer.ForceSPlayer') && this.isSupportedPlayer('splayer')) {
-			return mw.EmbedTypes.getSilverlightPlayer();
+			var silverlightPlayer = mw.EmbedTypes.getSilverlightPlayer();
+			if (this.isPlayerSupportMimeType(mimePlayers, silverlightPlayer)) {
+				mimePlayers = [silverlightPlayer];
+			} else {
+				mimePlayers = [];
+			}
 		}
-
-		var mimePlayers = this.getMIMETypePlayers( mimeType );
 
 		// Check for prior preference for this mime type
 		for ( var i = 0; i < mimePlayers.length; i++ ) {
 			if ( mimePlayers[i].id == this.preference[mimeType] ){
-				return mimePlayers[i];
+				mimePlayers = [mimePlayers[i]];
+				break;
 			}
 		}
 		// Otherwise just return the first compatible player
@@ -160,6 +178,12 @@ mw.MediaPlayers.prototype = {
 		}
 		// mw.log( 'No default player found for ' + mimeType );
 		return null;
+	},
+	isPlayerSupportMimeType: function(mimePlayers, player){
+		var playerSupported = mimePlayers.filter(function(mimePlayer){
+			return mimePlayer.id === player.id;
+		});
+		return (playerSupported.length > 0);
 	},
 	/**
 	 * Returns only a native video tag player

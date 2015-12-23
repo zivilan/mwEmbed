@@ -11,6 +11,7 @@
 			'scrubberColor': null,
 			'watchedSliderColor':null,
 			'bufferedSliderColor':null,
+			'timeLabelColor':null,
 			'buttonsIconColorDropShadow': null,
 			'dropShadowColor': null,
 			'applyToLargePlayButton': true
@@ -23,11 +24,19 @@
 			var _this = this;
 			// update drop shadow after the layout is ready
 			this.bind('layoutBuildDone', function(){
-				_this.onConfigChange('buttonsIconColorDropShadow', _this.getConfig('buttonsIconColorDropShadow'));
+				for (var prop in _this.defaultConfig){
+					_this.onConfigChange(prop, _this.getConfig(prop));
+				}
+				if ( mw.isIE() ){
+					$(".btn").not(".playHead").css({'margin-left': 1+'px','margin-right': 1+'px'});
+				}
 			});
 		},
 		onConfigChange: function( property, value ){
 			if (value != null){
+				if (mw.isMobileDevice() && property !== 'buttonsIconColor' && property !== 'applyToLargePlayButton'){
+					return;
+				}
 				switch( property ) {
 					case 'applyToLargePlayButton':
 						if (!this.getConfig('applyToLargePlayButton')) {
@@ -37,18 +46,25 @@
 						}
 						break;
 					case 'buttonsSize':
-						$("body").css("font-size",value + "px");
+						$(".controlsContainer, .topBarContainer").css("font-size",value + "px");
 						break;
 					case 'buttonsColor':
 						$(".btn").not(".playHead").attr("style","background-color: " + value + " !important; color: "+ this.getConfig('buttonsIconColor') +" !important; text-shadow: "+ this.getConfig('dropShadowColor') +" !important");
 						if (this.getConfig('applyToLargePlayButton')) {
-							$(".largePlayBtn").attr("style", "background-color: " + value + " !important");
+							$(".largePlayBtn").attr("style", "background-color: " + value + " !important; color: "+ this.getConfig('buttonsIconColor') +" !important;");
 						}
 						break;
 					case 'buttonsIconColor':
-						$(".btn").not(".playHead").attr("style","color: " + value + " !important; background-color: "+ this.getConfig('buttonsColor') +" !important; text-shadow: "+ this.getConfig('dropShadowColor') +" !important");
-						if (this.getConfig('applyToLargePlayButton')) {
-							$(".largePlayBtn ").attr("style", "color: " + value + " !important; background-color: " + this.getConfig('buttonsColor') + " !important");
+						if (mw.isMobileDevice()){
+							$(".btn:visible").not(".playHead").attr("style","color: " + value + " !important");
+							if (this.getConfig('applyToLargePlayButton')) {
+								$(".largePlayBtn ").attr("style", "color: " + value + " !important");
+							}
+						}else{
+							$(".btn").not(".playHead").attr("style","color: " + value + " !important; background-color: "+ this.getConfig('buttonsColor') +" !important; text-shadow: "+ this.getConfig('dropShadowColor') +" !important");
+							if (this.getConfig('applyToLargePlayButton')) {
+								$(".largePlayBtn ").attr("style", "color: " + value + " !important; background-color: " + this.getConfig('buttonsColor') + " !important");
+							}
 						}
 						break;
 					case 'sliderColor':
@@ -69,6 +85,10 @@
 					case 'bufferedSliderColor':
 						$(".buffered").attr("style","background-color: " + value + " !important");
 						$(".buffered").attr("style","background:"  + value + " !important");
+						break;
+					case 'timeLabelColor':
+						$(".currentTimeLabel").attr("style","color: " + value + " !important");
+						$(".durationLabel").attr("style","color:"  + value + " !important");
 						break;
 					case 'buttonsIconColorDropShadow':
 						if (value == true){

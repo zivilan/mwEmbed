@@ -10,15 +10,29 @@
 		},
 		setup: function(){
 			var _this = this;
+			var skin = this.embedPlayer.getRawKalturaConfig("layout") ? this.embedPlayer.getRawKalturaConfig("layout").skin : "kdark";
+			if (mw.isMobileDevice() && skin === "kdark"){
+				this.setConfig('parent','controlBarContainer');
+				this.setConfig('insertMode','firstChild');
+				this.bind('onHideControlBar', function(){
+					_this.$el.fadeOut();
+				});
+				this.bind('layoutBuildDone', function(){
+					_this.$el.hide();
+				});
+				this.bind('onShowControlBar', function(){
+					_this.$el.fadeIn();
+				});
+			}
 			this.bind('playerReady', function(){
 				// Update title to entry name
-				_this.getComponent().text( 
-					_this.getConfig('text')
-				);
+				_this.getComponent()
+					.text(_this.getConfig('text'))
+					.attr('title', _this.getConfig('text'));
+
 				var availableWidth = _this.getAvailableWidth(); // available width for title including buttons space and extra space for clarity
 				if (_this.getConfig('truncateLongTitles') && _this.getComponent().width() >= availableWidth) {
 					_this.getComponent()
-						.attr('title', _this.getConfig('text'))
 						.width(availableWidth)
 						.addClass('truncateText');
 				}
@@ -43,7 +57,12 @@
 			);
 		},
 		getAvailableWidth:function(){
-			return this.embedPlayer.getWidth() - ($('.' + this.getConfig('parent') + ' .btn').length + 1) * 30;
+			var skin = this.embedPlayer.getRawKalturaConfig("layout") ? this.embedPlayer.getRawKalturaConfig("layout").skin : "kdark";
+			if (mw.isMobileDevice() && skin === "kdark"){
+				return "90%";
+			}else{
+				return this.embedPlayer.getWidth() - ($('.' + this.getConfig('parent') + ' .btn').length + 1) * 30;
+			}
 		},
 		getComponent: function() {
 			if( !this.$el ) {

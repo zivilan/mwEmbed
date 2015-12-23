@@ -10,7 +10,12 @@
 			"showTooltip": true,
 			"switchOnResize": false,
 			"simpleFormat": true,
-            "displayMode": "size" //'size' – displays frame size ( default ), 'bitrate' – displays the bitrate, 'sizebitrate' displays size followed by bitrate
+			"iconClass": "icon-cog",
+            "displayMode": "size", //'size' – displays frame size ( default ), 'bitrate' – displays the bitrate, 'sizebitrate' displays size followed by bitrate
+            "hideSource": false,
+			"title": gM( 'mwe-embedplayer-select_source' ),
+			'smartContainer': 'qualitySettings',
+			'smartContainerCloseEvent': 'SourceChange'
 		},
 
 		isDisabled: false,
@@ -55,19 +60,23 @@
 					}
 				}
 				_this.getMenu().setActive({'key': 'id', 'val': selectedId});
-				_this.onEnable();
 			});
 
 			this.bind( 'sourceSwitchingStarted', function(){
+				_this.getComponent().find('button').addClass( 'in-progress-state' );
 				_this.onDisable();
 			});
 			this.bind( 'sourceSwitchingEnd', function(newIndex){
+				_this.getComponent().find('button').removeClass( 'in-progress-state' );
                 _this.onEnable();
 			});
             this.bind( 'onHideControlBar', function(){
                 if ( _this.getMenu().isOpen() )
                     _this.getMenu().close();
             });
+			this.bind( 'onChangeMedia', function(){
+				_this.sourcesList = [];
+			});
 
 			// Check for switch on resize option
 			if( this.getConfig( 'switchOnResize' ) ){
@@ -94,6 +103,14 @@
 					}
 				});
 			}
+
+			this.embedPlayer.bindHelper("propertyChangedEvent", function(event, data){
+				if ( data.plugin === _this.pluginName ){
+					if ( data.property === "sources" ){
+						_this.getMenu().$el.find("li a")[data.value].click();
+					}
+				}
+			});
 		},
 		getSources: function(){
 			return this.getPlayer().getSources();
@@ -115,6 +132,10 @@
             //add Auto for addaptive bitrate streams
             if ( !this.handleAdaptiveBitrateAndContinue() )
                 return;
+
+            if (this.getConfig('hideSource')) {
+                this.getPlayer().mediaElement.removeSourceFlavor(sources);
+            }
 
 			if( sources.length == 1 ){
 				// no need to do building menu logic. 
@@ -180,7 +201,8 @@
 					prevSource = source;
 				});
 			}
-
+			var items = [];
+			var itemLabels = [];
 			var prevSource = null;
 			$.each( sources, function( sourceIndex, source ) {
 				if( source.skip ){
@@ -203,9 +225,20 @@
 								)
 						){
 						_this.addSourceToMenu( source );
+						var label = _this.getSourceTitle( source )
+						if ($.inArray(label, itemLabels) === -1){
+							itemLabels.push(label)
+							items.push({'label':label, 'value':label});
+						}
+						if (mw.isMobileDevice() && _this.isSourceSelected(source)){
+							_this.getMenu().setActive(sourceIndex);
+						}
 					}
 				}
 			});
+			// dispatch event to be used by a master plugin if defined
+			this.getPlayer().triggerHelper("updatePropertyEvent",{"plugin": this.pluginName, "property": "sources", "items": items, "selectedItem": this.getMenu().$el.find('.active a').text()});
+
 		},
 		isSourceSelected: function( source ){
 			var _this = this;
@@ -222,7 +255,16 @@
             }
 
             //HLS, HDS
-            if(  this.getPlayer().streamerType != "http" && !this.getPlayer().isPlaying() ){
+            if (mw.isNativeApp()) {
+            	this.sourcesList = [];
+                this.addAutoToMenu();
+                return true;
+            }
+
+            if ( this.getPlayer().streamerType != "http" && !this.getPlayer().isPlaying() ){
+                if(this.getPlayer().streamerType !== "hls" && !mw.EmbedTypes.getMediaPlayers().isSupportedPlayer('kplayer')){ //If flash disabled, player fallback to http progressive, but the streamerType might still be hdnetwork
+                    return true;
+                }
                 this.addAutoToMenu();
                 return false;
             }
@@ -238,7 +280,7 @@
             this.getMenu().addItem({
                 'label': _this.AutoTitle,
                 'callback': function () {
-                    _this.getPlayer().switchSrc("-1");
+                    _this.getPlayer().switchSrc(-1);
                 },
                'active': true
             });
@@ -279,7 +321,7 @@
 		getSourceTitle: function( source ){
 			// We should return "Auto" for Apple HLS
 			if( source.getMIMEType() == 'application/vnd.apple.mpegurl' ) {
-				return _this.AutoTitle;
+				return this.AutoTitle;
 			}
 
             var title = '';
@@ -364,7 +406,6 @@
 		onEnable: function(){
 			this.isDisabled = false;
 			this.updateTooltip( this.selectSourceTitle );
-			this.getComponent().find('button').removeClass( 'rotate' );
 			this.getBtn().removeClass( 'disabled' );
 			if (this.saveBackgroundColor){
 				this.getComponent().find('button').attr('style', 'background-color: ' + this.saveBackgroundColor + ' !important');
@@ -373,7 +414,6 @@
 		onDisable: function(){
 			this.isDisabled = true;
 			this.updateTooltip( this.switchSourceTitle );
-			this.getComponent().find('button').addClass( 'rotate' );
 			this.saveBackgroundColor = this.getComponent().find('button').css("background-color");
 			this.getComponent().find('button').attr('style', 'background-color: null !important');
 			this.getComponent().removeClass( 'open' );

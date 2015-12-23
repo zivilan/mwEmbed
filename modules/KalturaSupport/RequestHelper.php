@@ -32,7 +32,8 @@ class RequestHelper {
 		'height'=> null,
 		'playerId' => null,
 		'vid_sec' => null,
-		'vid_slices' => null
+		'vid_slices' => null,
+		'inlineScript' => null
 	);
 
 
@@ -171,7 +172,7 @@ class RequestHelper {
 
 	function isEmbedServicesEnabled(){
 	    global $wgEnableKalturaEmbedServicesRouting, $wgKalturaAuthEmbedServicesDomains;
-	    if ($wgEnableKalturaEmbedServicesRouting && in_array($_SERVER['HTTP_HOST'], $wgKalturaAuthEmbedServicesDomains )){
+	    if ($wgEnableKalturaEmbedServicesRouting){
 	        return true;
 	    } else {
 	        return false;
@@ -306,7 +307,7 @@ class RequestHelper {
 		if( $this->get('flashvars') ) {
 			$flashVars = $this->get('flashvars');
 			if( ! is_null( $key ) ) {
-				if( isset($flashVars[$key]) ) {
+				if(is_array($flashVars) && isset($flashVars[$key]) ) {
 					return $this->utility->formatString($flashVars[$key]);
 				} else {
 					return $default;

@@ -167,11 +167,10 @@ mw.MediaElement.prototype = {
 			options = {};
 		}
 		if ( this.autoSelectSourceExecute( options ) ){
-			this.selectedSource.src = this.selectedSource.src.replace(/seekFrom\/\d+\//, '');
-			this.selectedSource.src = this.selectedSource.src.replace(/clipTo\/\d+\//, '');
 			var updatedDuration = 0;
 			if (options.supportsURLTimeEncoding && !!options.endTime) {
 				updatedDuration = options.endTime;
+				this.selectedSource.src = this.selectedSource.src.replace(/clipTo\/\d+\//, '');
 				this.selectedSource.src = this.selectedSource.src.replace(
 					"playManifest/", 
 					"playManifest/clipTo/" + parseInt(options.endTime) * 1000 + "/"
@@ -179,6 +178,7 @@ mw.MediaElement.prototype = {
 			}
 			if (options.supportsURLTimeEncoding && !! options.startTime) {
 				updatedDuration -= options.startTime;
+				this.selectedSource.src = this.selectedSource.src.replace(/seekFrom\/\d+\//, '');
 				this.selectedSource.src = this.selectedSource.src.replace(
 					"playManifest/", 
 					"playManifest/seekFrom/" + parseInt(options.startTime) * 1000 + "/"
@@ -248,7 +248,7 @@ mw.MediaElement.prototype = {
 
 		mw.setConfig( 'EmbedPlayer.IgnoreStreamerType', false);
 		//this array contains mimeTypes player should prefer to select, sorted by descending order
-		var typesToCheck = ['video/dash', 'video/playreadySmooth', 'video/ism', 'video/multicast'];
+		var typesToCheck = ['application/dash+xml', 'video/playreadySmooth', 'video/ism', 'video/multicast', 'video/wvm'];
 		for ( var i = 0; i < typesToCheck.length; i++ ) {
 			var matchingSources = this.getPlayableSources( typesToCheck[i], playableSources );
 			if ( matchingSources.length ) {
@@ -450,7 +450,7 @@ mw.MediaElement.prototype = {
 	autoSelectNativeSource: function() {
 		mw.log( "MediaElement::autoSelectNativeSource");
 		// check if already auto selected source can just "switch" to native: 
-		if (! this.selectedSource && ! this.autoSelectSource( { 'forceNative':true }) ) {
+		if (! this.selectedSource && ! this.autoSelectSource() ) {
 			return false;
 		}
 		// attempt to select player: 
@@ -617,6 +617,34 @@ mw.MediaElement.prototype = {
 				}
 			}
 		}
+	},
+	getLicenseData: function(){
+		var licenseData = {
+			custom_data: this.selectedSource["custom_data"],
+			signature: this.selectedSource["signature"]
+		};
+		if (this.selectedSource.flavors){
+			var base64encode = window.btoa ? window.btoa : window.base64_encode;
+			licenseData.files = encodeURIComponent(base64encode(this.selectedSource.flavors));
+		}
+
+		return licenseData;
+	},
+	getLicenseUriComponent: function(){
+		var licenseData = this.getLicenseData();
+		var licenseDataString = "";
+		if (licenseData) {
+			$.each( licenseData, function ( key, val ) {
+				//Only concatenate keys with actual values
+				if (val) {
+					licenseDataString += key + "=" + val + "&";
+				}
+			} );
+		}
+		return licenseDataString;
+	},
+	getAuthenticationToken: function(){
+		return this.selectedSource["contentId"];
 	}
 };
 

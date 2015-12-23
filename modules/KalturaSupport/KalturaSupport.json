@@ -32,6 +32,12 @@
 			"nanoScroller"
 		]
 	},
+	"mw.KBaseSmartContainer": {
+		"scripts": "resources/mw.KBaseSmartContainer.js",
+		"dependencies": [
+			"mw.KBaseComponent"
+		]
+	},
 	"mw.KBaseComponent": {
 		"scripts": "resources/mw.KBaseComponent.js",
 		"dependencies": [
@@ -79,20 +85,30 @@
 		"scripts": "resources/mw.KAdPlayer.js"
 	},
 	"dualScreen": {
-		"scripts": "components/dualScreen/dualScreen.js",
-		"styles": "components/dualScreen/dualScreen.css",
-		"templates": "components/dualScreen/dualScreenControlBar.tmpl.html",
+		"scripts": [
+			"components/dualScreen/dualScreen.js",
+			"components/dualScreen/dualScreenControlBar.js",
+			"components/dualScreen/displays.js",
+			"components/dualScreen/display.js",
+			"components/dualScreen/imagePlayer.js",
+			"components/dualScreen/videoPlayer.js",
+			"components/dualScreen/videoSync.js",
+			"components/dualScreen/fsm.js",
+			"components/dualScreen/dualScreenStatesConfig.js"
+		],
+		"styles": [
+			"components/dualScreen/dualScreen.css",
+			"components/dualScreen/dualScreenControlBar.css"
+		],
+		"templates": {
+			"dualScreenControlBar": "components/dualScreen/dualScreenControlBar.tmpl.html"
+		},
 		"dependencies": [
 			"mw.KBaseComponent",
 			"jquery.ui.draggable",
-			"jquery.ui.resizable",
-			"dualScreenControlBar"
+			"jquery.ui.resizable"
 		],
 		"kalturaPluginName": "dualScreen"
-	},
-	"dualScreenControlBar": {
-		"scripts": "components/dualScreen/dualScreenControlBar.js",
-		"styles": "components/dualScreen/dualScreenControlBar.css"
 	},
 	"hammerEvents": {
 		"scripts": "components/hammerEvents/hammerEvents.js",
@@ -104,6 +120,11 @@
 	},
 	"hammer": {
 		"scripts": "components/hammerEvents/hammer.min.js"
+	},
+	"smartContainer": {
+		"scripts": "components/smartContainer.js",
+		"dependencies": "mw.KBaseComponent",
+		"kalturaPluginName": "smartContainer"
 	},
 	"chapters": {
 		"scripts": "components/chapters/chapters.js",
@@ -134,6 +155,11 @@
 		"dependencies": "mw.KBasePlugin",
 		"kalturaLoad": "always"
 	},
+   "id3Tag": {
+     "scripts": "resources/mw.id3Tag.js",
+     "dependencies": "mw.KBasePlugin",
+     "kalturaLoad": "always"
+   },
 	"controlBarContainer": {
 		"scripts": "components/controlBarContainer.js",
 		"dependencies": "mw.KBasePlugin",
@@ -169,6 +195,11 @@
 		"dependencies": "mw.KBaseComponent",
 		"kalturaPluginName": "largePlayBtn"
 	},
+    "pipBtn":{
+      "scripts": "components/pipBtn.js",
+      "dependencies": "mw.KBaseComponent",
+      "kalturaPluginName": "pipBtn"
+    },
 	"playPauseBtn": {
 		"scripts": "components/playPauseBtn.js",
 		"dependencies": "mw.KBaseComponent",
@@ -184,6 +215,11 @@
 		"dependencies": "mw.KBaseComponent",
 		"kalturaPluginName": "fullScreenBtn"
 	},
+        "audioSelector":{
+            "scripts":  "components/audioSelector.js",
+                "dependencies":"mw.KBaseComponent" ,
+                    "kalturaPluginName":"audioSelector"
+        } ,
 	"expandToggleBtn": {
 		"scripts": "components/expandToggleBtn.js",
 		"dependencies": "mw.KBaseButton",
@@ -253,6 +289,7 @@
 	},
 	"infoScreen": {
 		"scripts": "components/info/info.js",
+		"styles": "components/info/info.css",
 		"templates": "components/info/info.tmpl.html",
 		"dependencies": [
 			"mw.KBaseScreen"
@@ -396,6 +433,16 @@
 		"scripts": "resources/uiConfComponents/playbackRateSelector.js",
 		"dependencies": "mw.KBaseComponent",
 		"kalturaPluginName": "playbackRateSelector"
+	},
+	"qualitySettings": {
+		"scripts": "components/qualitySettings.js",
+		"dependencies": "mw.KBaseSmartContainer",
+		"kalturaPluginName": "qualitySettings"
+	},
+	"morePlugins": {
+		"scripts": "components/morePlugins.js",
+		"dependencies": "mw.KBaseSmartContainer",
+		"kalturaPluginName": "morePlugins"
 	},
 	"streamSelector": {
 		"scripts": "components/streamSelector.js",

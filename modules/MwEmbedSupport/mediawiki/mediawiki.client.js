@@ -8,28 +8,31 @@
 	var userAgent = navigator.userAgent;
 
 	mw.isMobileDevice = function () {
-		return ( mw.isIphone() || mw.isIpod() || mw.isIpad() || mw.isAndroid() || mw.isWindowsPhone() || mw.getConfig("EmbedPlayer.ForceNativeComponent") === true )
+		return ( mw.isIphone() || mw.isIpod() || mw.isIpad() || mw.isAndroid() || mw.isWindowsPhone() || mw.getConfig("EmbedPlayer.ForceNativeComponent") === true || mw.getConfig("EmbedPlayer.SimulateMobile") === true )
 	};
 	mw.isNativeApp = function () {
 		return mw.getConfig("EmbedPlayer.ForceNativeComponent");
 	};
 	mw.isIphone = function () {
-		return ( mw.getConfig("EmbedPlayer.ForceNativeComponent") !== true && navigator.userAgent.indexOf('iPhone') != -1 && !mw.isIpad() ) || mw.isIpod();
+		return ( mw.getConfig("EmbedPlayer.ForceNativeComponent") !== true && userAgent.indexOf('iPhone') != -1 && !mw.isIpad() ) || mw.isIpod();
 	};
 	mw.isIE = function () {
-		return (/msie/.test(userAgent.toLowerCase()) || /trident/.test(navigator.userAgent.toLowerCase()));
+		return (/msie/.test(userAgent.toLowerCase()) || /trident/.test(userAgent.toLowerCase()));
 	};
 	mw.isIE7 = function () {
 		return (/msie 7/.test(userAgent.toLowerCase()));
 	};
 	mw.isIE8 = function () {
-		return (/msie 8/.test(userAgent.toLowerCase()));
+		return document.documentMode === 8;
 	};
 	mw.isIE9 = function () {
-		return (/msie 9/.test(userAgent.toLowerCase()));
+		return document.documentMode === 9;
 	};
     mw.isIE11 = function () {
-        return (/trident\/7.0/.test(navigator.userAgent.toLowerCase()));
+        return (/trident\/7.0/.test(userAgent.toLowerCase()));
+    };
+	mw.isEdge = function () {
+        return (/edge/.test(userAgent.toLowerCase()));
     };
 	mw.isDesktopSafari = function () {
 		return (/safari/).test(userAgent.toLowerCase()) && !mw.isMobileDevice() && !mw.isChrome();
@@ -51,33 +54,43 @@
 	mw.isIpad = function () {
 		return ( userAgent.indexOf('iPad') != -1 );
 	};
+	mw.isIpad2 = function () {
+		return ( mw.isIpad() && window.devicePixelRatio && window.devicePixelRatio < 2 );
+	};
 	mw.isIpad3 = function () {
 		return  /OS 3_/.test(userAgent) && mw.isIpad();
 	};
+	
+	// Note on those Android checks: Windows Phone browser has "Android" in its userAgent.
+	// https://msdn.microsoft.com/en-us/library/hh869301%28v=vs.85%29.aspx
+	// So the Android checks must make sure the string does not include "Windows".
+	
 	mw.isAndroid44 = function () {
-		return ( userAgent.indexOf('Android 4.4') != -1 );
+		return ( userAgent.indexOf('Android 4.4') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid43 = function () {
-		return ( userAgent.indexOf('Android 4.3') != -1 );
+		return ( userAgent.indexOf('Android 4.3') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid42 = function () {
-		return ( userAgent.indexOf('Android 4.2') != -1 );
+		return ( userAgent.indexOf('Android 4.2') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid41 = function () {
-		return ( userAgent.indexOf('Android 4.1') != -1 );
+		return ( userAgent.indexOf('Android 4.1') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid40 = function () {
-		return ( userAgent.indexOf('Android 4.0') != -1 );
+		return ( userAgent.indexOf('Android 4.0') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid2 = function () {
-		return ( userAgent.indexOf('Android 2.') != -1 );
+		return ( userAgent.indexOf('Android 2.') != -1  && userAgent.indexOf('Windows') === -1 );
 	};
 	mw.isAndroid = function () {
-		return ( userAgent.indexOf('Android') != -1 );
+		return ( userAgent.indexOf('Android') != -1 && userAgent.indexOf('Windows') === -1);
 	};
 	mw.isAndroid4andUp = function () {
-		return ( (userAgent.indexOf('Android 4.') != -1) || (userAgent.indexOf('Android 5.') != -1) );
+		return ( (userAgent.indexOf('Android 4.') != -1) || (userAgent.indexOf('Android 5.') != -1) || (userAgent.indexOf('Android 6.') != -1) ) && userAgent.indexOf('Windows') === -1;
 	};
+	
+	
 	mw.isFirefox = function () {
 		return ( userAgent.indexOf('Firefox') != -1 );
 	};
@@ -90,6 +103,13 @@
 	mw.isAndroidChromeNativeBrowser = function () {
 		return ( mw.isAndroid() && mw.isChrome() );
 	};
+	mw.isOldAndroidChromeNativeBrowser = function () {
+		var regExpResult = userAgent.match(/Chrome\/([0-9][0-9])/);
+		if ( regExpResult instanceof Array && regExpResult.length > 1 ){
+			return mw.isAndroidChromeNativeBrowser() && parseInt( regExpResult[1] ) < 30;
+		}
+		return false;
+	};
 	mw.isMobileChrome = function () {
 		return ( mw.isAndroid4andUp()
 			&&
@@ -97,7 +117,7 @@
 			)
 	};
 	mw.isWindowsPhone = function () {
-		return (  userAgent.indexOf('Windows Phone') != -1 );
+		return (  userAgent.indexOf('Windows Phone') != -1 || (userAgent.indexOf('Windows') != -1 && userAgent.indexOf('Touch') != -1  && userAgent.indexOf('Tablet') === -1));
 	};
 	mw.isIOS = function () {
 		return ( mw.isIphone() || mw.isIpod() || mw.isIpad() );
@@ -127,6 +147,20 @@
 	mw.isIOS8 = function () {
 		// Known Limitation - It will return false for iOS8 Simulator
 		return ( /OS 8_/.test(userAgent) || /Version\/8/.test(userAgent) ) && mw.isIOS();
+	};
+	mw.isIOS9 = function () {
+		// Known Limitation - It will return false for iOS8 Simulator
+		return ( /OS 9_/.test(userAgent) || /Version\/9/.test(userAgent) ) && mw.isIOS();
+	};
+
+	mw.isIOSBelow9 = function () {
+		// mw.isIOSV() methods check mw.isIOS(), but because of the OR operator it will be checked multiple times. 
+		// Short-circuit to save many calls.
+		return mw.isIOS() && (mw.isIOS3() || mw.isIOS4() || mw.isIOS5() || mw.isIOS6() || mw.isIOS7() || mw.isIOS8());
+	};
+	
+	mw.isIOS8_9 = function () {
+		return mw.isIOS8() || mw.isIOS9();
 	};
 
 	mw.isSilk = function () {

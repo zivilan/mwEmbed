@@ -51,12 +51,12 @@ $uiVars = array(
 					'default' => 'false',
 					'example' => '../modules/KalturaSupport/tests/ForceFlashOnDesktop.html'
 			),
-			'Kaltura.ForceFlashOnDesktopSafari' => array(
-            					'type' => 'String',
-            					'desc' => 'If the player should be forced to use flash on desktop Safari.',
-            					'default' => 'false',
-            					'example' => '../modules/KalturaSupport/tests/ForceFlashOnDesktopSafari.html'
-            			),
+			'ForceFlashOnDesktopSafari' => array(
+				'type' => 'String',
+				'desc' => 'If the player should be forced to use flash on desktop Safari.',
+				'default' => 'false',
+				'example' => '../modules/KalturaSupport/tests/ForceFlashOnDesktopSafari.html'
+			),
 			'Kaltura.EnableEmbedUiConfJs' => array(
 					'type' => 'String',
 					'desc' => 'If the player should request uiConf Javascript prior to embed',
@@ -131,6 +131,18 @@ $uiVars = array(
 					'default' => 'false',
 					'example' => '../modules/KalturaSupport/tests/LeadWithHLSOnFlash.html'
 			),
+			'forceHDS' => array(
+            					'type' => 'Boolean',
+            					'desc' => 'Force HDS streamerType for Kaltura Live (HLS by default)',
+            					'default' => 'false',
+            					'example' => ''
+            ),
+            'ignoreAkamaiHD' => array(
+                        					'type' => 'Boolean',
+                        					'desc' => 'Play HDS without AkamaiHD plugin (the plugin is loaded by default for HDNETWORK or HDNETWORK_HDS streamerTypes)',
+                        					'default' => 'false',
+                        					'example' => ''
+                        ),
 			'host' => array(
 					'type' => 'String',
 					'desc' => 'The URL of the Kaltura server to work with',
@@ -228,7 +240,7 @@ $uiVars = array(
 		'vars' => array(
 			'entryId' => array(
 				'type' => 'String',
-				'desc' => 'Valid Kaltura media entry id or a media URL (to use URL set sourceType=URL)',
+				'desc' => 'Valid Kaltura media entry id. To support directly assigning media see <a href="#uiVarsMediaProxy">MediaProxy</a>',
 				'default' => '',
 				'example' => '../modules/KalturaSupport/tests/kWidget.embed.qunit.html'
 			),
@@ -249,6 +261,7 @@ $uiVars = array(
 				'type' => 'String',
 				'desc' => 'The type of media source to load, either a URL or id of valid Kaltura media entry',
 				'default' => 'entryId',
+				'availability' => 'kdp',
 				'example' => ''
 			),
 			'streamerType' => array(
@@ -397,6 +410,7 @@ $uiVars = array(
 				'type' => 'String',
 				'desc' => 'External thumbnail URL to load instead of the entry default thumbnail. Supports evaluated expressions within curly brackets',
 				'default' => '',
+				'example' => '../modules/KalturaSupport/tests/ThumbnailEmbedExternalThumbnail.html',
 			),
 			'kml' => array(
 				'type' => 'String',
@@ -416,11 +430,6 @@ $uiVars = array(
 					'desc' => "Valid uiConf XML result, that is used by the 'KDP wrapper'; A Flash application that wraps the KDP for caching purposes",
 					'default' => 'null',
 					'availability' => 'kdp',
-			),
-			'relativeCortadoAppletPath' => array(
-				'type' => 'String',
-				'desc' => 'The default location for Java Cortado Applet',
-				'default' => '',
 			),
 			'disableTrackElement' => array(
 				'type' => 'Boolean',
@@ -451,11 +460,11 @@ $uiVars = array(
 				'example' => '../modules/KalturaSupport/tests/AutoPlay.qunit.html'
 			),
 			'EmbedPlayer.WebKitPlaysInline' => array(
-            			 		'type' => 'Boolean',
-            					'desc' => "Determines if should play the video inline or not",
-            					'default' => 'false',
-            					'example' => ''
-            ),
+			 		'type' => 'Boolean',
+					'desc' => "Determines if should play the video inline when inside a webview on iOS.",
+					'default' => 'false',
+					'example' => ''
+			),
 			'autoMute' => array(
 				'type' => 'Boolean',
 				'desc' => 'Determine whether to start playback with volume muted (usually used by video ads or homepage auto play videos)',
@@ -595,12 +604,12 @@ $uiVars = array(
 					'default' => '',
 					'example' => ''
 			),
-			/*'EmbedPlayer.iPhoneShowHTMLPlayScreen' => array(
+			'EmbedPlayer.DisableEntryCache' => array(
 			 'type' => '',
-					'desc' => "",
-					'default' => '',
-					'example' => ''
-			),*/
+					'desc' => "When set to true, entry data is not saved in the player cache. This can improve performances, especially when using long play lists",
+					'default' => 'false',
+					'example' => '../modules/KalturaSupport/tests/PlaylistEvents.qunit.html'
+			),
 			'EmbedPlayer.NativeControls' => array(
 					'type' => 'Boolean',
 					'desc' => "Determines if mwEmbed should use the Native player controls. This will prevent video tag rewriting and skinning. Useful for devices such as iPad / iPod that don't fully support DOM overlays or don't expose full-screen functionality to JavaScript",
@@ -637,6 +646,12 @@ $uiVars = array(
 					'default' => '2',
 					'example' => ''
 			),
+			'EmbedPlayer.SeekTargetThreshold'  => array(
+					'type' => 'Number',
+					'desc' => "Seek target precision threshold. Will not seek if difference between playback element time and seek target time is lower than the specified value",
+					'default' => '0.1',
+					'example' => ''
+			),
 			/*'EmbedPlayer.WebKitPlaysInline' => array(
 			 		'type' => 'Boolean',
 					'desc' => "Determines if should play the video inline or not",
@@ -647,12 +662,6 @@ $uiVars = array(
 					'type' => '',
 					'desc' => "",
 					'default' => '',
-					'example' => ''
-			),
-			'EmbedPlayer.DisableJava' => array(
-					'type' => 'Boolean',
-					'desc' => "If the java cortado player should be disabled",
-					'default' => 'true',
 					'example' => ''
 			),
 			'EmbedPlayer.DisableVideoTagSupport' => array(
@@ -792,12 +801,54 @@ $uiVars = array(
 					'desc' => "If the player should hide the loading spinner when it is in buffering mode",
 					'default' => 'false',
 					'example' => ''
+			),
+			'EmbedPlayer.DisableContextMenu' => array(
+					'type' => 'Boolean',
+					'desc' => "Disables the player's right-click context menu",
+					'default' => 'false',
+					'example' => '../modules/KalturaSupport/tests/ThumbnailEmbedManyPlayers.qunit.html'
+			),
+			'EmbedPlayer.KeepPoster' => array(
+					'type' => 'Boolean',
+					'desc' => "Keeps the entry thumbnail shown during playback (covers the video)",
+					'default' => 'false',
+					'example' => ''
 			)
 		)
 	),
 	'mediaProxy'=> array(
 		'desc' => "The MediaProxy object is responsible for referencing and loading of the current playing media.",
 		'vars' => array(
+			'mediaProxy.entry' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of <a href="http://www.kaltura.com/api_v3/testmeDoc/index.php?object=KalturaBaseEntry">entry object</a>.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
+			'mediaProxy.entryCuePoints' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of <a href="http://www.kaltura.com/api_v3/testmeDoc/index.php?object=KalturaCuePoint">player cuePoints</a>.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
+			'mediaProxy.entryCuePoints' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of <a href="http://www.kaltura.com/api_v3/testmeDoc/index.php?object=KalturaCuePoint">player cuePoints</a>.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
+			'mediaProxy.contextData' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of entry access control restriction.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
+			'mediaProxy.entryMetadata' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of entry custom metadata.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
+			'mediaProxy.sources' => array(
+					'type' => 'Object',
+					'desc' => 'Supports partial or complete override of entry media sources.',
+					'example' => '../modules/KalturaSupport/tests/StandAlonePlayerMediaProxyOverride.html'
+			),
 			'mediaProxy.selectedFlavorId' => array(
 					'type' => 'String',
 					'desc' => 'The transcoding flavor currently playing. A valid id of a transcoding flavor associated with Kaltura entry currently being played',

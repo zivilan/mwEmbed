@@ -26,6 +26,7 @@
 		streams: [],
 		streamsReady: false,
 		streamEnded: false,
+		streamChanging: false,
 
 		setup: function () {
 			this.addBindings();
@@ -64,6 +65,7 @@
 				//TODO: handle default stream selection???
 				if (_this.getPlayer().kentryid != _this.currentStream.id) {
 					_this.setStream(_this.currentStream);
+					_this.setActiveMenuItem();
 				}
 				_this.buildMenu();
 				_this.onEnable();
@@ -89,6 +91,15 @@
 
 			this.bind('changeStream', function (e, arg) {
 				_this.externalSetStream(arg);
+			});
+
+			this.bind('onChangeMedia', function () {
+				if (!_this.streamChanging){
+						_this.streams = [];
+						_this.getMenu().destroy();
+						_this.onDisable();
+						_this.streamsReady = false;
+					}
 			});
 
 			if (this.getConfig('enableKeyboardShortcuts')) {
@@ -120,11 +131,12 @@
 			// do the api request
 			this.getKalturaClient().doRequest(requestObject, function (data) {
 				// Validate result
-				if (data && _this.isValidResult(data[0])) {
+				if (data && _this.isValidResult(data[0] && data[0].totalCount > 0)) {
 					_this.createStreamList(data);
+					_this.$el.show();
 				} else {
 					mw.log('streamSelector::Error retrieving streams, disabling component');
-					_this.getBtn().hide();
+					_this.$el.hide();
 				}
 			});
 		},
@@ -147,8 +159,8 @@
 					}
 				} );
 			} else {
-				mw.log('streamSelector::No streams avaialble, disabling component');
-				_this.getBtn().hide();
+				mw.log('streamSelector::No streams available, disabling component');
+				_this.$el.hide();
 			}
 			_this.embedPlayer.triggerHelper('streamsReady');
 		},
@@ -170,14 +182,17 @@
 			// Add ] Sign for next stream
 			addKeyCallback(this.getConfig("keyboardShortcutsMap").nextStream, function () {
 				_this.setStream(_this.getNextStream());
+				_this.setActiveMenuItem();
 			});
 			// Add [ Sigh for previous stream
 			addKeyCallback(this.getConfig("keyboardShortcutsMap").prevStream, function () {
 				_this.setStream(_this.getPrevStream());
+				_this.setActiveMenuItem();
 			});
 			// Add \ Sigh for default stream
 			addKeyCallback(this.getConfig("keyboardShortcutsMap" ).defaultStream, function () {
 				_this.setStream(_this.getDefaultStream());
+				_this.setActiveMenuItem();
 			});
 			// Add S Sigh for open menu
 			addKeyCallback(this.getConfig("keyboardShortcutsMap" ).openMenu, function () {
@@ -237,6 +252,10 @@
 			}
 			this.getMenu().setActive({'key': 'id', 'val': this.getCurrentStreamIndex()});
 		},
+		setActiveMenuItem: function() {
+			var index = this.getCurrentStreamIndex();
+			this.getMenu().setActive(index);
+		},
 		addStreamToMenu: function (id, stream) {
 			var _this = this;
 			var active = (this.getCurrentStreamIndex() == id);
@@ -257,6 +276,7 @@
 			var stream = this.streams[id];
 			if (stream) {
 				this.setStream(stream);
+				this.setActiveMenuItem();
 			} else {
 				this.log("Error - invalid stream id");
 			}
@@ -266,6 +286,7 @@
 			if (this.currentStream != stream) {
 				var _this = this;
 				var embedPlayer = this.getPlayer();
+				this.streamChanging = true;
 				embedPlayer.triggerHelper('onChangeStream', [_this.currentStream.id]);
 				//Set reference to active stream
 				this.currentStream = stream;
@@ -325,6 +346,7 @@
 							embedPlayer.removeBlackScreen();
 							//Return poster to allow display of poster on clip done
 							mw.setConfig('EmbedPlayer.HidePosterOnStart', false);
+							_this.streamChanging = false;
 							embedPlayer.triggerHelper('onChangeStreamDone', [_this.currentStream.id]);
 						});
 						//Add black screen before seek to avoid flashing of video
@@ -380,13 +402,11 @@
 		onEnable: function () {
 			this.isDisabled = false;
 			this.updateTooltip(gM('mwe-embedplayer-select_stream'));
-			this.getComponent().find('button').removeClass('rotate');
 			this.getBtn().removeClass('disabled');
 		},
 		onDisable: function () {
 			this.isDisabled = true;
 			this.updateTooltip(gM('mwe-embedplayer-switch_stream'));
-			this.getComponent().find('button').addClass('rotate');
 			this.getComponent().removeClass('open');
 			this.getBtn().addClass('disabled');
 		}

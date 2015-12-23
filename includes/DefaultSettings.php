@@ -6,13 +6,19 @@
  *
  */
 
+if (isset($_SERVER["HTTP_X_FORWARDED_HOST"]))
+{
+	 $_SERVER["HTTP_HOST"] = $_SERVER["HTTP_X_FORWARDED_HOST"];
+	 $_SERVER["SERVER_NAME"] = $_SERVER["HTTP_X_FORWARDED_HOST"];
+}
+
 // The default cache directory
 $wgScriptCacheDirectory = realpath( dirname( __FILE__ ) ) . '/cache';
 
 $wgBaseMwEmbedPath = realpath( dirname( __FILE__ ) . '/../' );
 
 // The version of the library:
-$wgMwEmbedVersion = '2.31.rc10';
+$wgMwEmbedVersion = '2.39.rc4';
 
 // Default HTTP protocol from GET or SERVER parameters
 if( isset($_GET['protocol']) ) {
@@ -134,11 +140,7 @@ $wgExternalPlayersSupportedTypes = array('YouTube');
 
 //Embedded services
 //To enable service re routing for entryResult calls
-$wgEnableKalturaEmbedServicesRouting = false;
-//Set trusted domains for re route requests
-$wgKalturaAuthEmbedServicesDomains = array( 'localhost' );
-//To enable overloading proxy data on multirequest
-$wgKalturaEnableProxyData = false;
+$wgEnableKalturaEmbedServicesRouting = true;
 
 // To include signed headers with user IPs for IP restriction lookups, input a salt string for 
 // $wgKalturaRemoteAddressSalt configuration option. 
@@ -241,6 +243,23 @@ $wgRemoteWebInspector = false;
 $wgKalturaApiFeatures = array();
 
 /*********************************************************
+ * Override Domain:
+********************************************************/
+$wgEnableKalturaOverrideDomain = true;
+
+/*********************************************************
+ * A comma-delimited string of allowed flashavrs to be passed to server on dynamic embed call:
+********************************************************/
+$wgAllowedVars = "inlineScript";
+$wgAllowedVarsKeyPartials = "onPageJs,onPageCss,IframeCustomPluginJs,IframeCustomPluginCss";
+$wgAllowedPluginVars = "plugin,templatePath,templates,iframeHTML5Js,iframeHTML5Css,loadInIframe";
+$wgAllowedPluginVarsValPartials = "{html5ps}";
+// Kaltura cache TTL value in unix time for dynamic embed local storage caching of kWidget, default is 10 minutes
+$wgCacheTTL = (10 * 60 * 1000);
+// Kaltura max cache entries, limit max available cached entries per domain to avoid over populating localStorage
+$wgMaxCacheEntries = 1;
+
+/*********************************************************
  * Include local settings override:
 ********************************************************/
 $wgLocalSettingsFile = realpath( dirname( __FILE__ ) ) . '/../LocalSettings.php';
@@ -265,6 +284,7 @@ include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/api
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweFeaturesList.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweApiLanguageSupport.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweUpgradePlayer.php' );
+include_once( realpath( dirname( __FILE__ ) )  . '/../modules/KalturaSupport/apiServices/mweApiGetLicenseData.php' );
 include_once( realpath( dirname( __FILE__ ) )  . '/../studio/studioService.php');
 /**
  * Extensions should register foreign module sources here. 'local' is a

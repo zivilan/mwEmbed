@@ -9,6 +9,9 @@
 		keepOnScreen: false,
 
 		setup: function(){
+			if (mw.isMobileDevice()){
+				this.setConfig("hover", true);
+			}
 			// Exit if we're using native controls
 			if( this.getPlayer().useNativePlayerControls() ) {
 				this.getPlayer().enableNativeControls();
@@ -29,9 +32,14 @@
 			this.bind( 'showInlineDownloadLink', function(){
 				_this.hide();
 			});
-			this.bind( 'layoutBuildDone ended', function(){
+			this.bind( 'ended', function(){
 				_this.show();
-
+			});
+			this.bind( 'layoutBuildDone', function(){
+				var skin = _this.embedPlayer.getRawKalturaConfig("layout") ? _this.embedPlayer.getRawKalturaConfig("layout").skin : "kdark";
+				if (!mw.isMobileDevice() || skin !== "kdark"){
+					_this.show();
+				}
 			});
 
 			// Bind hover events
@@ -48,7 +56,15 @@
 					_this.keepOnScreen = true;
 					_this.show();
 				});
-				this.bind( 'onComponentsHoverEnabled', function(){
+				this.bind( 'hideScreen closeMenuOverlay', function(){
+					if (!_this.embedPlayer.paused){
+						_this.keepOnScreen = false;
+						_this.hide();
+					}else{
+						_this.show();
+					}
+				});
+				this.bind( 'onComponentsHoverEnabled showScreen displayMenuOverlay', function(){
 					_this.keepOnScreen = false;
 					_this.hide();
 				});
@@ -63,6 +79,9 @@
 			}
 		},
 		show: function(){
+			if(mw.isMobileDevice() && this.getPlayer().getPlayerPoster().length){
+				return; // prevent showing controls on top of the poster when the video first loads
+			}
 			this.getPlayer().isControlsVisible = true;
 			this.getComponent().addClass( 'open' );
 			// Trigger the screen overlay with layout info:
@@ -84,6 +103,7 @@
 		},
 		getComponent: function(){
 			if( !this.$el ) {
+				var _this = this;
 				var $controlsContainer = $('<div />').addClass('controlsContainer');
 				// Add control bar 				
 				this.$el = $('<div />')
@@ -92,7 +112,13 @@
 
 				// Add control bar special classes
 				if( this.getConfig('hover') && this.getPlayer().isOverlayControls() ) {
-					this.$el.addClass('hover');
+					this.$el.addClass('hover')
+						.on("mouseenter", function(){
+							_this.forceOnScreen = true;
+						})
+						.on("mouseleave click", function(){
+							_this.forceOnScreen = false;
+						});
 					this.embedPlayer.getVideoHolder().addClass('hover');
 				} else {
 					this.$el.addClass('block');

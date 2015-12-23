@@ -32,6 +32,9 @@ mw.KAnalytics.prototype = {
 	// Start Time
 	startReportTime: 0,
 
+	//delay the stats call in x sec
+	delay:0,
+
 	kEventTypes : {
 		'WIDGET_LOADED' : 1,
 		'MEDIA_LOADED' : 2,
@@ -76,6 +79,7 @@ mw.KAnalytics.prototype = {
 		this.embedPlayer = embedPlayer;
 		if( ! this.kClient ) {
 			this.kClient = mw.kApiGetPartnerClient( embedPlayer.kwidgetid );
+			this.delay = this.embedPlayer.getKalturaConfig( 'statistics' , 'delay' ) ? this.embedPlayer.getKalturaConfig( 'statistics' , 'delay' ) * 1000 : 0;
 		}
 		// Remove any old bindings:
 		$( embedPlayer ).unbind( this.bindPostFix );
@@ -165,9 +169,15 @@ mw.KAnalytics.prototype = {
 				eventSet[ flashVarEvents[ fvKey ] ] = encodeURIComponent( this.embedPlayer.getKalturaConfig('statistics', fvKey ) );
 			}
 		}
+		// hideUserId will remove the userId from the analytics call EVEN if the embed code sends one (unless hashedUserId is in use)
+		if(this.embedPlayer.getKalturaConfig( 'statistics' , 'hideUserId') && eventSet.userId){
+			delete(eventSet.userId);
+		}
+
 
 		// Add referrer parameter
-		eventSet[ 'referrer' ] = encodeURIComponent( mw.getConfig('EmbedPlayer.IframeParentUrl') );
+		var pageReferrer =  mw.getConfig('EmbedPlayer.IsFriendlyIframe') ? mw.getConfig('EmbedPlayer.IframeParentUrl') : document.referrer;
+		eventSet[ 'referrer' ] = encodeURIComponent( pageReferrer );
 
 		// Add in base service and action calls:
 		var eventRequest = {'service' : 'stats', 'action' : 'collect'};
@@ -190,12 +200,19 @@ mw.KAnalytics.prototype = {
 				// error in calling parent page event
 			}
 		}
-		if (this.embedPlayer.getFlashvars('ks')){
+		//hideKS is an attribute that will prevent the request from sending the KS even if the embed code receives one
+		if (this.embedPlayer.getFlashvars('ks') && !this.embedPlayer.getKalturaConfig( 'statistics' , 'hideKs') ){
 			eventRequest['ks'] = this.embedPlayer.getFlashvars('ks');
 		}
 
 		// Do the api request:
-		this.kClient.doRequest( eventRequest, null, true );
+		if (this.delay) {
+			setTimeout( function () {
+				_this.kClient.doRequest( eventRequest , null , true );
+			} , this.delay );
+		} else {
+			this.kClient.doRequest( eventRequest , null , true );
+		}
 	},
 
 	/**

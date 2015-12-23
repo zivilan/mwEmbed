@@ -6,6 +6,7 @@
 			"parent": "controlsContainer",
 			"order": 62,
 			"displayImportance": "high",
+			"iconClass": "icon-cc",
 			"align": "right",
 			"showTooltip": true,
 			"layout": "ontop", // "below"
@@ -22,7 +23,8 @@
 			"useExternalClosedCaptions": false,
 			"offButtonPosition": "first",
 			// Can be used to force loading specific language and expose to other plugins
-			"forceLoadLanguage": false
+			"forceLoadLanguage": false,
+			"title": gM( 'mwe-embedplayer-timed_text')
 		},
 
 		textSources: [],
@@ -38,8 +40,6 @@
 				&&
 				$.cookie( this.cookieName ) == 'None')
 				||
-				this.getConfig('displayCaptions') === null
-				||
 				( this.getConfig( 'hideClosedCaptions') === true )
 			){
 				this.setConfig('displayCaptions', false );
@@ -50,6 +50,14 @@
 					this.defaultBottom += this.embedPlayer.layoutBuilder.getHeight();
 				}
 			}
+
+			this.embedPlayer.bindHelper("propertyChangedEvent", function(event, data){
+				if ( data.plugin === _this.pluginName ){
+					if ( data.property === "captions" ){
+						_this.getMenu().$el.find("li a")[data.value].click();
+					}
+				}
+			});
 
 			if ( this.getConfig('showEmbeddedCaptions') === true ) {
 
@@ -110,7 +118,23 @@
 							_this.buildMenu( _this.textSources );
 						} );
 					} );
+					outOfBandCaptionEventHandlers.call(this);
 				}
+
+			}
+			if (this.getConfig("useExternalClosedCaptions")) {
+				this.bind( 'loadExternalClosedCaptions', function ( e, data ) {
+					if ( !(data && $.isArray( data.languages ) ) ) {
+						data.languages = [];
+					}
+					_this.destory();
+					_this.buildMenu( data.languages );
+				} );
+				outOfBandCaptionEventHandlers.call(this);
+			}
+
+			function outOfBandCaptionEventHandlers(){
+				var _this = this;
 				this.bind( 'timeupdate', function(){
 					if( _this.getConfig('displayCaptions') === true && _this.selectedSource ){
 						_this.monitor();
@@ -125,21 +149,14 @@
 					_this.ended = false;
 				});
 			}
-			if (this.getConfig("useExternalClosedCaptions")) {
-				this.bind( 'loadExternalClosedCaptions', function ( e, data ) {
-					if ( !(data && $.isArray( data.languages ) ) ) {
-						data.languages = [];
-					}
-					_this.destory();
-					_this.buildMenu( data.languages );
-				} );
-			}
 
 			this.bind( 'onplay', function(){
 				_this.playbackStarted = true;
+				_this.getMenu().close();
 			});
 			this.bind( 'hidePlayerControls', function(){
 				_this.getComponent().removeClass( 'open' );
+				_this.getMenu().close();
 			});
 
 			this.bind( 'showHideClosedCaptions', function(){
@@ -150,13 +167,13 @@
 				}
 			});
 
-			this.bind( 'showClosedCaptions', function(){
+			this.bind( 'showClosedCaptions preHideScreen hideMobileComponents', function(){
 				if( _this.getConfig('displayCaptions') === false ){
 					_this.setConfig('displayCaptions', true);
 				}
 			});
 
-			this.bind( 'hideClosedCaptions', function(){
+			this.bind( 'hideClosedCaptions preShowScreen showMobileComponents', function(){
 				if( _this.getConfig('displayCaptions') === true ){
 					_this.setConfig('displayCaptions', false);
 				}
@@ -172,15 +189,16 @@
 				this.updateBelowVideoCaptionContainer();
 			}
 
-			this.bind( 'onHideControlBar onShowControlBar', function(event, layout ){
-				if ( !_this.ended && _this.getPlayer().isOverlayControls() ) {
-					_this.defaultBottom = layout.bottom;
-					// Move the text track down if present
-					_this.getPlayer().getInterface().find( '.track' )
-						.stop()
-						.animate( layout, 'fast' );
-				}
-			});
+			if ( this.getConfig('layout') == 'ontop' ) {
+				this.bind('onHideControlBar onShowControlBar', function (event, layout) {
+					if (!_this.ended && _this.getPlayer().isOverlayControls()) {
+						_this.defaultBottom = layout.bottom;
+						// Move the text track down if present
+						_this.getPlayer().getInterface().find('.track')
+							.animate(layout, 'fast');
+					}
+				});
+			}
 
 			this.bind("AdSupport_StartAdPlayback", function(){
 				_this.setConfig('displayCaptions', false);
@@ -287,15 +305,19 @@
 			this.updateTimeOffset();
 			// Get from <track> elements
 			$.each( this.getPlayer().getTextTracks(), function( inx, textSource ){
-				_this.textSources.push( new mw.TextSource( textSource ) );
+				var textSource = new mw.TextSource( textSource );
+				if ( !_this.textSourcesInSources(_this.textSources, textSource) ){
+					_this.textSources.push( textSource );
+				}
 			});
 
 			this.loadCaptionsFromApi(function( captions ){
 				// Add track elements
 				$.each(captions, function(){
-					_this.textSources.push(
-						_this.getTextSourceFromDB( this )
-					);
+					var textSource = _this.getTextSourceFromDB( this );
+					if ( !_this.textSourcesInSources(_this.textSources, textSource) ){
+						_this.textSources.push(textSource);
+					}
 				});
 				// Allow plugins to override text sources data
 				_this.getPlayer().triggerHelper( 'ccDataLoaded', [_this.textSources, function(textSources){
@@ -315,6 +337,14 @@
 				}
 				callback();
 			});
+		},
+		textSourcesInSources: function(sources, textSource){
+			for ( var  i = 0; i < sources.length; i++ ){
+				if ( sources[i].id === textSource.id ){
+					return true;
+				}
+			}
+			return false;
 		},
 		loadCaptionsFromApi: function( callback ){
 			if(!this.getPlayer().kentryid){
@@ -407,7 +437,7 @@
 			}
 
 			var captionsSrc;
-			if( mw.isIphone() && !mw.getConfig('disableTrackElement') ) {
+			if( mw.isIphone() && !mw.getConfig('disableTrackElement') && !this.getConfig('forceLoadLanguage') ) {
 				// getting generated vtt file from dfxp/srt
 				captionsSrc = mw.getConfig('Kaltura.ServiceUrl') +
 							"/api_v3/index.php/service/caption_captionasset/action/serveWebVTT/captionAssetId/" +
@@ -744,7 +774,9 @@
 						(  fontsize > 24 )?  emFontMap[ 24 ]+'em' : emFontMap[ 6 ];
 			}
 			if( this.getConfig( 'useGlow' ) && this.getConfig( 'glowBlur' ) && this.getConfig( 'glowColor' ) ) {
-				style[ "text-shadow" ] = '0 0 ' + this.getConfig( 'glowBlur' ) + 'px ' + mw.getHexColor( this.getConfig( 'glowColor' ) );
+				var hShadow = this.getConfig( 'hShadow' ) ? this.getConfig( 'hShadow' ) : 0;
+				var vShadow = this.getConfig( 'vShadow' ) ? this.getConfig( 'vShadow' ) : 0;
+				style[ "text-shadow" ] = hShadow + 'px ' + vShadow + 'px ' + this.getConfig( 'glowBlur' ) + 'px ' + mw.getHexColor( this.getConfig( 'glowColor' ) );
 			}
 			return style;
 		},
@@ -765,6 +797,11 @@
 			return baseCss;
 		},
 		buildMenu: function( sources ){
+			for ( var i = sources.length - 1; i >= 0; i-- ){
+				if ( sources[i].srclang && sources[i].srclang === "multilingual" ){
+					sources.splice(i, 1); // remove multilingual source from menu
+				}
+			}
 			var _this = this;
 			mw.log('closedCaptions::buildMenu with sources: ', sources);
 			// Destroy the old menu
@@ -772,6 +809,8 @@
 
 			// Check if we even have textSources
 			if( sources == 0 ){
+				this.setConfig('displayCaptions', false);
+
 				if( this.getConfig('hideWhenEmpty') === true ) {
 					this.getBtn().hide();
 				}
@@ -784,9 +823,15 @@
 				// Allow plugins to integrate with captions menu
 				this.getPlayer().triggerHelper('captionsMenuReady');
 
+				this.getPlayer().triggerHelper("updatePropertyEvent",{"plugin": this.pluginName, "property": "captions", "items": [{'label':gM('mwe-timedtext-no-subtitles'), 'value':gM('mwe-timedtext-no-subtitles')}]});
+
 				return this.getMenu();
 			} else {
+				if( this.getConfig('hideWhenEmpty') == true ){
+					this.setConfig('visible', true)
+				}
 				this.getBtn().show();
+				this.embedPlayer.triggerHelper("updateComponentsVisibilityDone");
 				// show new timed captions text if exists
 				this.showCaptions();
 			}
@@ -796,6 +841,7 @@
 				this.addOffButton();
 			}
 
+			var items = [];
 			// Add text sources
 			$.each(sources, function( idx, source ){
 				_this.getMenu().addItem({
@@ -811,7 +857,11 @@
 						}
 					},
 					'active': ( _this.selectedSource === source && _this.getConfig( "displayCaptions" )  )
-				})
+				});
+				items.push({'label':source.label, 'value':source.label});
+				if (mw.isMobileDevice() && _this.selectedSource === source){
+					_this.getMenu().setActive(idx+1);
+				}
 			});
 
 			this.getActiveCaption();
@@ -819,6 +869,13 @@
 			if( this.getConfig('showOffButton') && this.getConfig('offButtonPosition') == 'last' ) {
 				this.addOffButton();
 			}
+
+			if ( this.getConfig('showOffButton')){
+				items.unshift({'label':'Off', 'value':'Off'});
+			}
+
+			// dispatch event to be used by a master plugin if defined
+			this.getPlayer().triggerHelper("updatePropertyEvent",{"plugin": this.pluginName, "property": "captions", "items": items, "selectedItem": this.getMenu().$el.find('.active a').text()});
 
 			// Allow plugins to integrate with captions menu
 			this.getPlayer().triggerHelper('captionsMenuReady');
@@ -831,6 +888,7 @@
 					'class': "offBtn"
 				},
 				'callback': function(){
+					_this.selectedSource = null;
 					_this.setConfig('displayCaptions', false);
 					// also update the cookie to "None"
 					_this.getPlayer().setCookie( _this.cookieName, 'None' );
@@ -881,7 +939,7 @@
 				var $menu = $( '<ul />' ).addClass( 'dropdown-menu' );
 				var $button = $( '<button />' )
 								.addClass( 'btn icon-cc' )
-								.attr('title', gM( 'mwe-embedplayer-timed_text' ) )
+								.attr('title', _this.getConfig('title') )
 								.click( function(e){
 									if ( _this.getMenu().numOfChildren() > 0 ) {
 										_this.getMenu().toggle();

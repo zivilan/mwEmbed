@@ -79,6 +79,7 @@
 			});
 
 			this.bind( 'playerReady', function() {
+				_this.onAirStatus = true;
 				_this.isLiveChanged();
 			} );
 
@@ -117,7 +118,9 @@
 
 				//if we moved from live to offline  - show message
 				if ( _this.onAirStatus && !onAirObj.onAirStatus ) {
-					//sometimes offline is only for a second and the message is not needed..
+                    //calculate offlineAlertOffset for timeout (by default = 0 as sometimes offline is only for a second and the message is not needed..)
+                    var offlineAlertOffest = _this.calculateOfflineAlertOffest();
+
 					setTimeout( function() {
 						if ( !_this.onAirStatus ) {
                             //if we already played once it means stream data was loaded. We can continue playing in "VOD" mode
@@ -146,7 +149,7 @@
 							    _this.getPlayer().disablePlayControls();
                             }
                         }
-					}, _this.getConfig( 'offlineAlertOffest' ) );
+					}, offlineAlertOffest );
 
 					embedPlayer.triggerHelper( 'liveOffline' );
 
@@ -158,11 +161,11 @@
 					if ( !_this.getPlayer().getError() ) {
 						_this.getPlayer().enablePlayControls();
 					}
+                    embedPlayer.triggerHelper( 'liveOnline' );
 					if ( _this.playWhenOnline ) {
 						embedPlayer.play();
 						_this.playWhenOnline = false;
 					}
-					embedPlayer.triggerHelper( 'liveOnline' );
 
 					//reload livestream
 					if ( !embedPlayer.firstPlay && _this.isDVR() ) {
@@ -429,13 +432,18 @@
 			if ( embedPlayer.streamerType != 'http' ) {
 				protocol = embedPlayer.streamerType;
 			}
-			_this.getKalturaClient().doRequest( {
-				'service' : service,
-				'action' : 'islive',
-				'id' : embedPlayer.kentryid,
-				'protocol' : protocol,
-				'partnerId': embedPlayer.kpartnerid
-			}, function( data ) {
+
+            var requestObj = {
+                'service' : service,
+                'action' : 'islive',
+                'id' : embedPlayer.kentryid,
+                'protocol' : protocol,
+                'partnerId': embedPlayer.kpartnerid
+            };
+            if ( mw.isIOS8_9() ) {
+                requestObj.rnd = Math.random();
+            }
+			_this.getKalturaClient().doRequest( requestObj, function( data ) {
 				var onAirStatus = false;
 				if ( data === true ) {
 					onAirStatus = true;
@@ -466,7 +474,16 @@
 				return true;
 			}
 			return false;
-		}
+		},
+
+        calculateOfflineAlertOffest: function() {
+            var offlineAlertOffest = this.getConfig( 'offlineAlertOffest' );
+            var bufferLength = this.getPlayer().getCurrentBufferLength() *1000;
+            if(bufferLength>0){
+                offlineAlertOffest = bufferLength;
+            }
+            return offlineAlertOffest;
+        }
 
 	}));
 

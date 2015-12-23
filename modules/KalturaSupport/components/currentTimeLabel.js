@@ -13,6 +13,10 @@
 
 		setup: function () {
 			var _this = this;
+			var skin = this.embedPlayer.getRawKalturaConfig("layout") ? this.embedPlayer.getRawKalturaConfig("layout").skin : "kdark";
+			if ( mw.isMobileDevice() && skin === "kdark" ){
+				this.getComponent().data("width",0.1);
+			}
 			this.bindTimeUpdate();
 			this.bind('externalTimeUpdate', function (e, newTime) {
 				if (newTime != undefined) {

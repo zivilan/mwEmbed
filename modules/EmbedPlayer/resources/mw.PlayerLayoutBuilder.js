@@ -74,13 +74,15 @@ mw.PlayerLayoutBuilder.prototype = {
 			}
 
 			var $videoDisplay = $embedPlayer.parent('.videoDisplay');
-
+			if( $videoDisplay.find('.videoShadow').length == 0 ){
+				$(".mwEmbedPlayer").before('<div class="videoShadow"></div>');
+			}
 			// build the videoHolder wrapper if needed
 			if( $videoDisplay.parent('.videoHolder').length == 0 ){
 				$videoDisplay.parent('.videoDisplay').wrap(
-					$('<div />').addClass( 'videoHolder' )
+					$('<div />').addClass( 'videoHolder')
 				);
-			}			
+			}
 
 			var $videoHolder = $videoDisplay.parent( '.videoHolder' );
 			if( $videoHolder.parent( '.mwPlayerContainer' ).length == 0 ){
@@ -97,8 +99,16 @@ mw.PlayerLayoutBuilder.prototype = {
 				this.$interface = $videoHolder.parent( '.mwPlayerContainer' )
 			}
 
+			if( mw.isMobileDevice() ){
+				this.$interface.addClass('mobile');
+			}
+
 			if( mw.isTouchDevice() ){
 				this.$interface.addClass('touch');
+			}
+
+			if (mw.isNativeApp()) {
+				this.$interface.addClass('nativeApp');
 			}
 
 			if ( mw.isIE8() ) {
@@ -106,7 +116,11 @@ mw.PlayerLayoutBuilder.prototype = {
 			}
 
 			// Add our skin name as css class
-			this.$interface.addClass( embedPlayer.playerConfig.layout.skin );
+			var skinName = embedPlayer.playerConfig.layout.skin;
+			if (embedPlayer.getRawKalturaConfig("layout") && embedPlayer.getRawKalturaConfig("layout").skin){
+				skinName = embedPlayer.getRawKalturaConfig("layout").skin;
+			}
+			this.$interface.addClass( skinName );
 
 			// clear out base style
 			embedPlayer.style.cssText = '';
@@ -298,8 +312,8 @@ mw.PlayerLayoutBuilder.prototype = {
 				_this.getInterface().find('.' + containerId )
 			);
 		});
-		
-		// once complete trigger and event ( so dynamic space components can resize to take remaining space ) 
+
+		// once complete trigger and event ( so dynamic space components can resize to take remaining space )
 		$(this.embedPlayer ).trigger( 'updateComponentsVisibilityDone' )
 	},
 
@@ -342,7 +356,9 @@ mw.PlayerLayoutBuilder.prototype = {
 					if ( !$first.data( 'forceHide' ) ) {
 						var $comp = $first.show();
 						nextWidth = _this.getComponentWidth( $comp );
-						$comp.hide();
+						if( mw.getConfig('EmbedPlayer.IsFriendlyIframe') ) {
+							$comp.hide();
+						}
 						//break;
 						return false;
 					}
@@ -422,7 +438,7 @@ mw.PlayerLayoutBuilder.prototype = {
 
 	initToolTips: function(){
 		var _this = this;
-		this.embedPlayer.bindHelper( 'layoutBuildDone', function(){
+		this.embedPlayer.bindHelper( 'layoutBuildDone mediaListLayoutReady', function(){
 			_this.setupTooltip()
 			_this.setupTooltip(_this.getInterface().find(".tooltipBelow"), "arrowTop");
 		});
@@ -437,26 +453,30 @@ mw.PlayerLayoutBuilder.prototype = {
 			return;
 		}
 		var	tooltips = elm ? elm : this.getInterface();
-		var arrowType = arrowDirection ? arrowDirection : "arrow";
-
-		tooltips.tooltip({
-			items: '[data-show-tooltip]',
-			"show": { "delay": 1000 },
-			"hide": { "duration": 0 },
-			"content": function(){return $(this).attr('title');},
-			position: {
-				my: "center bottom-10",
-				at: "center top",
-				using: function( position, feedback ) {
-					$( this ).css( position );
-					$( "<div>" )
-						.addClass( arrowType )
-						.addClass( feedback.vertical )
-						.addClass( feedback.horizontal )
-						.appendTo( this );
+		if (tooltips && tooltips.length > 0) {
+			var arrowType = arrowDirection ? arrowDirection : "arrow";
+			var myPosition = tooltips.offset().top > 0 ? "center bottom+55" : "center bottom-10";
+			tooltips.tooltip( {
+				items: '[data-show-tooltip]' ,
+				"show": {"delay": 1000} ,
+				"hide": {"duration": 0} ,
+				"content": function () {
+					return $( this ).attr( 'title' );
+				} ,
+				position: {
+					my: myPosition ,
+					at: "center top" ,
+					using: function ( position , feedback ) {
+						$( this ).css( position );
+						$( "<div>" )
+							.addClass( arrowType )
+							.addClass( feedback.vertical )
+							.addClass( feedback.horizontal )
+							.appendTo( this );
+					}
 				}
-			}
-		});
+			} );
+		}
 	},
 	/**
 	* Get minimal width for interface overlay
@@ -523,15 +543,11 @@ mw.PlayerLayoutBuilder.prototype = {
 		var bindFirstPlay = false;
 		_this.addRightClickBinding();
 
-		this.updateLayoutTimeout = null;
-
+		_this.updateComponentsVisibility();
+		_this.updatePlayerSizeClass();
 		b('updateLayout', function(){
-			// Firefox unable to get component width correctly without timeout
-			clearTimeout(_this.updateLayoutTimeout);
-			_this.updateLayoutTimeout = setTimeout(function(){
 				_this.updateComponentsVisibility();
 				_this.updatePlayerSizeClass();
-			},100);
 		});
 
 		// Bind into play.ctrl namespace ( so we can unbind without affecting other play bindings )
@@ -546,6 +562,14 @@ mw.PlayerLayoutBuilder.prototype = {
 
 		b( 'AdSupport_EndAdPlayback', function(){
 			$interface.removeClass( adPlaybackState );
+		});
+
+		b( 'seeking', function(){
+			$interface.addClass( "seeking-state" );
+		});
+
+		b( 'seeked', function(){
+			$interface.removeClass( "seeking-state" );
 		});
 
 		// Bind to EnableInterfaceComponents
@@ -634,6 +658,9 @@ mw.PlayerLayoutBuilder.prototype = {
 		clearTimeout(this.hideControlsTimeout);
 		this.getInterface().removeClass( this.outPlayerClass );
 		this.removeTouchOverlay();
+		if (this.isInFullScreen()){
+			this.$interface.find(".mwEmbedPlayer").removeClass("noCursor");
+		}
 		this.embedPlayer.triggerHelper( 'showPlayerControls' );
 	},
 	hidePlayerControls: function(){
@@ -641,6 +668,9 @@ mw.PlayerLayoutBuilder.prototype = {
 			this.embedPlayer.isInSequence()){
 			this.getInterface().addClass( this.outPlayerClass );
 			this.addTouchOverlay();
+			if (this.isInFullScreen()){
+				this.$interface.find(".mwEmbedPlayer").addClass("noCursor");
+			}
 			this.embedPlayer.triggerHelper( 'hidePlayerControls' );
 		}
 	},
@@ -1133,32 +1163,22 @@ mw.PlayerLayoutBuilder.prototype = {
 			.css( {
 				'height' : '100%',
 				'width' : '100%',
-				'z-index' : 2
-			} )
+				'z-index' : mw.isMobileDevice() ? 200 : 2
+			})
 		);
 
 		var $closeButton = [];
 
 		if ( !hideCloseButton ) {
 			// Setup the close button
-			$closeButton = $('<div />')
-			.addClass( 'ui-state-default ui-corner-all ui-icon_link rButton overlayCloseButton')
-			.css({
-				'position': 'absolute',
-				'cursor' : 'pointer',
-				'top' : '2px',
-				'right' : '2px'
-			})
+			$closeButton = $('<button></button>')
+			.addClass( 'btn icon-close closePluginsScreen')
 			.click( function() {
 				_this.closeMenuOverlay();
 				if( closeCallback ){
 					closeCallback();
 				}
-			} )
-			.append(
-					$('<span />')
-					.addClass( 'ui-icon ui-icon-closethick' )
-			);
+			} );
 		}
 		var margin = $(".topBarContainer").length === 0 ? '0 10px 10px 0' : '22px 10px 10px 0'; // if we have a topBarContainer - push the content 22 pixels down
 		var overlayMenuCss = {
@@ -1166,8 +1186,7 @@ mw.PlayerLayoutBuilder.prototype = {
 			'width' : '100%',
 			'position' : 'absolute',
 			'margin': margin,
-			'overflow' : 'auto',
-			'padding' : '4px',
+			'overflow' : 'hidden',
 			'z-index' : 3
 		};
 		var $overlayMenu = $('<div />')
@@ -1182,7 +1201,7 @@ mw.PlayerLayoutBuilder.prototype = {
 
 
 		// Append the overlay menu to the player interface
-		$overlayContainer.prepend(
+		$overlayContainer.find(".overlay").append(
 			$overlayMenu
 		)
 		.find( '.overlay-win' )
@@ -1233,6 +1252,11 @@ mw.PlayerLayoutBuilder.prototype = {
 		if ( embedPlayer.getInterface().find('.overlay-win').length != 0 ) {
 			return;
 		}
+		// remove error message from kalturaIframeClass.php
+		try{
+			embedPlayer.getInterface().parent().find( '#error').remove();
+		}catch(e){}
+
 		if ( typeof alertObj.callbackFunction == 'string' ) {
 			if ( alertObj.isExternal ) {
 				try {
@@ -1309,6 +1333,7 @@ mw.PlayerLayoutBuilder.prototype = {
 			var $currentButton = $( '<button />' )
 			.addClass( 'alert-button' )
 				.text( label )
+				.width(Math.floor(100 / buttonsNum) + "%")
 				.click( function( eventObject ) {
 					callback( eventObject );
 					_this.closeAlert( alertObj.keepOverlay );

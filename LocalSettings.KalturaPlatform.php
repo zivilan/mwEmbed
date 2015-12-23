@@ -46,8 +46,10 @@ $wgCDNAssetPath = $wgKalturaCDNUrl;
 // Default Kaltura Cache Path
 $wgScriptCacheDirectory = $kConf->get('cache_root_path') . '/html5/' . $wgKalturaVersion;
 
-$wgLoadScript = $wgKalturaServiceUrl . '/html5/html5lib/' . $wgKalturaVersion . '/load.php';
-$wgResourceLoaderUrl = $wgLoadScript;
+if (strpos($_SERVER["HTTP_HOST"], "kaltura.com")){
+	$wgLoadScript = $wgKalturaServiceUrl . '/html5/html5lib/' . $wgKalturaVersion . '/load.php';
+	$wgResourceLoaderUrl = $wgLoadScript;
+}
 
 // Salt for proxy the user IP address to Kaltura API
 if( $kConf->hasParam('remote_addr_header_salt') ) {
@@ -75,6 +77,21 @@ if( $kConf->hasMap('playReady') ) {
 	$playReadyMap = $kConf->getMap('playReady');
 	if($playReadyMap)
 		$wgKalturaLicenseServerUrl = $playReadyMap['license_server_url'];
+}
+
+// Get PlayReady License URL
+if( $kConf->hasMap('drm') ) {
+	$drmMap = $kConf->getMap('drm');
+	if($drmMap)
+		$wgKalturaUdrmLicenseServerUrl = $drmMap['license_server_url'];
+}
+
+if( $kConf->hasParam('overrideDomain') ) {
+	$wgEnableKalturaOverrideDomain = $kConf->get('overrideDomain');
+}
+
+if( $kConf->hasParam('enableEmbedServicesRouting') ) {
+	$wgEnableKalturaEmbedServicesRouting = $kConf->get('enableEmbedServicesRouting');
 }
 
 // A helper function to get full URL of host

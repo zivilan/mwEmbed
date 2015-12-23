@@ -85,6 +85,13 @@ return array(
                 "endline" => "true",
                 "model" => "config.plugins.controlBarContainer.hover"
             ),
+//            array(
+//               "label" => "Localization code:",
+//                "type" => "text",
+//                "size" => "small",
+//                "endline" => "true",
+//                "model" => "config.enviornmentConfig.localizationCode"
+//            ),
 			array(
 				"label" => "Last Update",
 				"type" => "readonly",
@@ -107,6 +114,13 @@ return array(
                 "endline" => "false",
                 "model" => "config.uiVars.enableTooltips"
             ),
+//            array(
+//                "label" => "Simulate Mobile",
+//                "type" => "checkbox",
+//                "initvalue" => false,
+//                "endline" => "false",
+//                "model" => "config.uiVars.EmbedPlayer.SimulateMobile"
+//            ),
 			"titleLabel" => "",
 			"logo" => "",
 			"loadingSpinner" => "",
@@ -116,6 +130,7 @@ return array(
 			"theme" => "",
 			"infoScreen" => "",
 			"share" => "",
+			"playersJsReceiver" => "",
 			"related" => "",
 			"playlistAPI" => "",
 			"nextPrevBtn" => ""
@@ -152,11 +167,11 @@ return array(
             ),
 			"bumper" => "",
 			"vast" => "",
-			"skipBtn" => "",
-			"skipNotice" => "",
-			"noticeMessage" => "",
 			"doubleClick" => "",
-			"freeWheel" => ""
+			"freeWheel" => "",
+			"skipBtn" => "",
+            "skipNotice" => "",
+            "noticeMessage" => ""
 		)
 	),
 	"plugins"=> array(
@@ -172,6 +187,7 @@ return array(
 			"playbackRateSelector" => "",
 			"restrictUserAgent" => "",
 			"widevine" => "",
+			"multiDrm" => "",
 			"sourceSelector" => "",
 			"download" => "",
 			"nativeCallout" => "",

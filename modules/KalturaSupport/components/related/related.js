@@ -7,11 +7,15 @@
 			order: 4,
 			align: "right",
 			tooltip: gM('mwe-embedplayer-related'),
+			title: gM('mwe-embedplayer-related'),
+			smartContainer: 'morePlugins',
+			smartContainerCloseEvent: 'hideScreen',
 			showTooltip: true,
 			itemsLimit: 12,
 			displayOnPlaybackDone: true,
 			autoContinueEnabled: true,
 			autoContinueTime: null,
+			sendContextWithPlaylist: false,
 			templatePath: 'components/related/related.tmpl.html',
 			playlistId: null,
 			formatCountdown : false,
@@ -56,7 +60,6 @@
 						$(this).width("100%");
 						$(this).height("100%");
 					});
-					_this.resizeThumbs();
 				},200);
 
 			});
@@ -68,7 +71,6 @@
 						$(this).width("100%");
 						$(this).height("100%");
 					});
-					_this.resizeThumbs();
 				},200);
 			});
 
@@ -86,6 +88,17 @@
 
 			this.bind('replayEvent preSequence', function(){
 				_this.stopTimer();
+			});
+
+			this.bind('preShowScreen', function (event, screenName) {
+				if ( screenName === "related" ){
+					_this.embedPlayer.disablePlayControls(['playPauseBtn']);
+				}
+			});
+			this.bind('preHideScreen', function (event, screenName) {
+				if ( screenName === "related" ){
+					_this.embedPlayer.enablePlayControls();
+				}
 			});
 		},
 
@@ -237,7 +250,7 @@
 			var _this = this;
 			// check for valid playlist id:
 			if( this.getConfig( 'playlistId' ) ){
-				return this.getEntriesFromPlaylistId( this.getConfig( 'playlistId' ), callback);
+				return this.getEntriesFromPlaylistId( this.getConfig( 'playlistId' ), callback , this.getConfig( 'sendContextWithPlaylist' ) );
 			}
 			// check for entry list:
 			if( this.getConfig( 'entryList' ) ){
@@ -389,13 +402,24 @@
 		},
 		onConfigChange: function( property, value ){
 			this._super( property, value );
+			if ( property === 'entryList' ){
+				var _this = this;
+				this.getEntriesFromList( value, function(data){
+					_this.updateTemplateData(data);
+					var keepScreenOpen = _this.isScreenVisible(); // save screen status so we can reopen it after switching entryList
+					_this.removeScreen(); // we must remove screen to clear the DOM from old entryList thumbnails
+					if (keepScreenOpen){
+						_this.showScreen(); // reopen screen if needed
+					}
+				} );
+			}
 			if( !this.isScreenVisible() ) {
 				return;
 			}
 
 			if( property == 'timeRemaining' ){
 				if( this.getConfig('formatCountdown')){
-					var timeFormat = mw.KDPMapping.prototype.formatFunctions.timeFormat;
+					var timeFormat = mw.util.formaters().get('timeFormat');
 					this.getScreen().then(function(screen){
 						screen.find('.remaining').html(timeFormat(value));
 					});
@@ -462,6 +486,9 @@
 				});
 			}
 			return defer;
+		},
+		closeScreen: function(){
+			this.hideScreen();
 		}
 	}));
 

@@ -7,12 +7,29 @@
 	mw.KCuePoints = function (embedPlayer) {
 		return this.init(embedPlayer);
 	};
+	mw.KCuePoints.TYPE = {
+		AD: "adCuePoint.Ad",
+		ANNOTATION: "annotation.Annotation",
+		CODE: "codeCuePoint.Code",
+		EVENT: "eventCuePoint.Event",
+		THUMB: "thumbCuePoint.Thumb",
+		QUIZ_QUESTION: "quiz.QUIZ_QUESTION"
+	};
+	mw.KCuePoints.THUMB_SUB_TYPE = {
+		SLIDE: 1,
+		CHAPTER: 2
+	};
 	mw.KCuePoints.prototype = {
 
 		// The bind postfix:
 		bindPostfix: '.kCuePoints',
 		midCuePointsArray: [],
 		liveCuePointsIntervalId: null,
+		supportedCuePoints: [
+			mw.KCuePoints.TYPE.CODE,
+			mw.KCuePoints.TYPE.THUMB,
+			mw.KCuePoints.TYPE.QUIZ_QUESTION
+		],
 
 		init: function (embedPlayer) {
 			var _this = this;
@@ -23,6 +40,7 @@
 
 			// Process cue points
 			embedPlayer.bindHelper('KalturaSupport_CuePointsReady' + this.bindPostfix, function () {
+				_this.initSupportedCuepointTypes();
 				_this.processCuePoints();
 				// Add player bindings:
 				_this.addPlayerBindings();
@@ -63,6 +81,17 @@
 			});
 
 			this.midCuePointsArray = newCuePointsArray;
+		},
+		initSupportedCuepointTypes: function(){
+			//Initial flashvars configuration arrives in form of comma-separated string,
+			//so turn it into array of supported types.
+			var supportedCuePoints = mw.getConfig("EmbedPlayer.SupportedCuepointTypes", this.supportedCuePoints);
+
+			if ($.type(supportedCuePoints) === "string"){
+				supportedCuePoints = supportedCuePoints.split(",")
+			}
+
+			mw.setConfig("EmbedPlayer.SupportedCuepointTypes", supportedCuePoints);
 		},
 		requestThumbAsset: function (cuePoints, callback) {
 			var _this = this;
@@ -110,11 +139,23 @@
 				}
 			}
 		},
+		fixLiveCuePointArray:function(arr) {
+			$.each(arr, function (index,cuePoint) {
+				cuePoint.startTime = cuePoint.createdAt*1000; //start time is in ms and createdAt is in seconds
+			});
+			arr.sort(function (a, b) {
+				return a.createdAt - b.createdAt;
+			});
+		},
 		requestLiveCuepoints: function () {
 			var _this = this;
 
 			// Create associative cuepoint array to enable comparing new cuepoints vs existing ones
 			var cuePoints = this.getCuePoints();
+
+			this.fixLiveCuePointArray(this.midCuePointsArray);
+			this.fixLiveCuePointArray(cuePoints);
+
 			this.associativeCuePoints = {};
 			$.each(cuePoints, function (index, cuePoint) {
 				_this.associativeCuePoints[cuePoint.id] = cuePoint;
@@ -128,13 +169,14 @@
 					'action': 'list',
 					'filter:entryIdEqual': entryId,
 					'filter:objectType': 'KalturaCuePointFilter',
-					'filter:statusIn': '1,3',
-					'filter:cuePointTypeEqual': 'thumbCuePoint.Thumb'
+					'filter:statusIn': '1,3', //1=READY, 3=HANDLED  (3 is after copying to VOD)
+					'filter:cuePointTypeEqual': 'thumbCuePoint.Thumb',
+					'filter:orderBy': "+createdAt" //let backend sorting them
 				};
-				var lastUpdatedAt = _this.getLastUpdateTime() + 1;
+				var lastCreationTime = _this.getLastCreationTime() + 1;
 				// Only add lastUpdatedAt filter if any cue points already received
-				if (lastUpdatedAt > 0) {
-					request['filter:updatedAtGreaterThanOrEqual'] = lastUpdatedAt;
+				if (lastCreationTime > 0) {
+					request['filter:createdAtGreaterThanOrEqual'] = lastCreationTime;
 				}
 				_this.getKalturaClient().doRequest( request,
 					function (data) {
@@ -144,6 +186,7 @@
 							mw.log("Error:: KCuePoints could not retrieve live cuepoints");
 							return;
 						}
+						_this.fixLiveCuePointArray(data.objects);
 						_this.updateCuePoints(data.objects);
 						_this.embedPlayer.triggerHelper('KalturaSupport_CuePointsUpdated', [data.totalCount]);
 					}
@@ -197,6 +240,16 @@
 			});
 			return lastUpdateTime;
 		},
+		getLastCreationTime: function () {
+			var cuePoints = this.getCuePoints();
+			var lastCreationTime = -1;
+			$.each(cuePoints, function (key, cuePoint) {
+				if (lastCreationTime < cuePoint.createdAt) {
+					lastCreationTime = cuePoint.createdAt;
+				}
+			});
+			return lastCreationTime;
+		},
 		getKalturaClient: function () {
 			if (!this.kClient) {
 				this.kClient = mw.kApiGetPartnerClient(this.embedPlayer.kwidgetid);
@@ -240,7 +293,7 @@
 					" onplay" + this.bindPostfix +
 					" KalturaSupport_ThumbCuePointsUpdated" + this.bindPostfix,
 				function (e) {
-					var currentTime = embedPlayer.currentTime * 1000;
+					var currentTime = embedPlayer.getPlayerElementTime() * 1000;
 					//In case of seeked the current cuepoint needs to be updated to new seek time before
 					if (e.type == "seeked") {
 						currentCuePoint = _this.getPreviousCuePoint(currentTime);
@@ -302,9 +355,10 @@
 		 * @param {Number} time Time in milliseconds
 		 */
 		getNextCuePoint: function (time) {
-			if (!isNaN(time) && time >= 0) {
+            if (!isNaN(time) && time >= 0) {
+
 				var cuePoints = this.midCuePointsArray;
-				// Start looking for the cue point via time, return first match:
+				// Start looking for the cue point via time, return FIRST match:
 				for (var i = 0; i < cuePoints.length; i++) {
 					if (cuePoints[i].startTime >= time) {
 						return cuePoints[i];
@@ -356,15 +410,14 @@
 			var cuePointWrapper = {
 				'cuePoint': rawCuePoint
 			};
-			if (rawCuePoint.cuePointType == 'codeCuePoint.Code' || rawCuePoint.cuePointType == 'thumbCuePoint.Thumb') {
-				// Code type cue point ( make it easier for people grepping the code base for an event )
-				eventName = 'KalturaSupport_CuePointReached';
-			} else if (rawCuePoint.cuePointType == 'adCuePoint.Ad') {
+			if (rawCuePoint.cuePointType == 'adCuePoint.Ad') {
 				// Ad type cue point
 				eventName = 'KalturaSupport_AdOpportunity';
 				cuePointWrapper.context = this.getVideoAdType(rawCuePoint);
+			} else if($.inArray(rawCuePoint.cuePointType, mw.getConfig("EmbedPlayer.SupportedCuepointTypes")) !== -1){
+				// Code type cue point ( make it easier for people grepping the code base for an event )
+				eventName = 'KalturaSupport_CuePointReached';
 			} else {
-				// Ignore all others cue points types
 				return;
 			}
 			mw.log('mw.KCuePoints :: Trigger event: ' + eventName + ' - ' + rawCuePoint.cuePointType + ' at: ' + rawCuePoint.startTime);
@@ -435,17 +488,6 @@
 			// anything else, return zero
 			return 0;
 		}
-	};
-	mw.KCuePoints.TYPE = {
-		AD: "adCuePoint.Ad",
-		ANNOTATION: "annotation.Annotation",
-		CODE: "codeCuePoint.Code",
-		EVENT: "eventCuePoint.Event",
-		THUMB: "thumbCuePoint.Thumb"
-	};
-	mw.KCuePoints.THUMB_SUB_TYPE = {
-		SLIDE: 1,
-		CHAPTER: 2
 	};
 
 })(window.mw, window.jQuery);

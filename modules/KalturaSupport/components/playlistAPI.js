@@ -13,7 +13,9 @@
 			'kpl0Id': null,
 			'titleLimit': 36,
 			'descriptionLimit': 32,
+			'resizeThumbnails': true,
 			'thumbnailWidth': 86,
+			'thumbnailHeight': 48,
 			'mediaItemWidth': null,
 			'mediaItemHeight': 70,
 			'includeThumbnail': true,
@@ -32,7 +34,8 @@
 			'includeHeader': true,
 			'renderWhenEmpty': false,
 			'paging': false,
-			'pageSize': 25
+			'pageSize': 25,
+			'showEmptyPlaylistError': true
 		},
 
 
@@ -54,17 +57,20 @@
 		page: 1,                 // start page for paging
 		pagingInProgress: false, // flag to block paging call during previous paging
 		pagingDone: false,       // flag for when there are no more entries in the next page so no need to load it
+		playlistInterfaceHeight: null,
 
 		setup: function (embedPlayer) {
 			if ( $(".playlistInterface").length === 0 ){
 				$(".mwPlayerContainer").wrap('<div class="playlistInterface" style="position: relative; width: 100%; height: 100%"></div>');
 			}
+			this.playlistInterfaceHeight = $(".playlistInterface").height();
 			if (this.getConfig('includeInLayout') === false) { // support hidden playlists - force onPage and hide its div.
 				this.setConfig('onPage', true);
 			}
 			this.minClips = parseInt(this.getConfig('MinClips'));
 			//Backward compatibility setting - set autoplay on embedPlayer instead of playlist
 			this.getPlayer().autoplay = (this.getConfig('autoPlay') == true);
+			mw.setConfig("autoPlay", this.getPlayer().autoplay);
 
 			if ( !this.getConfig( 'mediaItemWidth') ){
 				this.widthSetByUser = false;           // user did not specify a required width. We will set to 320 and apply responsive logic on resizeEvent event
@@ -100,7 +106,7 @@
 				}
 
 				// prevent iframe resize layout refresh  on iOS8
-				if ( mw.isIOS8() ){
+				if ( mw.isIOS8_9() ){
 					_this.redrawOnResize = false;
 				}
 
@@ -149,19 +155,11 @@
 			});
 
 			$(this.embedPlayer).bind('playNextClip', function (event) {
-				_this.playNext();
+				_this.playNext(true);
 			});
 
 			$(this.embedPlayer).bind('playPreviousClip', function (event) {
-				_this.playPrevious();
-			});
-
-			$(this.embedPlayer).bind('onDisableInterfaceComponents', function (event) {
-				_this.getMedialistHeaderComponent().find(".playlistBtn").addClass("disabled");
-			});
-
-			$(this.embedPlayer).bind('onEnableInterfaceComponents', function (event) {
-				_this.getMedialistHeaderComponent().find(".playlistBtn").removeClass("disabled");
+				_this.playPrevious(true);
 			});
 
 			$( this.embedPlayer ).bind('onOpenFullScreen', function() {
@@ -178,14 +176,27 @@
 					_this.pagingInProgress = true;
 					_this.page++; // move to next page
 					mw.log("Playlist:: scrollEnd event. paging: true: trying to load next playlist page: page="+_this.page+", pageSize"+_this.getConfig('pageSize'));
-					var playlistRequest = {
-						'service': 'playlist',
-						'action': 'execute',
-						'pager:objectType': 'KalturaFilterPager',
-						'pager:pageIndex': _this.page,
-						'pager:pageSize': _this.getConfig('pageSize'),
-						'id': _this.playlistSet[_this.currentPlaylistIndex].id
-					};
+
+					var playlistRequest;
+					if (_this.playlistSet[_this.currentPlaylistIndex].playlistParams) {
+						// use saved params and extend them with paging params
+						playlistRequest = $.extend(_this.playlistSet[_this.currentPlaylistIndex].playlistParams, {
+							'pager:objectType': 'KalturaFilterPager',
+							'pager:pageIndex': _this.page,
+							'pager:pageSize': _this.getConfig('pageSize')
+						});
+					} else {
+						// create params
+						playlistRequest = {
+							'service': 'playlist',
+							'action': 'execute',
+							'pager:objectType': 'KalturaFilterPager',
+							'pager:pageIndex': _this.page,
+							'pager:pageSize': _this.getConfig('pageSize'),
+							'id': _this.playlistSet[_this.currentPlaylistIndex].id
+						};
+					}
+
 					_this.getKClient().doRequest(playlistRequest, function (playlistDataResult) {
 						if (playlistDataResult.length){
 							_this.addMediaItems(playlistDataResult);
@@ -240,24 +251,26 @@
 				_this.setMultiplePlayLists();
 				_this.getComponent().find(".k-description-container").dotdotdot();
 				// keep aspect ratio of thumbnails - crop and center
-				_this.getComponent().find('.k-thumb').not('.resized').each(function () {
-					var img = $(this)[0];
-					img.onload = function () {
-						if (img.naturalWidth / img.naturalHeight > 16 / 9) {
-							$(this).height(48);
-							$(this).width(img.naturalHeight * 16 / 9);
-							var deltaWidth = ($(this).width() - 86) / 2 * -1;
-							$(this).css("margin-left", deltaWidth)
-						}
-						if (img.naturalWidth / img.naturalHeight < 16 / 9) {
-							$(this).width(86);
-							$(this).height(img.naturalWidth * 9 / 16);
-							var deltaHeight = ($(this).height() - 48) / 2 * -1;
-							$(this).css("margin-top", deltaHeight)
-						}
-						$(this).addClass('resized');
-					};
-				});
+				if ( _this.getConfig("resizeThumbnails") ){
+					_this.getComponent().find('.k-thumb').not('.resized').each(function () {
+						var img = $(this)[0];
+						img.onload = function () {
+							if (img.naturalWidth / img.naturalHeight > 16 / 9) {
+								$(this).height(_this.getConfig('thumbnailHeight'));
+								$(this).width(img.naturalHeight * 16 / 9);
+								var deltaWidth = ($(this).width() - _this.getConfig('thumbnailWidth')) / 2 * -1;
+								$(this).css("margin-left", deltaWidth)
+							}
+							if (img.naturalWidth / img.naturalHeight < 16 / 9) {
+								$(this).width(_this.getConfig('thumbnailWidth'));
+								$(this).height(img.naturalWidth * 9 / 16);
+								var deltaHeight = ($(this).height() - _this.getConfig('thumbnailHeight')) / 2 * -1;
+								$(this).css("margin-top", deltaHeight)
+							}
+							$(this).addClass('resized');
+						};
+					});
+				}
 			});
 
 
@@ -274,10 +287,19 @@
 						_this.playlistSet.push({});
 					}
 					_this.playlistSet[_this.currentPlaylistIndex].items = playlistDataResult; //apply data to the correct playlist in the playlistSet
+					_this.playlistSet[_this.currentPlaylistIndex].playlistParams = params.playlistParams; // save current playlis params for paging
+
+					// reset paging if available
+					if (params.playlistParams['pager:pageIndex']) {
+						_this.page = params.playlistParams['pager:pageIndex'];
+						_this.pagingDone = false;
+						_this.pagingInProgress = false;
+					}
 					if(params.playlistName){
 						_this.playlistSet[_this.currentPlaylistIndex].name = params.playlistName; //apply data to the correct playlist in the playlistSet
 					}
 					_this.selectPlaylist(_this.currentPlaylistIndex);
+					_this.redrawPlaylist();
 					_this.currentClipIndex = -1; //reset index of current clip so "next" will play the first item of the new loaded playlist
 					if(params.autoInsert){
 						_this.playNext();
@@ -295,6 +317,7 @@
 			if (!this.getPlayer().layoutBuilder.isInFullScreen() && this.redrawOnResize && this.redrawOnResize && this.playlistSet.length > 0) {
 				// decide the width of the items. For vertical layout: 3rd of the container. For horizontal: according to MinClips value
 				if ( this.getLayout() === "vertical" ){
+					var saveScrollTop = this.getMedialistComponent().find(".nano-content").scrollTop(); // save scrollTop
 					if ( !this.widthSetByUser ){
 						if ( $( ".playlistInterface" ).width() / 3 > this.getConfig( 'mediaItemWidth' ) ) {
 							this.setConfig( 'mediaItemWidth', $( ".playlistInterface" ).width() / 3 );
@@ -304,13 +327,20 @@
 					}
 				}else{
 					var width = this.getConfig("fixedControls") ? $( ".playlistInterface" ).width() - this.getConfig("horizontalControlsWidth")*2 : $( ".playlistInterface" ).width();
-					this.setConfig( 'mediaItemWidth', Math.floor(width / this.getConfig("MinClips")) );
+					// if the number of items in the playlist is lower than MinClips, calculate mediaItemWidth according to it, else according to MinClips settings
+					var itemsNumber = this.playlistSet.length ? this.playlistSet[this.currentPlaylistIndex].items.length : this.getConfig('MinClips');
+					var clipsNumber = itemsNumber < this.getConfig('MinClips') ? itemsNumber : this.minClips;
+					this.setConfig('mediaItemWidth', Math.floor(width / clipsNumber));
 				}
 				if ( this.getConfig('onPage') !== true ){ // do not refresh mediaListContainer on page
 					this.$mediaListContainer = null;
 					this.getMedialistContainer();
 				}
-				this.renderMediaList();
+				this.renderMediaList(function(){
+					if ( _this.getLayout() === "vertical" ){
+						_this.getMedialistComponent().find(".nano-content").scrollTop(saveScrollTop); // restore scrollTop
+					}
+				});
 			}
 		},
 		// called from KBaseMediaList when a media item is clicked - trigger clip play
@@ -381,8 +411,15 @@
 		},
 
 		// play a clip according to the passed index. If autoPlay is set to false - the clip will be loaded but not played
-		playMedia: function (clipIndex, load) {
+		playMedia: function (clipIndex, load, autoScrollToMedia) {
 			this.setSelectedMedia(clipIndex);              // this will highlight the selected clip in the UI
+			if ( autoScrollToMedia ){
+				if (this.getLayout() === "vertical") {
+					this.getMedialistComponent().find(".nano-content").scrollTop(clipIndex * this.getConfig("mediaItemHeight"));
+				}else{
+					this.getMedialistComponent().find( '.k-carousel' )[0].jCarouselLiteGo(clipIndex);
+				}
+			}
 			this.setConfig("selectedIndex", clipIndex);    // save it to the config so it can be retrieved using the API
 			this.embedPlayer.setKalturaConfig('playlistAPI', 'dataProvider', {'content': this.playlistSet, 'selectedIndex': this.getConfig('selectedIndex')}); // for API backward compatibility
 			this.currentClipIndex = clipIndex; // save clip index for next / previous calls
@@ -390,6 +427,7 @@
 
 			var _this = this;
 			var id = _this.mediaList[clipIndex].id;
+			var referenceId = _this.mediaList[clipIndex].referenceId ? _this.mediaList[clipIndex].referenceId : null;
 			if (!embedPlayer) {
 				mw.log("Error: Playlist:: playClip called with null embedPlayer ");
 				return;
@@ -403,14 +441,16 @@
 				}
 			}
 
+			var mobileAutoPlay = true;
 			// mobile devices have a autoPlay restriction, we issue a raw play call on
 			// the video tag to "capture the user gesture" so that future
 			// javascript play calls can work
-			if (mw.isMobileDevice() && embedPlayer.firstPlay && load) {
+			if (mw.isMobileDevice() && load) {
 				mw.log("Playlist:: issue load call to capture click for iOS");
 				try {
 					embedPlayer.getPlayerElement().load();
 				} catch (e) {
+					mobileAutoPlay = false;
 					mw.log("Playlist:: could not load video - possibly restricted video");
 				}
 			}
@@ -431,10 +471,14 @@
 				embedPlayer.triggerHelper(eventToTrigger);
 				_this.loadingEntry = false; // Update the loadingEntry flag//
 				// play clip that was selected when autoPlay=false. if autoPlay=true, the embedPlayer will do that for us.
-				if (!_this.getConfig("autoPlay")) {
+				if (!_this.getConfig("autoPlay") && mobileAutoPlay && embedPlayer.canAutoPlay()) {
 					setTimeout(function(){
 						embedPlayer.play();
-					},100); // timeout is required when loading live entries
+					},500); // timeout is required when loading live entries
+				}
+				if (mw.isMobileDevice() && !mobileAutoPlay){
+					mw.setConfig('EmbedPlayer.HidePosterOnStart', false);
+					embedPlayer.updatePosterHTML();
 				}
 			});
 			mw.log("PlaylistAPI::playClip::changeMedia entryId: " + id);
@@ -447,7 +491,7 @@
 			//embedPlayer.changeMediaStarted = false;
 			if (!this.firstPlay) {
 				this.loadingEntry = id; // Update the loadingEntry flag
-				embedPlayer.sendNotification("changeMedia", {'entryId': id, 'playlistCall': true});
+				embedPlayer.sendNotification("changeMedia", {'entryId': id, 'playlistCall': true, 'referenceId': referenceId});
 			} else {
 				embedPlayer.triggerHelper(eventToTrigger);
 			}
@@ -470,12 +514,12 @@
 			if (this.getConfig("autoContinue") == true) {
 				$(this.embedPlayer).unbind('postEnded' + this.bindPostFix).bind('postEnded' + this.bindPostFix, function () {
 					mw.log("PlaylistAPI:: postEnded > on inx: " + clipIndex);
-					_this.playNext();
+					_this.playNext(true);
 				});
 			}
 		},
 
-		playNext: function () {
+		playNext: function (autoScrollToMedia) {
 			if (this.isDisabled || this.loadingEntry) {
 				return;
 			}
@@ -485,19 +529,19 @@
 			if (this.currentClipIndex != null && this.currentClipIndex < this.mediaList.length - 1) {
 				this.currentClipIndex++;
 				this.setSelectedMedia(this.currentClipIndex);
-				this.playMedia(this.currentClipIndex, true);
+				this.playMedia(this.currentClipIndex, true, autoScrollToMedia);
 			}
 			$(this.embedPlayer).trigger('playlistPlayNext');
 		},
 
-		playPrevious: function () {
+		playPrevious: function (autoScrollToMedia) {
 			if (this.isDisabled || this.loadingEntry) {
 				return;
 			}
 			if (this.currentClipIndex != null && this.currentClipIndex > 0) {
 				this.currentClipIndex--;
 				this.setSelectedMedia(this.currentClipIndex);
-				this.playMedia(this.currentClipIndex, true);
+				this.playMedia(this.currentClipIndex, true, autoScrollToMedia);
 			}
 			$(this.embedPlayer).trigger('playlistPlayPrevious');
 		},
@@ -529,10 +573,11 @@
 					this.getComponent().find( ".playlistItem" ).on( "click", function () {
 						_this.switchPlaylist( $( this ).attr( 'data-index' ) );
 					} );
-					setTimeout(function(){
-						_this.getComponent().find(".dropDownIcon").show();
-					},100);
 				}
+				setTimeout(function(){
+					_this.getComponent().find(".dropDownIcon").show();
+				},250);
+
 			}
 		},
 
@@ -632,19 +677,22 @@
 			if ( this.getConfig( 'showControls' ) === true ) {
 				this.getMedialistHeaderComponent().prepend( '<div class="playlistControls k-' + this.getLayout() + '"><div class="prevBtn playlistBtn"></div><div class="nextBtn playlistBtn"></div></div>' );
 				this.getMedialistHeaderComponent().find( ".playlistControls .nextBtn" ).on( "click", function () {
-					_this.playNext()
+					_this.playNext(true)
 				} );
 				this.getMedialistHeaderComponent().find( ".playlistControls .prevBtn" ).on( "click", function () {
-					_this.playPrevious()
+					_this.playPrevious(true)
 				} );
 			}
 
-			if (items.length === 0){
+			if (items.length === 0 && this.getConfig('showEmptyPlaylistError')){
 				//If no items then show error message
 				this.showEmptyPlaylistError();
 				this.configMediaListFeatures();
 			} else {
 				this.clearEmptyPlaylistError();
+				if (this.playlistInterfaceHeight){
+					$( ".playlistInterface").height(this.playlistInterfaceHeight);
+				}
 				this.renderMediaList();  // set the media list in KBaseMediaList
 
 				// support initial selectedIndex or initItemEntryId
@@ -654,14 +702,14 @@
 						var found = false;
 						for ( var i = 0; i < items.length; i++ ) {
 							if ( items[i].id === this.getConfig( 'initItemEntryId' ) ) {
-								this.playMedia( i );
+								this.playMedia( i, false, true );
 								found = true;
 								break;
 							}
 						}
 					}
 					if ( (this.getConfig( 'initItemEntryId' ) && !found) || !(this.getConfig( 'initItemEntryId' )) ) {
-						this.playMedia( this.getConfig( 'selectedIndex' ) );
+						this.playMedia( this.getConfig( 'selectedIndex' ), false, true );
 					}
 				}
 			}
@@ -695,9 +743,18 @@
 				this.embedPlayer.layoutBuilder.closeAlert();
 				this.embedPlayer.layoutBuilder.closeMenuOverlay();
 			}
+		},
+		onDisable: function(){
+			//Only disable if ad is being displayed
+			if (this.getPlayer().isInSequence()){
+				this.getMedialistHeaderComponent().find(".playlistBtn").addClass("disabled");
+				this._super();
+			}
+		},
+		onEnable: function(){
+			this.getMedialistHeaderComponent().find(".playlistBtn").removeClass("disabled");
+			this._super();
 		}
 	})
-
 	);
-
 })(window.mw, window.jQuery);
