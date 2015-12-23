@@ -42,8 +42,6 @@
 		chaptersMap: [],
 		slidesMap: [],
 		pendingMediaItems: [], //Hold the medialist items that are pending to be displayed in live stream
-		cache: {}, //Hold the search data cache
-		dataSet: null, //Hold current dataset returned from API
 		renderOnData: false, //Indicate if to wait for data before rendering layout
 		freezeTimeIndicators: false,
 		activeItem: 0,
@@ -191,8 +189,6 @@
 					_this.mediaList = [];
 					_this.chaptersMap = [];
 					_this.slidesMap = [];
-                    _this.cache = {};
-                    _this.dataSet = null;
                     _this.renderOnData = false;
                     _this.selectedChapterIndex = 0;
                     _this.selectedMediaItemIndex= 0;
