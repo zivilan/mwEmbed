@@ -10,7 +10,7 @@
 </head>
 <body>
 	<h1>Color Sampler Demo</h1>
-	<div id="kaltura_player" style="width: 740px; height: 600px;float: left;"></div>
+	<div id="kaltura_player" style="width: 750px; height: 610px;float: left;"></div>
 	<br style="clear: both;" /><br />
 <script>
     var kdp;
@@ -20,13 +20,23 @@
 		'uiconf_id' : '32872141',
         'readyCallback': function(id){
             kdp = document.getElementById(id);
+            kdp.kBind("videoColorPaletteEvent", function(palette){
+                $("#avg").show();
+                for (var i=0; i<palette.length; i++){
+                    var color = palette[i];
+                    var colorDiv = $("<div style='width: 25px; height: 25px; display: inline-block'></div>").css("background-color", "rgb("+color+")");
+                    $("#palette").append(colorDiv);
+                }
+            })
         },
 		'flashvars': {
             'mediaProxy.preferedFlavorBR': 1600,
             'EmbedPlayer.ShowPosterOnStop': false,
 			'colorSampler': {
 				'plugin': true,
-                'position': 'bottom  '
+                'position': 'bottom',
+                'sampleInterval': 500,
+                'calculateAveragePalette': true
 			}
 		},
 		"entry_id": "1_4btg8y7b"
@@ -43,6 +53,9 @@
         <option value="bottom">Bottom</option>
         <option value="right">Right</option>
     </select>
+    <br>
+    <span id="avg" style="display: none">Average color palette:</span><br>
+    <div id="palette" style="width: 750px; line-height: 0px"></div>
 </p>
 </body>
 </html>

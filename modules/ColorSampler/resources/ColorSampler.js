@@ -11,13 +11,15 @@
 			'showTooltip': true,
 			'tooltip': gM( 'mwe-ColorSampler-tooltip' ),
 			'sampleInterval': 500,
-			'position': 'bottom'
+			'position': 'bottom',
+			'calculateAveragePalette': true
 		},
 		colorThief: null,
 		intervalID: null,
 		vid: null,
 		active: false,
 		$colorSamples: null,
+		averagePalette:{},
 
 		setup: function( embedPlayer ) {
 			this.colorThief = new ColorThief();
@@ -39,6 +41,27 @@
 			$( this.embedPlayer).bind('playerReady', function(){
 				_this.vid = _this.embedPlayer.getPlayerElement();
 				$(_this.vid).attr("crossorigin", "anonymous");
+			});
+
+			$( this.embedPlayer).bind('onEndedDone', function(){
+				if (_this.getConfig("calculateAveragePalette")){
+					var tuples = [];
+					for (var key in _this.averagePalette) tuples.push([key, _this.averagePalette[key]]);
+					tuples.sort(function(a, b) {
+						a = a[1];
+						b = b[1];
+						return a < b ? -1 : (a > b ? 1 : 0);
+					});
+					var palette = [];
+					for (var i = 0; i < tuples.length; i++) {
+						palette.push(tuples[i][0])
+					}
+					palette.reverse();
+					if (palette.length > 256){
+						palette = palette.slice(0,256);
+					}
+					_this.embedPlayer.triggerHelper("videoColorPaletteEvent",[palette]);
+				}
 			});
 		},
 
@@ -75,6 +98,17 @@
 				this.$colorSamples.find(".color1").html("<span>"+ntc.name(hex1)[1]+" </span>").css("background-color","rgb("+color1+")");
 				this.$colorSamples.find(".color2").html("<span>"+ntc.name(hex2)[1]+" </span>").css("background-color","rgb("+color2+")");
 				this.$colorSamples.find(".color3").html("<span>"+ntc.name(hex3)[1]+" </span>").css("background-color","rgb("+color3+")");
+				if (this.getConfig("calculateAveragePalette")){
+					for (var i=0; i<frameColors.length; i++){
+						var color = frameColors[i];
+						if (this.averagePalette[color]){
+							this.averagePalette[color] = this.averagePalette[color]+1;
+						}else{
+							this.averagePalette[color] = 1;
+						}
+					}
+
+				}
 			}
 		},
 
