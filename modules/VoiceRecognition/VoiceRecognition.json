@@ -1,7 +1,8 @@
 {
     "VoiceRecognition": {
         "scripts": [
-            "resources/VoiceRecognition.js"
+            "resources/VoiceRecognition.js",
+            "resources/annyang.js"
         ],
         "dependencies": "mw.KBaseComponent",
         "kalturaPluginName": "voiceRecognition",
