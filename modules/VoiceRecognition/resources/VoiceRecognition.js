@@ -42,12 +42,10 @@
 
 		displayMessage: function(message){
 			var embedPlayer = this.embedPlayer;
-
-			$(embedPlayer).append(
-					$('<span />')
-							.addClass( 'voiceRecogMsg' )
-							.html( message )
-			).hide().fadeIn(1500).fadeOut(1500);
+			if ($(embedPlayer).find(".voiceRecogMsg").length === 0){
+				$(embedPlayer).append($('<span />').addClass( 'voiceRecogMsg' ));
+			}
+			$(embedPlayer).find(".voiceRecogMsg").html( message ).hide().fadeIn(1500).fadeOut(1500);
 		},
 
 		setupCommands: function(){
@@ -109,10 +107,10 @@
 					embedPlayer.getInterface().find(".icon-cc").trigger("click");
 					_this.displayMessage("Show captions menu");
 				},
-				'(Kaltura) select *captLanguage caption': function (captLanguage) {
+				'(Kaltura) select *captLanguage captions': function (captLanguage) {
 					embedPlayer.triggerHelper('showClosedCaptions', captLanguage);
 					embedPlayer.getInterface().find(".icon-cc").trigger("click");
-					_this.displayMessage("Select " + captLanguage + " captions");
+					_this.displayMessage("Selected " + captLanguage + " captions");
 				},
 				'(Kaltura) volume Up': function () {
 					embedPlayer.setVolume(embedPlayer.volume + 0.2);
