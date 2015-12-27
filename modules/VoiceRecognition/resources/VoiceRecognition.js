@@ -15,7 +15,6 @@
 
 		setup: function( embedPlayer ) {
 			var _this = this;
-			//this.addBindings();
 
 			//start commands
 			this.setupCommands();
@@ -41,24 +40,42 @@
 			annyang.pause();
 		},
 
-		addBindings: function() {
+		displayMessage: function(message){
+			var embedPlayer = this.embedPlayer;
 
+			$(embedPlayer).append(
+					$('<span />')
+							.addClass( 'voiceRecogMsg' )
+							.html( message )
+			).hide().fadeIn(1500).fadeOut(1500);
 		},
 
 		setupCommands: function(){
+			var _this = this;
 			var embedPlayer = this.embedPlayer;
 
 			var commands = {
-				'Player play': function () {
+				'(Kaltura) play': function () {
 					embedPlayer.play();
+					_this.displayMessage("Playing");
 				},
-				'Player stop': function () {
+				'(Kaltura) play next': function () {
+					embedPlayer.triggerHelper( 'playNextClip' );
+					_this.displayMessage("Playing next video");
+				},
+				'(Kaltura) play previous': function () {
+					embedPlayer.triggerHelper( 'playPreviousClip' );
+					_this.displayMessage("Playing previous video");
+				},
+				'(Kaltura) stop': function () {
 					embedPlayer.stop();
+					_this.displayMessage("Stop");
 				},
-				'Player pause': function () {
+				'(Kaltura) pause': function () {
 					embedPlayer.pause();
+					_this.displayMessage("Pause");
 				},
-				'Player go to *seekTime': function (seekTime) {
+				'(Kaltura) go to *seekTime': function (seekTime) {
 					var hours, minutes, seconds, seekTimeTotal;
 					//some times the numbers appear as words need to replace them
 					var wordToNumber = {
@@ -79,31 +96,47 @@
 					seekTimeTotal = hours + minutes + seconds;
 
 					//check if is a number and seek
-					if (!isNaN(parseFloat(seekTimeTotal)) && isFinite(seekTimeTotal) && seekTimeTotal !== 0) {
+					if (!isNaN(parseFloat(seekTimeTotal)) && isFinite(seekTimeTotal) &&
+						seekTimeTotal !== 0 &&
+						seekTimeTotal <= embedPlayer.duration) {
 						embedPlayer.seek(seekTimeTotal);
+						_this.displayMessage("Seeking to: " + seekTime);
+					} else {
+						_this.displayMessage("Can't seek to invalid time");
 					}
 				},
-				'Player captions': function () {
+				'(Kaltura) captions': function () {
 					embedPlayer.getInterface().find(".icon-cc").trigger("click");
+					_this.displayMessage("Show captions menu");
 				},
-				'Player select *captLanguage captions': function (captLanguage) {
+				'(Kaltura) select *captLanguage caption': function (captLanguage) {
 					embedPlayer.triggerHelper('showClosedCaptions', captLanguage);
 					embedPlayer.getInterface().find(".icon-cc").trigger("click");
+					_this.displayMessage("Select " + captLanguage + " captions");
 				},
-				'Player volume Up': function () {
+				'(Kaltura) volume Up': function () {
 					embedPlayer.setVolume(embedPlayer.volume + 0.2);
+					_this.displayMessage("Volume up");
 				},
-				'Player volume Down': function () {
+				'(Kaltura) volume Down': function () {
 					embedPlayer.setVolume(embedPlayer.volume - 0.2);
+					_this.displayMessage("Volume down");
 				},
-				'Player volume Max': function () {
+				'(Kaltura) volume Max': function () {
 					embedPlayer.setVolume(1);
+					_this.displayMessage("Volume max");
 				},
-				'Player volume Mute': function () {
+				'(Kaltura) volume Mute': function () {
 					embedPlayer.setVolume(0);
+					_this.displayMessage("Volume mute");
 				},
-				'full': function () {
-					embedPlayer.openNewWindow();
+				'(Kaltura) download': function () {
+					embedPlayer.getInterface().find(".download").trigger("click");
+					_this.displayMessage("Download media");
+				},
+				'(Kaltura) full': function () {
+					embedPlayer.layoutBuilder.fullScreenManager.openNewWindow();
+					_this.displayMessage("Open full screen");
 				}
 			};
 			annyang.addCommands(commands);
