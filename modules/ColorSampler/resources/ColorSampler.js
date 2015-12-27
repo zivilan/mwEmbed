@@ -44,22 +44,9 @@
 
 		startSample: function(){
 			var _this = this;
+			this.doSample();
 			this.intervalID = setInterval(function(){
-				var frameColors = _this.colorThief.getPalette(_this.vid,3);
-				if (frameColors){
-					var color1 = frameColors[0];
-					var color2 = frameColors[1];
-					var color3 = frameColors[2];
-					var hex1 = mw.util.rgbToHex(color1[0],color1[1],color1[2]);
-					var hex2 = mw.util.rgbToHex(color2[0],color2[1],color2[2]);
-					var hex3 = mw.util.rgbToHex(color3[0],color3[1],color3[2]);
-//					_this.$colorSamples.find(".color1").html("<span style='font-size: 14px'>"+ntc.name(hex1)[1]+" </span>("+hex1+")").css("background-color","rgb("+color1+")");
-//					_this.$colorSamples.find(".color2").html("<span style='font-size: 14px'>"+ntc.name(hex2)[1]+" </span>("+hex2+")").css("background-color","rgb("+color2+")");
-//					_this.$colorSamples.find(".color3").html("<span style='font-size: 14px'>"+ntc.name(hex3)[1]+" </span>("+hex3+")").css("background-color","rgb("+color3+")");
-					_this.$colorSamples.find(".color1").html("<span style='font-size: 14px'>"+ntc.name(hex1)[1]+" </span>").css("background-color","rgb("+color1+")");
-					_this.$colorSamples.find(".color2").html("<span style='font-size: 14px'>"+ntc.name(hex2)[1]+" </span>").css("background-color","rgb("+color2+")");
-					_this.$colorSamples.find(".color3").html("<span style='font-size: 14px'>"+ntc.name(hex3)[1]+" </span>").css("background-color","rgb("+color3+")");
-				}
+				_this.doSample();
 			},this.getConfig("sampleInterval"));
 		},
 
@@ -67,6 +54,21 @@
 			if (this.intervalID){
 				clearInterval(this.intervalID);
 				this.intervalID = null;
+			}
+		},
+
+		doSample: function(){
+			var frameColors = this.colorThief.getPalette(this.vid,3);
+			if (frameColors){
+				var color1 = frameColors[0];
+				var color2 = frameColors[1];
+				var color3 = frameColors[2];
+				var hex1 = mw.util.rgbToHex(color1[0],color1[1],color1[2]);
+				var hex2 = mw.util.rgbToHex(color2[0],color2[1],color2[2]);
+				var hex3 = mw.util.rgbToHex(color3[0],color3[1],color3[2]);
+				this.$colorSamples.find(".color1").html("<span>"+ntc.name(hex1)[1]+" </span>").css("background-color","rgb("+color1+")");
+				this.$colorSamples.find(".color2").html("<span>"+ntc.name(hex2)[1]+" </span>").css("background-color","rgb("+color2+")");
+				this.$colorSamples.find(".color3").html("<span>"+ntc.name(hex3)[1]+" </span>").css("background-color","rgb("+color3+")");
 			}
 		},
 
