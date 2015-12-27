@@ -67,6 +67,7 @@ you can use the generic selector below, but it's slower:
 .icon-locator,
 .icon-audio,
 .icon-toggleAll,
+.icon-mic,
 .icon-new-tab{
 	font-family: 'icomoon';
 	speak: none;
@@ -242,5 +243,23 @@ you can use the generic selector below, but it's slower:
 .icon-new-tab:before {
     content: "\e628";
 }
+
+
+.icon-mic:before {
+    content: "\e901";
+}
+.icon-bubbles:before {
+    content: "\e902";
+}
+.icon-users:before {
+    content: "\e903";
+}
+.icon-equalizer:before {
+    content: "\e904";
+}
+.icon-stats-bars2:before {
+    content: "\e905";
+}
+
 
 

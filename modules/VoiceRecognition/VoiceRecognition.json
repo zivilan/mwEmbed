@@ -1,0 +1,11 @@
+{
+    "VoiceRecognition": {
+        "scripts": [
+            "resources/VoiceRecognition.js"
+        ],
+        "dependencies": "mw.KBaseComponent",
+        "kalturaPluginName": "voiceRecognition",
+        "styles": "resources/VoiceRecognition.css",
+        "messageFile": "VoiceRecognition.i18n.json"
+    }
+}
