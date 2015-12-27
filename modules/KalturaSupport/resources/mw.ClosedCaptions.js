@@ -166,9 +166,14 @@
 				}
 			});
 
-			this.bind( 'showClosedCaptions', function(){
-				if( _this.getConfig('displayCaptions') === false ){
-					_this.setConfig('displayCaptions', true);
+			this.bind( 'showClosedCaptions preHideScreen hideMobileComponents', function(e,data){
+				if( data ){
+					for ( var  i = 0; i < _this.textSources.length; i++ ){
+						if ( _this.textSources[i].label === data ){
+							_this.setTextSource(_this.textSources[i], false);
+							_this.getMenu().setActive(i+1);
+						}
+					}
 				}
 			});
 
