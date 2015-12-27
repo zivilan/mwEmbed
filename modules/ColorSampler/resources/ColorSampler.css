@@ -1,8 +1,8 @@
 .colorSamples{
-    -webkit-transition: all 0.25s ease-in-out;
-    -moz-transition: all 0.25s ease-in-out;
-    -o-transition: all 0.25s ease-in-out;
-    -ms-transition: all 0.25s ease-in-out;
+    -webkit-transition: margin-bottom 0.25s ease-in-out, margin-right 0.25s ease-in-out;
+    -moz-transition: margin-bottom 0.25s ease-in-out, margin-right 0.25s ease-in-out;
+    -o-transition: margin-bottom 0.25s ease-in-out, margin-right 0.25s ease-in-out;
+    -ms-transition: margin-bottom 0.25s ease-in-out, margin-right 0.25s ease-in-out;
 }
 .colorSamples.bottom{
     border: 1px solid rgba(0,0,0,0.7);

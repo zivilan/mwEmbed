@@ -13,20 +13,36 @@
 	<div id="kaltura_player" style="width: 740px; height: 600px;float: left;"></div>
 	<br style="clear: both;" /><br />
 <script>
+    var kdp;
 	kWidget.featureConfig({
 		'targetId': 'kaltura_player',
 		'wid': '_1645161',
 		'uiconf_id' : '32872141',
+        'readyCallback': function(id){
+            kdp = document.getElementById(id);
+        },
 		'flashvars': {
             'mediaProxy.preferedFlavorBR': 1600,
             'EmbedPlayer.ShowPosterOnStop': false,
 			'colorSampler': {
 				'plugin': true,
-                'position': 'bottom'
+                'position': 'bottom  '
 			}
 		},
 		"entry_id": "1_4btg8y7b"
 	});
+
+    function changeSamplerPosition(sel){
+        kdp.setKDPAttribute('colorSampler', 'position', sel.value );
+    }
 </script>
+
+<p>
+    <span>Select sampler position: </span><br>
+    <select onchange="changeSamplerPosition(this)">
+        <option value="bottom">Bottom</option>
+        <option value="right">Right</option>
+    </select>
+</p>
 </body>
 </html>

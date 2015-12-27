@@ -42,6 +42,12 @@
 			});
 		},
 
+		onConfigChange: function( property, value ){
+			if (property === "position"){
+				this.$colorSamples.removeClass("bottom right").addClass(value);
+			}
+		},
+
 		startSample: function(){
 			var _this = this;
 			this.doSample();
