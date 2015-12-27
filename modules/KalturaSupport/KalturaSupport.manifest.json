@@ -1711,6 +1711,12 @@
         "label": "airPlay",
         "model": "config.plugins.airPlay"
     },
+    "audioCast": {
+        "description": "Enables castin audio to mobile devices",
+        "type": "featuremenu",
+        "label": "audioCast",
+        "model": "config.plugins.audioCast"
+    },
     "nativeCallout": {
         "description": "Supports replacing the player \"play button\" with a callout to native player, for Mobile Devices.",
         "type": "featuremenu",

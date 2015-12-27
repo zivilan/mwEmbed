@@ -261,6 +261,11 @@
 		"dependencies": "mw.KBaseComponent",
 		"kalturaPluginName": "airPlay"
 	},
+	"audioCast": {
+	  "scripts": ["components/audioCast.js","components/jquery.qrcode.min.js"],
+	  "dependencies": "mw.KBaseComponent",
+	  "kalturaPluginName": "audioCast"
+	},
 	"nativeCallout": {
 		"scripts": "components/nativeCallout/nativeCallout.js",
 		"dependencies": "mw.KBasePlugin",
