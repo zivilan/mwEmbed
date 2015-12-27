@@ -1,0 +1,13 @@
+{
+    "ColorSampler": {
+        "scripts": [
+            "resources/ColorSampler.js",
+	        "resources/color-thief.js",
+	        "resources/ntc.js"
+        ],
+        "dependencies": "mw.KBaseComponent",
+        "kalturaPluginName": "colorSampler",
+        "styles": "resources/ColorSampler.css",
+        "messageFile": "ColorSampler.i18n.json"
+    }
+}
