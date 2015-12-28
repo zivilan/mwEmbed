@@ -12,12 +12,8 @@
 			'tooltip': gM( 'mwe-OnVideoFilters-tooltip' )
 		},
 		active: false,
-		filterString: '',
 
 		setup: function( embedPlayer ) {
-			//if (mw.isChrome()){
-			//	this.filterString='';
-			//}
 		},
 
 		getComponent: function() {
@@ -112,7 +108,7 @@
 			}
 		},
 
-		toggleFiltersScreen: function(x) {
+		toggleFiltersScreen: function() {
 			if (this.active){
 				this.embedPlayer.getVideoHolder().find(".filtersScreen").css("right",30+"px");
 				this.embedPlayer.getVideoHolder().find(".filtersScreen").fadeIn();
