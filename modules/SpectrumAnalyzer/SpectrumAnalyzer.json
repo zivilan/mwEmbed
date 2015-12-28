@@ -1,0 +1,11 @@
+{
+    "SpectrumAnalyzer": {
+        "scripts": [
+            "resources/SpectrumAnalyzer.js",
+	        "resources/color-thief.js"
+        ],
+        "dependencies": "mw.KBaseComponent",
+        "kalturaPluginName": "spectrumAnalyzer",
+        "messageFile": "SpectrumAnalyzer.i18n.json"
+    }
+}

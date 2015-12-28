@@ -1,0 +1,16 @@
+{
+    "SpectrumAnalyzer": {
+        "description": "Spectrum Analyzer",
+        "attributes": {
+            "parent": {
+                "doc": "Parent container for component. Components include default placement, leave as null if unsure.",
+                "type": "enum",
+                "enum": [
+                    "topBarContainer",
+                    "videoHolder",
+                    "controlsContainer"
+                ]
+            }
+        }
+    }
+}

@@ -69,6 +69,7 @@ you can use the generic selector below, but it's slower:
 .icon-toggleAll,
 .icon-mic,
 .icon-eyedropper,
+.icon-spectrum-analyzer,
 .icon-new-tab{
 	font-family: 'icomoon';
 	speak: none;
@@ -260,7 +261,7 @@ you can use the generic selector below, but it's slower:
 .icon-equalizer:before {
     content: "\e904";
 }
-.icon-stats-bars2:before {
+.icon-spectrum-analyzer:before {
     content: "\e905";
 }
 
