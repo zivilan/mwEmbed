@@ -4,10 +4,8 @@
         defaultConfig: {
             "parent": "videoHolder",
             "order": 200,
-            "align": "right",
-            currentTime: 0
+            "align": "right"
         },
-        currentTime:0,
         setup: function(){
             this.addBindings();
         },
@@ -29,14 +27,9 @@
 
             this.bind('onplay', function(){
                 _this.socket.emit('publish', _this.qId + ":play");
-
-                if(!_this.firstPlay) {
-                    _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
-                }
-
                 _this.interval =  setInterval(function(){
                     _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
-                } ,2000);
+                } ,3000);
             });
 
             this.bind('onpause', function(){
