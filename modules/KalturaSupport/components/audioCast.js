@@ -18,11 +18,12 @@
 
             return false;
         },
-        addBindings: function() {
+        addBindings: function() {debugger;
             var _this = this;
 
             this.bind('playerReady', function() {
                 _this.addAudioCastButton();
+                _this.go();
             });
 
             this.bind('playing', function(){
@@ -50,6 +51,7 @@
             var url = "http://www.kaltura.com";
             var qrParams = {
                 entryId:this.embedPlayer.kentryid,
+                partnerId:this.embedPlayer.kpartnerid,
                 ks:ks,
                 currentTime:this.currentTime,
                 url:url
@@ -61,10 +63,15 @@
         addAudioCastButton: function(){
             this.embedPlayer.getVideoHolder().append(this.qrdiv);
             this.createQRCode();
-
         },
         removeAudioCastButton: function(){
             $("#qrcode").remove();
+        },
+        go: function () {
+            var y = "p=" + this.embedPlayer.kpartnerid +"&x=q3";
+            var socket = io.connect("http://dev-backend15.dev.kaltura.com:3000/?"+y);
+            socket.emit('publish', "q3:hhhhh");
+            return false;
         }
     }));
 

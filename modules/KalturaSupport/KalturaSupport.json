@@ -262,7 +262,7 @@
 		"kalturaPluginName": "airPlay"
 	},
 	"audioCast": {
-	  "scripts": ["components/audioCast.js","components/jquery.qrcode.min.js"],
+	  "scripts": ["components/audioCast.js","components/jquery.qrcode.min.js", "components/socket.io.js"],
 	  "dependencies": "mw.KBaseComponent",
 	  "kalturaPluginName": "audioCast"
 	},
