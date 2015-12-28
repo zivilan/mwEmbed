@@ -17,6 +17,10 @@
 
 		active: false,
 
+		isSafeEnviornment: function(){
+			return mw.isChrome();
+		},
+
 		setup: function( embedPlayer ) {
 			var _this = this;
 
