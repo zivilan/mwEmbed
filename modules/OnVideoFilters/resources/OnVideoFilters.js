@@ -66,23 +66,24 @@
 		},
 
 		_bindSliderEvents: function() {
+			var self = this;
 			$(".brightnessFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'brightness(' + data.value + ')');
+				self._addFilter('brightness', data.value);
 			});
 			$(".contrastFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'contrast(' + data.value + ')');
+				self._addFilter('contrast', data.value);
 			});
 			$(".grayscaleFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'grayscale(' + data.value + ')');
+				self._addFilter('grayscale', data.value);
 			});
 			$(".saturationFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'saturate(' + data.value + ')');
+				self._addFilter('saturate', data.value);
 			});
 			$(".hueFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'hue-rotate(' + data.value + 'deg)');
+				self._addFilter('hue-rotate', data.value + 'deg');
 			});
 			$(".sepiaFilter").bind("slider:changed", function(event, data) {
-				$("video").css('-webkit-filter', 'sepia(' + data.value + ')');
+				self._addFilter('sepia', data.value);
 			});
 
 		},
@@ -94,6 +95,21 @@
 			$(".saturationFilter").simpleSlider("setValue", 1);
 			$(".hueFilter").simpleSlider("setValue", 0);
 			$(".sepiaFilter").simpleSlider("setValue", 0);
+			$("video").css('webkit-filter', 'none');
+		},
+
+		_addFilter: function(filterName, value) {
+			var oldStyle = $("video").css('-webkit-filter');
+			if(oldStyle === "none") {
+				$("video").css('-webkit-filter', filterName + '(' + value + ')');
+			}
+			else {
+				var currentStyle = $("video").css('-webkit-filter').split(" ").filter(function (name) {
+					return name.indexOf(filterName) == -1;
+				});
+				currentStyle.push(filterName + '(' + value + ')');
+				$("video").css('-webkit-filter', currentStyle.join(" "));
+			}
 		},
 
 		toggleFiltersScreen: function(x) {
