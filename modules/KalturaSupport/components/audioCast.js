@@ -26,15 +26,20 @@
                 _this.go();
             });
 
+            this.bind('play', function(){
+                if(!_this.embedPlayer.firstPlay) {
+                    _this.socket.emit('publish', _this.qId + ":play");
+                }
+            });
+
+            this.bind('pause', function(){
+                _this.socket.emit('publish', _this.qId + ":pause");
+            });
+
             this.bind('playing', function(){
                 setInterval(function(){
-                        //_this.currentTime = _this.embedPlayer.currentTime;
-                        //_this.createQRCode();
-                        //_this.removeAudioCastButton();
-                        //_this.addAudioCastButton();
                         _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
-                    }
-                    ,5000);
+                    } ,2000);
             });
 
 
