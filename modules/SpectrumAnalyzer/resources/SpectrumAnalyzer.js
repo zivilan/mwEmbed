@@ -12,6 +12,7 @@
 			'matchVideoColors': false,
 			'refreshInterval': 500,
 			'showTooltip': true,
+			'meterWidth': 10,
 			'tooltip': gM( 'mwe-SpectrumAnalyzer-tooltip' )
 		},
 		colorThief: null,
@@ -117,7 +118,7 @@
 			var _this = this;
 			var	cwidth = this.canvas.width;
 			var	cheight = this.canvas.height - 2;
-			var	meterWidth = 10; //width of the meters in the spectrum
+			var	meterWidth = this.getConfig('meterWidth'); //width of the meters in the spectrum
 			var	gap = 2; //gap between meters
 			var	capHeight = 2;
 			var	capStyle = '#fff';
@@ -167,13 +168,13 @@
 					ctx.fillStyle = capStyle;
 					//draw the cap, with transition effect
 					if (value < capYPositionArray[i]) {
-						ctx.fillRect(i * 12, cheight - (--capYPositionArray[i]), meterWidth, capHeight);
+						ctx.fillRect(i * (meterWidth+gap), cheight - (--capYPositionArray[i]), meterWidth, capHeight);
 					} else {
-						ctx.fillRect(i * 12, cheight - value, meterWidth, capHeight);
+						ctx.fillRect(i * (meterWidth+gap), cheight - value, meterWidth, capHeight);
 						capYPositionArray[i] = value;
 					};
 					ctx.fillStyle = gradient; //set the filllStyle to gradient for a better look
-					ctx.fillRect(i * 12 /*meterWidth+gap*/ , cheight - value + capHeight, meterWidth, cheight); //the meter
+					ctx.fillRect(i * (meterWidth+gap) /*meterWidth+gap*/ , cheight - value + capHeight, meterWidth, cheight); //the meter
 				}
 				_this.animationId = requestAnimationFrame(drawMeter);
 			}
