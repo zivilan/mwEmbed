@@ -9,6 +9,7 @@
 			'visible': true,
 			'align': "right",
 			'showTooltip': true,
+			'language': "en-US", //Voice recognition user language
 			'autoStart':false, //should voice recognition automatically start
 			'continuous':false, //when the user stops talking, speech recognition will end
 			'autoRestart':true, //Should voice recognition restart itself if it is closed indirectly, because of silence or window conflicts
@@ -28,7 +29,7 @@
 			this.setupCommands();
 
 			//set language
-			annyang.setLanguage("en-US");
+			annyang.setLanguage(this.getConfig('language'));
 
 			//auto start voice recognition
 			if(this.getConfig('autoStart')){
