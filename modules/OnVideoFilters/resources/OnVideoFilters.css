@@ -1,0 +1,17 @@
+.filtersScreen{
+    position: absolute;
+    width: 120px;
+    height: 150px;
+    bottom: 10px;
+   /* background-color: rgba(0,0,0,0.7);*/
+    background-color: red;
+    border-radius: 5px;
+    display: none;
+    -webkit-filter: none;
+}
+.filtersScreen.active{
+    display: block;
+}
+.filtersScreen span{
+    display: inline-block;
+}

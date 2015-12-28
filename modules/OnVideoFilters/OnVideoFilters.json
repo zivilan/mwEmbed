@@ -1,0 +1,16 @@
+{
+    "OnVideoFilters": {
+        "scripts": [
+            "resources/OnVideoFilters.js",
+            "resources/simple-slider.min.js"
+        ],
+        "dependencies": "mw.KBaseComponent",
+        "kalturaPluginName": "onVideoFilters",
+        "styles": [
+            "resources/OnVideoFilters.css",
+            "resources/simple-slider.css",
+            "resources/simple-slider-volume.css"
+        ],
+        "messageFile": "OnVideoFilters.i18n.json"
+    }
+}
