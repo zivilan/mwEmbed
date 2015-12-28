@@ -18,6 +18,7 @@
 
             return false;
         },
+        interval:null,
         addBindings: function() {
             var _this = this;
 
@@ -26,23 +27,23 @@
                 _this.go();
             });
 
-            this.bind('play', function(){
-                if(!_this.embedPlayer.firstPlay) {
-                    _this.socket.emit('publish', _this.qId + ":play");
+            this.bind('onplay', function(){
+                _this.socket.emit('publish', _this.qId + ":play");
+
+                if(!_this.firstPlay) {
+                    _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
                 }
+
+                _this.interval =  setInterval(function(){
+                    _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
+                } ,2000);
             });
 
-            this.bind('pause', function(){
+            this.bind('onpause', function(){
+                window.clearInterval(_this.interval);
+                _this.interval = null;
                 _this.socket.emit('publish', _this.qId + ":pause");
             });
-
-            this.bind('playing', function(){
-                setInterval(function(){
-                        _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
-                    } ,2000);
-            });
-
-
         },
         getComponent: function() {
             if( !this.$el ) {
