@@ -1,10 +1,9 @@
 .filtersScreen{
     position: absolute;
-    width: 120px;
-    height: 150px;
+    width: 210px;
+    height: 170px;
     bottom: 10px;
-   /* background-color: rgba(0,0,0,0.7);*/
-    background-color: red;
+    background-color: rgba(0,0,0,0.15);
     border-radius: 5px;
     display: none;
     -webkit-filter: none;
@@ -14,4 +13,24 @@
 }
 .filtersScreen span{
     display: inline-block;
+}
+
+.filtersResetBtn{
+    border: none;
+    background-color: transparent;
+    outline: none;
+    color: #848484;
+    margin-left: 150px;
+    margin-top: 3px;
+}
+
+.filtersTable {
+    width: 200px;
+    height: 140px;
+    color: #D0D0D0;
+    margin: 0 auto;
+}
+
+.filtersTable td {
+    vertical-align: middle;
 }

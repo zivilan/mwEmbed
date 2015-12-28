@@ -166,13 +166,21 @@
 				}
 			});
 
-			this.bind( 'showClosedCaptions preHideScreen hideMobileComponents', function(e,data){
+			this.bind( 'showClosedCaptions', function(e,data){
+				if( _this.getConfig('displayCaptions') === false ){
+					_this.setConfig('displayCaptions', true);
+				}
 				if( data ){
+					var foundCaption = false;
 					for ( var  i = 0; i < _this.textSources.length; i++ ){
 						if ( _this.textSources[i].label === data ){
+							foundCaption = true;
 							_this.setTextSource(_this.textSources[i], false);
 							_this.getMenu().setActive(i+1);
 						}
+					}
+					if (!foundCaption){
+						mw.log( "mw.ClosedCaptions:: showClosedCaptions: Caption named" + data + "does not exist" );
 					}
 				}
 			});
