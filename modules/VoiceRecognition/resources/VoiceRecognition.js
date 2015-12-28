@@ -9,7 +9,9 @@
 			'visible': true,
 			'align': "right",
 			'showTooltip': true,
-			'autoStart':false,
+			'autoStart':false, //should voice recognition automatically start
+			'continuous':false, //when the user stops talking, speech recognition will end
+			'autoRestart':true, //Should voice recognition restart itself if it is closed indirectly, because of silence or window conflicts
 			'tooltip': gM( 'mwe-VoiceRecognition-tooltip' )
 		},
 
@@ -35,7 +37,7 @@
 
 		},
 		startVoiceRecognition: function(){
-			annyang.start({autoRestart: true, continuous: true});
+			annyang.start({autoRestart: this.getConfig('autoRestart'), continuous: this.getConfig('continuous')});
 			this.displayMessage("Voice Recognition Active");
 			this.updateTooltip( "Voice Recognition On" );
 		},
