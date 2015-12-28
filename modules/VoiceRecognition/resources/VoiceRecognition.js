@@ -141,11 +141,11 @@
 					_this.displayMessage("Volume mute");
 				},
 				'(Kaltura) download': function () {
-					embedPlayer.getInterface().find(".download").trigger("click");
+					embedPlayer.triggerHelper('downloadMedia');
 					_this.displayMessage("Download media");
 				},
-				'(Kaltura) full': function () {
-					embedPlayer.layoutBuilder.fullScreenManager.openNewWindow();
+				'(Kaltura) full screen': function () {
+					embedPlayer.toggleFullscreen();
 					_this.displayMessage("Open full screen");
 				}
 			};
