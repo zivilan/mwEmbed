@@ -40,14 +40,16 @@
 
 		createFiltersScreen: function(){
 			var _this = this;
+			var filtersTable = $("<table class='filtersTable'>")
+				.append("<tr><td>Brightness</td><td><input class='brightnessFilter' type='text' /></td></tr>")
+				.append("<tr><td>Contrast</td><td><input class='contrastFilter' type='text' /></td></tr>")
+				.append("<tr><td>Grayscale</td><td><input class='grayscaleFilter' type='text' /></td></tr>")
+				.append("<tr><td>Saturation</td><td><input class='saturationFilter' type='text' /></td></tr>")
+				.append("<tr><td>Hue-Rotate</td><td><input class='hueFilter' type='text' /></td></tr>")
+				.append("<tr><td>Sepia</td><td><input class='sepiaFilter' type='text' /></td></tr>");
 			var filtersScreen = $("<div class='filtersScreen'/>")
-				.append("<input class='brightnessFilter' type='text' />")
-				.append("<input class='contrastFilter' type='text' />")
-				.append("<input class='grayscaleFilter' type='text' />")
-				.append("<input class='saturationFilter' type='text' />")
-				.append("<input class='hueFilter' type='text' />")
-				.append("<input class='sepiaFilter' type='text' />")
-				.append("<button class='reset-filters'>Reset</button>");
+				.append(filtersTable)
+				.append("<button class='reset-filters filtersResetBtn'>Reset</button>");
 			this.embedPlayer.getVideoHolder().append(filtersScreen);
 			this._setupSliders();
 			$(".reset-filters").click(function() { _this._resetFilters(); });
@@ -99,7 +101,7 @@
 
 		toggleFiltersScreen: function(x) {
 			if (this.active){
-				this.embedPlayer.getVideoHolder().find(".filtersScreen").css("margin-left",(x-80)+"px");
+				this.embedPlayer.getVideoHolder().find(".filtersScreen").css("right",30+"px");
 				this.embedPlayer.getVideoHolder().find(".filtersScreen").addClass("active");
 			}else{
 				this.embedPlayer.getVideoHolder().find(".filtersScreen").removeClass("active");
