@@ -13,6 +13,8 @@
 			'tooltip': gM( 'mwe-VoiceRecognition-tooltip' )
 		},
 
+		active: false,
+
 		setup: function( embedPlayer ) {
 			var _this = this;
 
@@ -34,10 +36,14 @@
 		},
 		startVoiceRecognition: function(){
 			annyang.start({autoRestart: true, continuous: true});
+			this.displayMessage("Voice Recognition Active");
+			this.updateTooltip( "Voice Recognition On" );
 		},
 
 		stopVoiceRecognition: function(){
 			annyang.pause();
+			this.displayMessage("Voice Recognition Paused");
+			this.updateTooltip( "Voice Recognition Off" );
 		},
 
 		displayMessage: function(message){
@@ -144,16 +150,16 @@
 			var _this = this;
 			if( !this.$el ) {
 				this.$el = $( '<button/>' )
-					.attr( 'title', this.tooltip )
+					.attr( 'title', this.getConfig('tooltip') )
 					.addClass( "btn icon-mic" + this.getCssClass() )
 						.click( function(){
-							_this.isActive = !_this.isActive;
-								if(_this.isActive){
+							_this.active = !_this.active;
+								if(_this.active){
 									_this.startVoiceRecognition();
 								} else {
 									_this.stopVoiceRecognition();
 								}
-							var iconColor = _this.isActive ? "LawnGreen" : "white";
+							var iconColor = _this.active ? "LawnGreen" : "white";
 							$(_this.embedPlayer.getInterface().find(".icon-mic").css("color", iconColor));
 						});
 			}
