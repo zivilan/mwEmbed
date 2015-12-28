@@ -3,25 +3,22 @@
     width: 210px;
     height: 170px;
     bottom: 10px;
-    background-color: rgba(0,0,0,0.15);
+    background-color: rgba(0,0,0,0.45);
     border-radius: 5px;
-    display: none;
     -webkit-filter: none;
+    font-family: Tahoma;
+    display: none;
 }
-.filtersScreen.active{
-    display: block;
-}
+
 .filtersScreen span{
     display: inline-block;
 }
 
 .filtersResetBtn{
-    border: none;
-    background-color: transparent;
-    outline: none;
-    color: #848484;
-    margin-left: 150px;
+    color: #2EC7E1;
+    margin-left: 156px;
     margin-top: 3px;
+    text-decoration: underline;
 }
 
 .filtersTable {

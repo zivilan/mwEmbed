@@ -11,27 +11,24 @@
 			'showTooltip': true,
 			'tooltip': gM( 'mwe-OnVideoFilters-tooltip' )
 		},
-		_filtersScreenOpen: false,
 		active: false,
+		filterString: '',
 
 		setup: function( embedPlayer ) {
-			this.addBindings();
-
-		},
-
-		addBindings: function() {
-
+			//if (mw.isChrome()){
+			//	this.filterString='';
+			//}
 		},
 
 		getComponent: function() {
 			var _this = this;
 			if( !this.$el ) {
 				this.$el = $( '<button/>' )
-					.attr( 'title', this.tooltip )
+					.attr( 'title', this.getConfig('tooltip') )
 					.addClass( "btn icon-equalizer" + this.getCssClass() )
-					.click( function(e) {
+					.click( function() {
 						_this.active = !_this.active;
-						_this.toggleFiltersScreen(e.clientX);
+						_this.toggleFiltersScreen();
 					});
 				this.createFiltersScreen();
 			}
@@ -49,19 +46,19 @@
 				.append("<tr><td>Sepia</td><td><input class='sepiaFilter' type='text' /></td></tr>");
 			var filtersScreen = $("<div class='filtersScreen'/>")
 				.append(filtersTable)
-				.append("<button class='reset-filters filtersResetBtn'>Reset</button>");
+				.append("<a href='#' class='reset-filters filtersResetBtn'>Reset</a>");
 			this.embedPlayer.getVideoHolder().append(filtersScreen);
 			this._setupSliders();
 			$(".reset-filters").click(function() { _this._resetFilters(); });
 		},
 
 		_setupSliders: function() {
-			$(".brightnessFilter").simpleSlider({range: [0,10], step: 0.1, snap: true, highlight: true});
-			$(".contrastFilter").simpleSlider({range: [0,10], step: 0.1, snap: true, highlight: true});
-			$(".grayscaleFilter").simpleSlider({range: [0,1], step: 0.1, snap: true, highlight: true});
-			$(".saturationFilter").simpleSlider({range: [0,10], step: 0.1, snap: true, highlight: true});
-			$(".hueFilter").simpleSlider({range: [0,360], step: 30, snap: true, highlight: true});
-			$(".sepiaFilter").simpleSlider({range: [0,1], step: 0.1, snap: true, highlight: true});
+			$(".brightnessFilter").simpleSlider({range: [0,10], step: 0.1});
+			$(".contrastFilter").simpleSlider({range: [0,10], step: 0.1});
+			$(".grayscaleFilter").simpleSlider({range: [0,1], step: 0.1});
+			$(".saturationFilter").simpleSlider({range: [0,10], step: 0.1});
+			$(".hueFilter").simpleSlider({range: [0,360], step: 30});
+			$(".sepiaFilter").simpleSlider({range: [0,1], step: 0.1});
 
 			this._resetFilters();
 			this._bindSliderEvents();
@@ -102,11 +99,10 @@
 		toggleFiltersScreen: function(x) {
 			if (this.active){
 				this.embedPlayer.getVideoHolder().find(".filtersScreen").css("right",30+"px");
-				this.embedPlayer.getVideoHolder().find(".filtersScreen").addClass("active");
+				this.embedPlayer.getVideoHolder().find(".filtersScreen").fadeIn();
 			}else{
-				this.embedPlayer.getVideoHolder().find(".filtersScreen").removeClass("active");
+				this.embedPlayer.getVideoHolder().find(".filtersScreen").fadeOut();
 			}
-			this._filtersScreenOpen = !this._filtersScreenOpen;
 		}
 
 	}));

@@ -43,7 +43,7 @@
     border-radius: 8px;
 
     border: 1px solid #aaa;
-    height: 1px;
+    height: 0px;
 }
 
 .slider > .highlight-track {
