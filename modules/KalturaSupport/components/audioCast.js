@@ -66,7 +66,7 @@
 
             $("#qrcode").qrcode(JSON.stringify(qrParams));
         },
-        qrdiv:"<div id='qrcode' style='position: absolute;bottom:0;right:0;width: 260px; height: 260px; background-color: white; padding: 2px'></div>",
+        qrdiv:"<div id='qrcode' style='position: absolute;bottom:35px;right:0;width: 260px; height: 260px; background-color: white; padding: 2px'></div>",
         addAudioCastButton: function(){
             this.embedPlayer.getVideoHolder().append(this.qrdiv);
             this.createQRCode();
