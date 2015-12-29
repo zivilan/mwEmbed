@@ -29,7 +29,7 @@
                 _this.socket.emit('publish', _this.qId + ":play");
                 _this.interval =  setInterval(function(){
                     _this.socket.emit('publish', _this.qId + ":currentTime=" + _this.embedPlayer.currentTime);
-                } ,3000);
+                } ,1000);
             });
 
             this.bind('onpause', function(){
