@@ -4,6 +4,7 @@
             "resources/mw.DoubleClick.js"
         ],
         "dependencies": [
+	        "mw.KBaseComponent",
             "mw.AdTimeline"
         ],
         "kalturaPluginName": "doubleClick"

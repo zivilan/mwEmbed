@@ -1,9 +1,6 @@
 ( function( mw, $ ) { "use strict";
 
-	mw.DoubleClick = function( embedPlayer, callback, pluginName ){
-		this.init( embedPlayer, callback, pluginName);
-	};
-	mw.DoubleClick.prototype = {
+	mw.PluginManager.add( 'doubleClick', mw.KBaseComponent.extend({
 		// The bind postfix to keep track of doubleclick bindings.
 		bindPostfix: '.DoubleClick',
 
@@ -1495,9 +1492,7 @@
 			if (this.adsManager && $.isFunction( this.adsManager.unload ) ) {
 				this.adsManager.unload();
 			}
-			if (this.embedPlayer.sequenceProxy.isInSequence){
-				this.restorePlayer(this.contentDoneFlag);
-			}
+			this.restorePlayer(true);
 		},
 		restorePlayer: function( onContentComplete, adPlayed ){
 			if (this.isdestroy && this.getConfig("adTagUrl")){ // DFP trafficed and already destroyed
@@ -1593,6 +1588,5 @@
 			}
 			this.contentDoneFlag = false;
 		}
-	};
-
-})( window.mw, jQuery);
+	}));
+} )( window.mw, window.jQuery );
