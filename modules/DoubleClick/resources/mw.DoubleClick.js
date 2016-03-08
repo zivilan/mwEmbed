@@ -401,6 +401,7 @@
 					_this.currentAdSlotType = 'preroll';
 					// set flag that this ad has prerolls so playlists should pause before playback
 					_this.shouldPausePlaylist = true;
+					_this.contentDoneFlag = false;
 					// Setup the restore callback
 					_this.restorePlayerCallback = callback;
 
@@ -1534,8 +1535,8 @@
 					if (_this.postRollCallback){
 						_this.postRollCallback();
 					}
-					this.isdestroy = true;
-					this.destroy();
+//					this.isdestroy = true;
+//					this.destroy();
 
 				} else {
 					if ( _this.saveTimeWhenSwitchMedia ) {
