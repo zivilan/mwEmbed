@@ -203,18 +203,16 @@
 								// trigger the preSequenceComplete event ( always fired )
 								embedPlayer.triggerHelper( 'AdSupport_PreSequenceComplete' );
 
+								if( playedAnAdFlag  ){
+									// reset displaySlotCount:
+									_this.displayedSlotCount=0;
+								}
 								// Restore the player only do event trigger if we played an ad
 								_this.restorePlayer( null, playedAnAdFlag );
 								// Restore duration:
 								embedPlayer.setDuration( orgDuration );
-
-								if( playedAnAdFlag  ){
-									// reset displaySlotCount:
-									_this.displayedSlotCount=0;
-									// Continue playback
-									embedPlayer.play();
-								}
-
+								// Continue playback
+								embedPlayer.play();
 							};
 							// Check if the src does not match original src if
 							// so switch back and restore original bindings
@@ -390,7 +388,9 @@
 			// Set the current slot type :
 			this.currentAdSlotType = slotType;
 			// Stop the native embedPlayer events so we can play the preroll and bumper
-			embedPlayer.stopEventPropagation();
+			if ( slotType === "preroll" ||  slotType === "bumper" ){
+				embedPlayer.stopEventPropagation();
+			}
 			// TODO read the add disable control bar to ad config and check that here.
 			var components = ['fullScreenBtn','logo','volumeControl'];
 			if (mw.getConfig('enableControlsDuringAd')) {
