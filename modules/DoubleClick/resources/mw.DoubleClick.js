@@ -764,6 +764,7 @@
 				return;
 			}
 			var _this = this;
+			_this.adManagerLoaded = false;
 			this.addSkipSupport();
 			this.parseAdTagUrlParts(this.embedPlayer, this.pluginName);
 			var adTagUrl = this.adTagUrl;
