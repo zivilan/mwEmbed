@@ -3,6 +3,7 @@
 // Class defined in resources/class/class.js
 mw.KBasePlugin = Class.extend({
 	asyncInit: false,
+
 	init: function( embedPlayer, callback, pluginName ){
 
 		// Save to local scope
@@ -56,6 +57,11 @@ mw.KBasePlugin = Class.extend({
 	},
 	isSafeEnviornment: function(){
 		return true;
+	},
+	isOffline:function(){
+		if (mw.isNativeApp() && window.location.href.indexOf("iom=true") > -1){
+			return true;
+		}
 	},
 	setup: function() {},
 	getPlayer: function() {

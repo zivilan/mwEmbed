@@ -12,6 +12,9 @@
 
         init: function( embedPlayer, callback, pluginName ) {
             // parent init return true / false based on isSafeEnviornment, default true
+	        if ( this.isOffline()) {
+		        return;
+	        }
             if( this._super( embedPlayer, callback, pluginName ) === false ) {
                 return ;
             }
