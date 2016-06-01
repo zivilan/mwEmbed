@@ -337,7 +337,7 @@
 				// embed iframe ( native skin in iOS )
 				$('.videoHolder').append('<div id="'+this.pid+'"></div>');
 				var tag = document.createElement('script');
-				tag.src = "//www.youtube.com/iframe_api";
+				tag.src = "https://www.youtube.com/iframe_api";
 				tag.id = "youTubeLib";
 				var firstScriptTag = document.getElementsByTagName('script')[0];
 				firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
@@ -519,8 +519,10 @@
 		play: function(){
 			var _this = this;
 			if(this._playContorls) {
-				if (this.hasEnded) {
-					if (mw.isMobileDevice()) {
+				// on mobile devices, disable prerolls as the user must click the Youtube play button and we can't initialize our video tag without a user gesture
+				if ( mw.isMobileDevice() ){
+					this.preSequenceFlag = true;
+					if (this.hasEnded) {
 						$(".largePlayBtn").hide();
 						$(".mwEmbedPlayer").hide();
 					}
