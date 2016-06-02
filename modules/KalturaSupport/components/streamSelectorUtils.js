@@ -22,7 +22,13 @@
         destroy: function () {
             this._super();
             this.getComponent().remove();
+            this.streams = [];
+            this.removeBindings();
         },
+        removeBindings: function(){
+            this.unbind();
+        },
+
         addBindings: function () {
             var _this = this;
 
@@ -71,6 +77,7 @@
         getStreams: function () {
             var _this = this;
             var requestObject = [];
+            this.streams = [];
             requestObject.push({
                 'service': 'baseEntry',
                 'action': 'list',

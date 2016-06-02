@@ -185,10 +185,10 @@
         },
 		hide: function (isFlashMode) {
             this.obj.addClass( 'hiddenScreen' );
+			this.obj.removeClass('componentOn').addClass('componentOff');
             //take care of flash obj (seek through hidden flash player will be very slow, so we need to bring at least several pixels inside the visible area of the player frame)
             if ( isFlashMode ) {
                 var _this = this;
-                this.obj.addClass('componentOff');
                 setTimeout(function () {
                     if (!_this.hiddenProp) {
                         _this.hiddenProp = _this.obj.css(['top', 'left', 'width', 'height']);
@@ -201,6 +201,7 @@
 		},
 		show: function (isFlashMode) {
             if ( !isFlashMode ) {
+				this.obj.removeClass('componentOff').addClass('componentOn');
                 this.obj.removeClass('hiddenScreen');
             } else {
                 //FlashMode only - take care of flash obj (seek through hidden flash player will be very slow, so we need to bring at least several pixels inside the visible area of the player frame)

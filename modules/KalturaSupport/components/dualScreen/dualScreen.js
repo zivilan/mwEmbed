@@ -127,7 +127,9 @@
 
 				//Handle layout changes due to layout update(resize and orientation change)
 				this.bind( 'updateLayout', function(e){
-					_this.updateSecondScreenLayout(e);
+                    if ( !_this.disabled ) {
+                        _this.updateSecondScreenLayout(e);
+                    }
 				});
 				// Android fires orientationchange too soon, i.e width and height are wrong
 				var eventName = mw.isAndroid() ? 'resize' : 'orientationchange';
@@ -159,6 +161,9 @@
 				});
 
                 this.bind( 'dualScreenDisplaysSwitched sourcesReplaced', function(e){
+                    if ( _this.disabled || _this.resetSecondPlayer ) {
+                        return;
+                    }
                     if ( _this.secondPlayer instanceof mw.dualScreen.videoPlayer && _this.secondPlayer.isABR() ){
                         if( e.type === 'sourcesReplaced' ){
                            _this.abrSourcesLoaded = true;
@@ -219,12 +224,8 @@
 					}
                     //channel play list
                     if( _this.isPlaylistPersistent() ) {
-                        mw.log('DualScreen - onChangeMedia :: play list case - reset flag on');
-                        _this.playerReadyFlag = false;
-                        _this.secondScreen = null;
-                        _this.streamSelector = null;
-                        _this.resetSecondPlayer = true;
-                        _this.streamSelectorLoaded = false;
+                        mw.log('DualScreen - onChangeMedia :: play list case - clean all');
+                        _this.cleanAll();
                     }
 				});
 				this.bind("onChangeStream", function(){
@@ -240,6 +241,21 @@
 					});
 				}
 			},
+
+            cleanAll: function ( ) {
+                this.playerReadyFlag = false;
+                this.destroySecondScreen();
+                this.destroyStreamSelector();
+                this.destroyControlBar();
+                this.resetSecondPlayer = true;
+                this.streamSelectorLoaded = false;
+                this.abrSourcesLoaded = false;
+                this.disabled = true;
+                if( this.waitForSecondScreen ) {
+                    clearInterval(this.waitForSecondScreen);
+                    this.waitForSecondScreen = null;
+                }
+            },
 
             reset: function ( ) {
                 var _this = this;
@@ -323,6 +339,7 @@
                         this.waitingCounter++;
                     } else {
                         mw.log("DualScreen :: clear waitForSecondScreen timer - no second screen");
+                        this.disabled = true;
                         clearInterval(this.waitForSecondScreen);
                         this.waitForSecondScreen = null;
                     }
@@ -710,8 +727,10 @@
 
 							var secondScreen = _this.displays.getAuxDisplay();
 							secondScreen.repaint(screenProps);
-							//TODO: move to image player
-							_this.secondPlayer.applyIntrinsicAspect();
+
+                            if( _this.secondPlayer && _this.secondPlayer instanceof mw.dualScreen.imagePlayer ) {
+                                _this.secondPlayer.applyIntrinsicAspect(); //TODO: move to image player
+                            }
 							if (!_this.disabled && _this.render) {
 								//Show display and control bar after resizing
 								_this.enableView();
@@ -847,7 +866,7 @@
                             deferred.resolve(true);
                         }, function () { // master entry doesn't has sub-entries
                             _this.streamSelectorLoaded = true; //prevent to load streamSelector again in the future
-                            deferred.resolve(false);
+                            deferred.reject();
                         });
                     }, "streamSelectorUtils");
                 }else{
