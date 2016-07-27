@@ -86,7 +86,9 @@
 			var _this = this;
 			this.bind('chromecastPlay', function(){_this.playMedia();});
 			this.bind('chromecastPause', function(){_this.pauseMedia();});
-			this.bind('chromecastSwitchMedia', function(e, url, mime){_this.loadMedia(url, mime);});
+			this.bind('chromecastSwitchMedia', function(e, eid){
+				_this.sendMessage({'type': 'notification','event': e.type, 'data': eid});
+			});
 			this.bind('chromecastGetCurrentTime', function(){_this.getCurrentTime();});
 			this.bind('chromecastSetVolume', function(e, percent){_this.setVolume(e,percent);});
 			this.bind('chromecastSeek', function(e, percent){_this.seekMedia(percent);});

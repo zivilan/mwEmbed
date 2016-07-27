@@ -105,8 +105,9 @@
 			});
 		},
 		switchPlaySource: function( source, switchCallback ){
-			$(this).trigger("chromecastSwitchMedia", [source.src, source.mimeType]);
-			this.vid.mediaLoadedCallback = switchCallback;
+			$(this).trigger("chromecastSwitchMedia", [this.kentryid]);
+			//this.vid.mediaLoadedCallback = switchCallback;
+			switchCallback();
 		},
 
 		mediaLoaded: function(mediaSession){
