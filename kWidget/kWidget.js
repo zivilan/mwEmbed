@@ -195,11 +195,13 @@
 					&&
 					window.location.host != 'localhost'
 				) {
+					mw.setConfig("addRectRed" , true);
 					if (console && console.error) {
-						console.error("Error: Using non-prodcution version of kaltura player library. Please see http://knowledge.kaltura.com/production-player-urls")
+						console.error("Error: Using non-prodcution version of kaltura player library. Please see http://knowledge.kaltura.com/production-player-urls");
 					}
 				}
 			}
+
 
             if (mw.getConfig( 'EmbedPlayer.ForceNativeComponent')) {
                 // set up window.kNativeSdk
@@ -415,6 +417,8 @@
 				this.log("Error: kWidget.embed could not find target: " + targetId);
 				return false; // No target found ( probably already done )
 			}
+
+			if ( mw.getConfig("addRectRed") ) { elm.style.border = "red 9px solid"; }
 			// Don't rewrite special key kaltura_player_iframe_no_rewrite
 			if (elm.getAttribute('name') == 'kaltura_player_iframe_no_rewrite') {
 				return;

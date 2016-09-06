@@ -1226,6 +1226,9 @@ HTML;
 		}
 		waitForKWidget( function(){
 			if( kWidget.isUiConfIdHTML5( '<?php echo $uiConfId ?>' ) ){
+			if ( mw.getConfig("addRectRed",false) ){
+            					document.getElementsByClassName("mwPlayerContainer")[0].style.border="red 2px solid";
+            				}
 				loadMw( function(){
 					// Load skin resources after other modules loaded
 					if( isIE8 ){
